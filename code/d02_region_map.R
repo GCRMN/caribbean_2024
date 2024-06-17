@@ -40,18 +40,38 @@ data_tropics <- tibble(long = c(-180, 180, -180, 180, -180, 180),
   summarise() %>% 
   st_cast("LINESTRING")
 
+# 3.6 Bbox for alpha on bathymetry ---
+
+data_alpha <- tibble(lat = c(0, 50),
+                     lon = c(-130, -40)) %>% 
+  st_as_sf(coords = c("lon", "lat"), crs = 4326) %>% 
+  st_bbox() %>% 
+  st_as_sfc()
+
+data_alpha <- data_eez %>% 
+  summarise(geometry = st_union(geometry)) %>% 
+  st_difference(data_alpha, .)
+
 # 4. Create text annotation ----
 
-data_labels <- tibble(long = c(-57.5, -60, -95, -99.5, -66, -75),
-                      lat = c(24.5, 27.5, 33.5, 20, 8, 7.5),
-                      text = c("Tropic of Cancer", "Atlantic Ocean", "United States", "Mex.",
-                               "Venezuela", "Col."),
-                      color = c("white", "#1e517b", "#363737", "#363737", "#363737", "#363737")) %>% 
+data_labels_tropic <- tibble(long = c(-57.5),
+                      lat = c(24.5),
+                      text = c("Tropic of Cancer")) %>% 
   st_as_sf(coords = c("long", "lat"), crs = 4326)
 
-# 5. Make the map ----
+data_labels_atlantic <- tibble(long = c(-60),
+                      lat = c(27.5),
+                      text = c("Atlantic Ocean")) %>% 
+  st_as_sf(coords = c("long", "lat"), crs = 4326)
 
-plot_map <- ggplot() +
+data_labels_land <- tibble(long = c(-95, -99.5, -66, -75),
+                      lat = c(33.5, 20, 8, 7.5),
+                      text = c("United States", "Mex.", "Venezuela", "Col.")) %>% 
+  st_as_sf(coords = c("long", "lat"), crs = 4326)
+
+# 5. Make the basic regional map ----
+
+caribbean_map <- ggplot() +
   geom_sf(data = data_bathy %>% filter(depth == 0), aes(fill = fill_color), color = NA, alpha = 0.2) +
   geom_sf(data = data_bathy %>% filter(depth == 200), aes(fill = fill_color), color = NA, alpha = 0.2) +
   geom_sf(data = data_bathy %>% filter(depth == 1000), aes(fill = fill_color), color = NA, alpha = 0.2) +
@@ -65,25 +85,35 @@ plot_map <- ggplot() +
   geom_sf(data = data_bathy %>% filter(depth == 9000), aes(fill = fill_color), color = NA, alpha = 0.2) +
   geom_sf(data = data_bathy %>% filter(depth == 10000), aes(fill = fill_color), color = NA, alpha = 0.2) +
   scale_fill_identity() +
+  #geom_sf(data = data_alpha, fill = "white", alpha = 0.6) +
   # Tropics
   geom_sf(data = data_tropics, linetype = "dashed", color = "white", linewidth = 0.25) +
   # EEZ
-  geom_sf(data = data_eez, color = "#363737", fill = "#e4e9ed", alpha = 0.2) +
-  # Reefs
-  geom_sf(data = data_reefs, color = palette_second[4]) +
+  geom_sf(data = data_eez, color = "#363737", fill = "#e4e9ed", alpha = 0.1) +
   # Countries
   geom_sf(data = data_countries, fill = "grey", col = "darkgrey") +
   # Text annotations
-  geom_sf_text(data = data_labels, aes(label = text, color = color), 
+  geom_sf_text(data = data_labels_tropic, aes(label = text), color = "white",
                fontface = "italic", size = 3.5, family = font_choose_map) +
-  scale_color_identity() +
+  geom_sf_text(data = data_labels_atlantic, aes(label = text), color = "#1e517b",
+               fontface = "italic", size = 3.5, family = font_choose_map) +
+  geom_sf_text(data = data_labels_land, aes(label = text), color = "#363737",
+               fontface = "italic", size = 3.5, family = font_choose_map) +
+  theme_map()
+
+save(caribbean_map, file = "data/02_misc/caribbean_map.RData")
+
+# 6. Add annotations ----
+
+caribbean_map +
+  # Reefs
+  geom_sf(data = data_reefs, color = palette_second[4]) +
   # Parameters
   annotation_scale(location = "bl", width_hint = 0.25, text_family = font_choose_map, 
                    text_cex = 0.8, style = "bar", line_width = 1,  height = unit(0.045, "cm"),
                    pad_x = unit(0.5, "cm"), pad_y = unit(0.35, "cm"), bar_cols = c("black", "black")) +
-  coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35)) +
-  theme_map()
+  coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35))
 
-# 6. Export the map ----
+# 7. Export the map ----
 
 ggsave(filename = "figs/01_part-1/fig-1.png", width = 7.5, height = 4.75, dpi = fig_resolution)

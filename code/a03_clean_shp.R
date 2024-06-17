@@ -3,6 +3,7 @@
 library(tidyverse) # Core tidyverse packages
 library(sf)
 sf_use_s2(FALSE) # Switch from S2 to GEOS
+library(nngeo)
 
 # 2. Bathymetry ----
 
@@ -59,10 +60,6 @@ data_eez <- read_sf("data/01_shp/01_raw/02_eez/eez_v12.shp") %>%
 
 data_reefs <- st_intersection(data_reefs, data_regions) %>%
   filter(region == "Caribbean")
-
-## 3.3 Export the data ----
-
-st_write(data_reefs, "data/01_shp/02_clean/02_reefs/reefs.shp", append = TRUE)
 
 # 4. EEZ ----
 
@@ -135,6 +132,30 @@ data_eez <- data_eez %>%
   bind_rows(data_eez %>% 
               filter(!(TERRITORY1 == "Panama")), .)
 
-## 4.3 Export the data ----
+## 4.3 Add EEZ to reefs ----
+
+#data_reefs <- st_intersection(data_reefs, data_eez) %>% 
+#  select(-MRGID)
+
+#st_write(data_reefs, "data/01_shp/02_clean/02_reefs/reefs.shp", append = TRUE)
+
+## 4.4 Remove EEZ without reefs ----
+
+data_eez <- data_eez %>% 
+  filter(TERRITORY1 %in% unique(data_reefs$TERRITORY1))
+
+## 4.5 Remove holes in EEZ ----
+
+# todo
 
 st_write(data_eez, "data/01_shp/02_clean/03_eez/caribbean_eez.shp", append = TRUE)
+
+# 5. Land (Princeton) ----
+
+list_shp <- list.files(path = "data/01_shp/01_raw/05_princeton",
+                       pattern = ".shp$", full.names = TRUE, recursive = TRUE)
+
+data_land <- map_dfr(list_shp, ~st_read(.)) %>% 
+  st_transform(crs = 4326)
+
+st_write(data_land, "data/01_shp/02_clean/05_princeton/land.shp", append = TRUE)
