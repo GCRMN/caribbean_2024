@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# **Status and Trends of Coral Reefs of the Caribbean**
+# **Status and Trends of Caribbean Coral Reefs: 1980-2023**
 
 ## 1. Introduction
 
@@ -35,7 +35,7 @@
      collate  French_France.utf8
      ctype    French_France.utf8
      tz       Europe/Paris
-     date     2024-06-16
+     date     2024-06-19
      pandoc   3.1.11 @ C:/Program Files/RStudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)
 
     ─ Packages ───────────────────────────────────────────────────────────────────
