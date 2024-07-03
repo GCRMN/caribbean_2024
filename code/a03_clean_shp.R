@@ -70,6 +70,21 @@ data_eez_intersects <- st_intersection(data_eez, data_reefs)
 data_eez <- data_eez %>% 
   filter(TERRITORY1 %in% unique(data_eez_intersects$TERRITORY1))
 
+## 4.2 Overclaimed territories ----
+
+data_eez2 <- data_eez %>% 
+  mutate(overclaimed = ifelse(str_detect(GEONAME, "Over"), TRUE, FALSE))
+
+ggplot() +
+  geom_sf(data = data_eez2, aes(fill = overclaimed)) +
+  scale_fill_manual(breaks = c(TRUE, FALSE),
+                     values = c("red", "white")) +
+  coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35))
+
+ggsave("figs/04_supp/overclaimed-territories.png")
+
+rm(data_eez2)
+
 ## 4.2 Remove non-caribbean EEZ ----
 
 ### 4.2.1 United States ----
