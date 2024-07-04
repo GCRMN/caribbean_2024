@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# **Status and Trends of Caribbean Coral Reefs: 1980-2023**
+# **Status and Trends of Caribbean Coral Reefs: 1970-2024**
 
 ## 1. Introduction
 
@@ -21,7 +21,9 @@
 
 ### Models (benthic cover) (`c_`)
 
-### Figures and tables (`d_`)
+### Models (fish biomass) (`d_`)
+
+### Figures and tables (`e_`)
 
 ## 3. Reproducibility parameters
 
@@ -35,7 +37,7 @@
      collate  French_France.utf8
      ctype    French_France.utf8
      tz       Europe/Paris
-     date     2024-06-19
+     date     2024-07-04
      pandoc   3.1.11 @ C:/Program Files/RStudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)
 
     ─ Packages ───────────────────────────────────────────────────────────────────
@@ -60,7 +62,7 @@
      colorspace      2.1-0      2023-01-23 [1] CRAN (R 4.4.0)
      conflicted      1.2.0      2023-02-01 [1] CRAN (R 4.4.0)
      cpp11           0.4.7      2023-12-02 [1] CRAN (R 4.4.0)
-     crayon          1.5.2      2022-09-29 [1] CRAN (R 4.4.0)
+     crayon          1.5.3      2024-06-20 [1] CRAN (R 4.4.1)
      curl            5.2.1      2024-03-01 [1] CRAN (R 4.4.0)
      data.table      1.15.4     2024-03-30 [1] CRAN (R 4.4.0)
      DBI             1.2.3      2024-06-02 [1] CRAN (R 4.4.0)
