@@ -210,7 +210,10 @@ data_reefs <- data_reefs %>%
   st_intersection(., data_eez) %>% 
   st_as_sf() %>% 
   st_transform(crs = 4326) %>% 
-  st_make_valid()
+  st_make_valid() %>% 
+  group_by(country, territory) %>% 
+  summarise(geometry = st_union(geometry)) %>% 
+  ungroup()
 
 st_write(data_reefs, "data/01_maps/02_clean/02_reefs/reefs.shp", append = TRUE)
 
