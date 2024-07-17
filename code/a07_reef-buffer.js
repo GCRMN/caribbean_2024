@@ -10,17 +10,40 @@ var reef_buffer = function(feature) {
 
 var data_reefs_buffer = data_reefs.map(reef_buffer);
   
-// 3. Data vizualisation ----
+// 2.1 Data vizualisation ----
 
 Map.addLayer(data_reefs);
 Map.addLayer(data_reefs_buffer);
 
-// 4. Export the data ----
+// 2.2 Export the data ----
 
 Export.table.toDrive({
   collection:data_reefs_buffer,
   folder:"GEE",
-  fileNamePrefix:"reefs_buffer",
+  fileNamePrefix:"reefs_buffer_100",
   fileFormat:"SHP",
-  description:"reefs_buffer"
+  description:"reefs_buffer_100"
+});
+
+// 3. Create 50 km reef buffer ----
+
+var reef_buffer = function(feature) {
+  return feature.buffer(50000); // 50 km  
+};
+
+var data_reefs_buffer = data_reefs.map(reef_buffer);
+  
+// 3.1 Data vizualisation ----
+
+Map.addLayer(data_reefs);
+Map.addLayer(data_reefs_buffer);
+
+// 3.2 Export the data ----
+
+Export.table.toDrive({
+  collection:data_reefs_buffer,
+  folder:"GEE",
+  fileNamePrefix:"reefs_buffer_50",
+  fileFormat:"SHP",
+  description:"reefs_buffer_50"
 });

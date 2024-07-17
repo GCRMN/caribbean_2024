@@ -9,7 +9,7 @@ library(nngeo)
 
 ## 2.1 List path of shapefiles ----
 
-list_shp <- list.files(path = "data/01_shp/01_raw/04_natural-earth/ne_10m_bathymetry_all/",
+list_shp <- list.files(path = "data/01_maps/01_raw/04_natural-earth/ne_10m_bathymetry_all/",
                        pattern = ".shp", full.names = TRUE)
 
 ## 2.2 Combine shapefiles ----
@@ -36,7 +36,7 @@ data_bathy <- map_dfr(list_shp, ~st_read(., quiet = TRUE)) %>%
 
 ## 2.3 Export the data ----
 
-save(data_bathy, file = "data/01_shp/02_clean/04_natural-earth/ne_10m_bathymetry_all.RData") # RData
+save(data_bathy, file = "data/01_maps/02_clean/04_natural-earth/ne_10m_bathymetry_all.RData") # RData
 
 rm(list_shp, data_bathy)
 
@@ -44,15 +44,15 @@ rm(list_shp, data_bathy)
 
 ## 3.1 Load data ----
 
-data_regions <- read_sf("data/01_shp/02_clean/01_gcrmn-regions/gcrmn_regions.shp") %>% 
+data_regions <- read_sf("data/01_maps/02_clean/01_gcrmn-regions/gcrmn_regions.shp") %>% 
   st_transform(crs = 4326) %>% 
   st_make_valid()
 
-data_reefs <- read_sf("data/01_shp/01_raw/01_reefs/reef_500_poly.shp") %>% 
+data_reefs <- read_sf("data/01_maps/01_raw/01_reefs/reef_500_poly.shp") %>% 
   st_transform(crs = 4326) %>% 
   st_make_valid()
 
-data_eez <- read_sf("data/01_shp/01_raw/02_eez/eez_v12.shp") %>% 
+data_eez <- read_sf("data/01_maps/01_raw/02_eez/eez_v12.shp") %>% 
   st_transform(crs = 4326) %>% 
   st_make_valid()
 
@@ -172,13 +172,36 @@ ggplot() +
 
 data_eez <- data_eez %>% 
   rename(country = SOVEREIGN1, territory = TERRITORY1) %>% 
+  select(country, territory) %>% 
   st_as_sf() %>% 
   st_transform(crs = 4326) %>% 
   st_make_valid()
 
-### 4.3.10 Export the data ----
+### 4.3.10 Remove holes in EEZ ----
 
-st_write(data_eez, "data/01_shp/02_clean/03_eez/caribbean_eez.shp", append = TRUE)
+ggplot() +
+  geom_sf(data = data_eez)
+
+data_eez_a <- data_eez %>% 
+  filter(territory == "Serrana Bank") %>% 
+  nngeo::st_remove_holes(.)
+
+data_eez_b <- data_eez %>% 
+  filter(territory == "Quitasueño Bank") %>% 
+  nngeo::st_remove_holes(.)
+
+data_eez <- data_eez %>% 
+  filter(!(territory %in% c("Quitasueño Bank", "Serrana Bank"))) %>% 
+  nngeo::st_remove_holes(.) %>% 
+  bind_rows(., data_eez_a) %>% 
+  bind_rows(., data_eez_b)
+
+ggplot() +
+  geom_sf(data = data_eez)
+
+### 4.3.11 Export the data ----
+
+st_write(data_eez, "data/01_maps/02_clean/03_eez/caribbean_eez.shp", append = TRUE)
 
 ## 4.4 Associate EEZ to reefs ----
 
@@ -189,11 +212,11 @@ data_reefs <- data_reefs %>%
   st_transform(crs = 4326) %>% 
   st_make_valid()
 
-st_write(data_reefs, "data/01_shp/02_clean/02_reefs/reefs.shp", append = TRUE)
+st_write(data_reefs, "data/01_maps/02_clean/02_reefs/reefs.shp", append = TRUE)
 
 # 5. Land (Princeton) ----
 
-list_shp <- list.files(path = "data/01_shp/01_raw/05_princeton",
+list_shp <- list.files(path = "data/01_maps/01_raw/05_princeton",
                        pattern = ".shp$", full.names = TRUE, recursive = TRUE)
 
 data_land <- map_dfr(list_shp, ~st_read(.)) %>% 
@@ -201,4 +224,4 @@ data_land <- map_dfr(list_shp, ~st_read(.)) %>%
   st_transform(crs = 4326) %>% 
   select(TERRITORY1) 
 
-st_write(data_land, "data/01_shp/02_clean/05_princeton/land.shp", append = TRUE)
+st_write(data_land, "data/01_maps/02_clean/05_princeton/land.shp", append = TRUE)
