@@ -2,14 +2,10 @@
 
 library(tidyverse) # Core tidyverse packages
 library(sf)
-sf_use_s2(FALSE) # Switch from S2 to GEOS
-library(patchwork)
 
 # 2. Source functions ----
 
-source("code/function/graphical_par.R")
-source("code/function/theme_map.R")
-source("code/function/theme_graph.R")
+source("code/function/plot_region.R")
 source("code/function/data_descriptors.R")
 
 # 3. Select benthic data ----
@@ -28,19 +24,21 @@ data_benthic <- data_benthic %>%
          interval_class = as.factor(interval_class)) %>% 
   st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
 
-# 4. Make the map ----
+# 4. Make the plot ----
 
-load("data/02_misc/caribbean_map.RData")
-
-plot_i <- caribbean_map +
+plot <- plot_region() +
+  annotation_scale(location = "bl", width_hint = 0.25, text_family = font_choose_map, text_col = "black",
+                   text_cex = 0.8, style = "bar", line_width = 1,  height = unit(0.045, "cm"), line_col = "black",
+                   pad_x = unit(0.5, "cm"), pad_y = unit(0.35, "cm"), bar_cols = c("black", "black")) +
   geom_sf(data = data_benthic %>% arrange(interval_class), aes(color = interval_class)) +
-  scale_color_manual(values = palette_second,
-                     labels = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"), 
-                     drop = FALSE, name = "Number of years with data") +
-  guides(colour = guide_legend(title.position = "top", title.hjust = 0.5, override.aes = list(size = 4))) +
+    scale_color_manual(values = palette_second,
+                       labels = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"), 
+                       drop = FALSE, name = "Number of years with data") +
+    guides(colour = guide_legend(title.position = "top", title.hjust = 0.5, override.aes = list(size = 4))) +
   coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35))
 
-ggsave(filename = "figs/01_part-1/fig-2.png", width = 7.5, height = 5.75, dpi = fig_resolution)
+ggsave(filename = "figs/01_part-1/fig-2.png", plot = plot,
+       width = 7.5, height = 5.75, dpi = fig_resolution)
 
 # 5. Plot of number of surveys per year ----
 
@@ -101,9 +99,8 @@ monitoring_descriptors <- data_benthic %>%
   ungroup() %>% 
   # Add missing territories (those with no data)
   left_join(st_read("data/01_shp/02_clean/03_eez/caribbean_eez.shp") %>%
-              select(TERRITORY1) %>% 
-              st_drop_geometry() %>% 
-              rename(territory = TERRITORY1),
+              select(territory) %>% 
+              st_drop_geometry(),
             .) %>% 
   mutate(across(c("nb_sites", "nb_surveys", "nb_datasets"), .fns = ~replace_na(.,0))) %>% 
   arrange(territory)
