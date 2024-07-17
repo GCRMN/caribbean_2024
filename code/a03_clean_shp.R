@@ -61,6 +61,11 @@ data_eez <- read_sf("data/01_shp/01_raw/02_eez/eez_v12.shp") %>%
 data_reefs <- st_intersection(data_reefs, data_regions) %>%
   filter(region == "Caribbean")
 
+## 3.3 Visual check ----
+
+ggplot() +
+  geom_sf(data = data_reefs, fill = "red")
+
 # 4. EEZ ----
 
 ## 4.1 Filter EEZ with coral reefs ----
@@ -85,9 +90,9 @@ ggsave("figs/04_supp/overclaimed-territories.png")
 
 rm(data_eez2)
 
-## 4.2 Remove non-caribbean EEZ ----
+## 4.3 Remove non-caribbean EEZ ----
 
-### 4.2.1 United States ----
+### 4.3.1 United States ----
 
 data_eez <- data_eez %>% 
   filter(SOVEREIGN1 == "United States" & GEONAME == "United States Exclusive Economic Zone") %>%
@@ -98,7 +103,7 @@ data_eez <- data_eez %>%
                          GEONAME == "United States Exclusive Economic Zone")), .) %>% 
   filter(GEONAME != "Joint regime area: United States / Russia")
 
-### 4.2.2 Mexico ----
+### 4.3.2 Mexico ----
 
 data_eez <- data_eez %>% 
   filter(SOVEREIGN1 == "Mexico") %>% 
@@ -107,7 +112,7 @@ data_eez <- data_eez %>%
   bind_rows(data_eez %>% 
               filter(!(SOVEREIGN1 == "Mexico")), .)
   
-### 4.2.3 Colombia ----
+### 4.3.3 Colombia ----
 
 data_eez <- data_eez %>% 
   filter(SOVEREIGN1 == "Colombia" & GEONAME == "Colombian Exclusive Economic Zone") %>% 
@@ -117,7 +122,7 @@ data_eez <- data_eez %>%
               filter(!(SOVEREIGN1 == "Colombia" & 
                          GEONAME == "Colombian Exclusive Economic Zone")), .)
 
-### 4.2.4 Nicaragua ----
+### 4.3.4 Nicaragua ----
 
 data_eez <- data_eez %>% 
   filter(SOVEREIGN1 == "Nicaragua") %>% 
@@ -126,7 +131,7 @@ data_eez <- data_eez %>%
   bind_rows(data_eez %>% 
               filter(!(TERRITORY1 == "Nicaragua")), .)
 
-### 4.2.5 Costa Rica ----
+### 4.3.5 Costa Rica ----
 
 data_eez <- data_eez %>% 
   filter(SOVEREIGN1 == "Costa Rica" & GEONAME == "Costa Rican Exclusive Economic Zone") %>% 
@@ -137,7 +142,7 @@ data_eez <- data_eez %>%
                          GEONAME == "Costa Rican Exclusive Economic Zone")), .) %>% 
   filter(GEONAME != "Joint regime area: Costa Rica / Ecuador (Galapagos)")
 
-### 4.2.6 Panama ----
+### 4.3.6 Panama ----
 
 data_eez <- data_eez %>% 
   filter(SOVEREIGN1 == "Panama") %>% 
@@ -147,23 +152,44 @@ data_eez <- data_eez %>%
   bind_rows(data_eez %>% 
               filter(!(TERRITORY1 == "Panama")), .)
 
-## 4.3 Add EEZ to reefs ----
-
-#data_reefs <- st_intersection(data_reefs, data_eez) %>% 
-#  select(-MRGID)
-
-#st_write(data_reefs, "data/01_shp/02_clean/02_reefs/reefs.shp", append = TRUE)
-
-## 4.4 Remove EEZ without reefs ----
+### 4.3.7 Honduras ----
 
 data_eez <- data_eez %>% 
-  filter(TERRITORY1 %in% unique(data_reefs$TERRITORY1))
+  filter(GEONAME == "Honduran Exclusive Economic Zone") %>% 
+  st_cast(., "POLYGON") %>% 
+  filter(row_number() == 2) %>% 
+  bind_rows(data_eez %>% 
+              filter(!(GEONAME == "Honduran Exclusive Economic Zone")), .)
 
-## 4.5 Remove holes in EEZ ----
+### 4.3.8 Visual check ----
 
-# todo
+ggplot() +
+  geom_sf(data = data_eez) +
+  geom_sf(data = data_reefs, col = "red") +
+  coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35))
+
+### 4.3.9 Remove useless columns ----
+
+data_eez <- data_eez %>% 
+  rename(country = SOVEREIGN1, territory = TERRITORY1) %>% 
+  st_as_sf() %>% 
+  st_transform(crs = 4326) %>% 
+  st_make_valid()
+
+### 4.3.10 Export the data ----
 
 st_write(data_eez, "data/01_shp/02_clean/03_eez/caribbean_eez.shp", append = TRUE)
+
+## 4.4 Associate EEZ to reefs ----
+
+data_reefs <- data_reefs %>% 
+  select(-GRIDCODE) %>% 
+  st_intersection(., data_eez) %>% 
+  st_as_sf() %>% 
+  st_transform(crs = 4326) %>% 
+  st_make_valid()
+
+st_write(data_reefs, "data/01_shp/02_clean/02_reefs/reefs.shp", append = TRUE)
 
 # 5. Land (Princeton) ----
 
@@ -171,6 +197,8 @@ list_shp <- list.files(path = "data/01_shp/01_raw/05_princeton",
                        pattern = ".shp$", full.names = TRUE, recursive = TRUE)
 
 data_land <- map_dfr(list_shp, ~st_read(.)) %>% 
-  st_transform(crs = 4326)
+  rename(TERRITORY1 = NAME_ENGLI) %>% 
+  st_transform(crs = 4326) %>% 
+  select(TERRITORY1) 
 
 st_write(data_land, "data/01_shp/02_clean/05_princeton/land.shp", append = TRUE)
