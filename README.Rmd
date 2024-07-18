@@ -24,15 +24,21 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 
 * `data_descriptors.R` Get number of sites, surveys, datasets, first and last year of monitoring.
 * `graphical_par.R` Graphical parameters, including colors and fonts.
+* `plot_region.R` Regional background map.
 * `theme_graph.R` Main ggplot theme for the plots of the reports.
 * `theme_map.R` Main ggplot theme for the maps of the reports.
 
 ### Cleaning and selection (`a_`)
 
+* `a01_select_benthic-data.R`
+* `a03_clean_shp.R`
+* `a07_reef-buffer.js`
+* `a08_clean_cyclones.R`
+* `a09_extract_dhw-year.R`
 
+### Extract indicators (`b_`)
 
-### Extract indicators (except benthic cover) (`b_`)
-
+* `b05_extract_indicator_cyclones`
 
 ### Models (benthic cover) (`c_`)
 
@@ -42,7 +48,11 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 
 ### Figures and tables (`e_`)
 
-
+* `e02_region_map.R`
+* `e03_territories_map.R`
+* `e06_region_cyclones.R` 
+* `e07_territories_cyclones.R` 
+* `e11_other-indicators.R`
 
 ## 3. Reproducibility parameters
 

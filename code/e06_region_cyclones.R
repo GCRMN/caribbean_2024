@@ -56,7 +56,7 @@ data_cyclones <- data_cyclones %>%
   bind_rows(., tibble(territory = setdiff(data_eez$territory, data_cyclones$territory),
                       n = rep(0, length(setdiff(data_eez$territory, data_cyclones$territory))),
                       n_tot = n)) %>% 
-  filter(!(territory %in% c("Quitasueño Bank", "Serrana Bank"))) %>% 
+  filter(!(territory %in% c("Quitasueño Bank", "Serrana Bank", "Navassa Island"))) %>% 
   mutate(territory = str_replace_all(territory, c("Islands" = "Isl.",
                                                   " and the " = " & ",
                                                   " and " = " & ",
@@ -82,7 +82,7 @@ ggplot(data = data_cyclones, aes(x = n, y = fct_reorder(territory, n_tot), fill 
 
 ## 5.3 Save the plot ----
 
-ggsave(filename = "figs/01_part-1/fig-7.png", width = 6, height = 10, dpi = fig_resolution)
+ggsave(filename = "figs/01_part-1/fig-7.png", width = 6, height = 12, dpi = fig_resolution)
 
 # 6. Key numbers ----
 
