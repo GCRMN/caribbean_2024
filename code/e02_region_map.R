@@ -16,5 +16,5 @@ plot <- plot_region() +
 
 # 4. Export the map ----
 
-ggsave(filename = "figs/01_part-1/fig-1u.png", plot = plot,
+ggsave(filename = "figs/01_part-1/fig-1.png", plot = plot,
        width = 7.25, height = 4.75, dpi = fig_resolution)
