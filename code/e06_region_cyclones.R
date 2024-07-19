@@ -22,10 +22,7 @@ data_cyclones <- data_cyclones %>%
 
 # 4. Make the plot ----
 
-plot <- plot_region() +
-  annotation_scale(location = "bl", width_hint = 0.25, text_family = font_choose_map, text_col = "black",
-                   text_cex = 0.8, style = "bar", line_width = 1,  height = unit(0.045, "cm"), line_col = "black",
-                   pad_x = unit(0.5, "cm"), pad_y = unit(0.35, "cm"), bar_cols = c("black", "black")) +
+plot <- plot_region(scale = TRUE) +
   geom_sf(data = data_cyclones %>% arrange(saffir), aes(color = saffir),
           alpha = 0.75, linewidth = 0.5, show.legend = "line") +
   scale_color_manual(breaks = c("1", "2", "3", "4", "5"),

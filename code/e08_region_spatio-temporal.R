@@ -7,6 +7,7 @@ library(sf)
 
 source("code/function/plot_region.R")
 source("code/function/data_descriptors.R")
+source("code/function/theme_graph.R")
 
 # 3. Select benthic data ----
 
@@ -26,15 +27,12 @@ data_benthic <- data_benthic %>%
 
 # 4. Make the plot ----
 
-plot <- plot_region() +
-  annotation_scale(location = "bl", width_hint = 0.25, text_family = font_choose_map, text_col = "black",
-                   text_cex = 0.8, style = "bar", line_width = 1,  height = unit(0.045, "cm"), line_col = "black",
-                   pad_x = unit(0.5, "cm"), pad_y = unit(0.35, "cm"), bar_cols = c("black", "black")) +
+plot <- plot_region(scale = TRUE) +
   geom_sf(data = data_benthic %>% arrange(interval_class), aes(color = interval_class)) +
     scale_color_manual(values = palette_second,
                        labels = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"), 
                        drop = FALSE, name = "Number of years with data") +
-    guides(colour = guide_legend(title.position = "top", title.hjust = 0.5, override.aes = list(size = 4))) +
+  guides(colour = guide_legend(title.position = "top", title.hjust = 0.5, override.aes = list(size = 4))) +
   coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35))
 
 ggsave(filename = "figs/01_part-1/fig-2.png", plot = plot,
@@ -98,16 +96,19 @@ monitoring_descriptors <- data_benthic %>%
   data_descriptors() %>% 
   ungroup() %>% 
   # Add missing territories (those with no data)
-  left_join(st_read("data/01_shp/02_clean/03_eez/caribbean_eez.shp") %>%
+  full_join(., st_read("data/01_maps/02_clean/03_eez/caribbean_eez.shp") %>%
               select(territory) %>% 
-              st_drop_geometry(),
-            .) %>% 
+              distinct() %>% 
+              st_drop_geometry()) %>% 
   mutate(across(c("nb_sites", "nb_surveys", "nb_datasets"), .fns = ~replace_na(.,0))) %>% 
-  arrange(territory)
+  arrange(territory) %>% 
+  filter(!(territory %in% c("Quitasueño Bank", "Serrana Bank", "Navassa Island"))) %>% 
+  distinct()
 
 ## 7.2 Add total ----
 
 monitoring_descriptors <- data_benthic %>% 
+  filter(!(territory %in% c("Quitasueño Bank", "Serrana Bank", "Navassa Island"))) %>% 
   data_descriptors() %>% 
   ungroup() %>% 
   mutate(territory = "Entire Caribbean region") %>% 

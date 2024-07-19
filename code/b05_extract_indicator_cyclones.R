@@ -20,7 +20,7 @@ data_reef <- st_read("data/01_maps/02_clean/02_reefs/reefs.shp")
 
 ## 2.4 Coral reef distribution 100 km buffer --
 
-data_reef_buffer <- st_read("data/01_maps/02_clean/02_reefs/reefs_buffer_100.shp") %>% 
+data_reefs_buffer <- st_read("data/01_maps/02_clean/02_reefs/reefs_buffer_100.shp") %>% 
   # Correct the issue of encoding GEE export
   mutate(territory = str_replace_all(territory, c("Cura\\?ao" = "Curaçao",
                                                   "Quitasue\\?o Bank" = "Quitasueño Bank",
@@ -39,7 +39,7 @@ extract_cyclone <- function(territory_i){
   
   # Filter data for territory
   
-  data_reef_buffer_i <- data_reef_buffer %>% 
+  data_reefs_buffer_i <- data_reefs_buffer %>% 
     filter(territory == territory_i)
   
   data_reef_i <- data_reef %>% 
@@ -47,7 +47,7 @@ extract_cyclone <- function(territory_i){
   
   # Extract tropical storms passing within 100 km from a reef
   
-  data_ts_lines_i <- st_filter(data_ts_lines, data_reef_buffer_i, .predicate = st_intersects) %>% 
+  data_ts_lines_i <- st_filter(data_ts_lines, data_reefs_buffer_i, .predicate = st_intersects) %>% 
     select(-type) %>% 
     mutate(dist = as.numeric(st_distance(data_reef_i, .))/1000) %>% 
     st_drop_geometry()

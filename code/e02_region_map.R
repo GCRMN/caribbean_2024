@@ -7,14 +7,20 @@ library(sf)
 
 source("code/function/plot_region.R")
 
-# 3. Make the plot ----
+# 3. Create annotations ----
 
-plot <- plot_region() +
-  annotation_scale(location = "bl", width_hint = 0.25, text_family = font_choose_map, text_col = "black",
-                   text_cex = 0.8, style = "bar", line_width = 1,  height = unit(0.045, "cm"), line_col = "black",
-                   pad_x = unit(0.5, "cm"), pad_y = unit(0.35, "cm"), bar_cols = c("black", "black"))
+data_annotations <- tibble(long = c(-59, -95),
+                            lat = c(26, 10),
+                            text = c("Atlantic Ocean", "Pacific Ocean")) %>% 
+  st_as_sf(coords = c("long", "lat"), crs = 4326)
 
-# 4. Export the map ----
+# 4. Make the plot ----
+
+plot <- plot_region(scale = TRUE) +
+  geom_sf_text(data = data_annotations, aes(label = text), fontface = "italic",
+               color = "white", size = 3, family = font_choose_map)
+
+# 5. Export the map ----
 
 ggsave(filename = "figs/01_part-1/fig-1.png", plot = plot,
        width = 7.25, height = 4.75, dpi = fig_resolution)
