@@ -4,7 +4,22 @@ library(tidyverse)
 library(sf)
 sf_use_s2(TRUE)
 
-# 2. Clean data ----
+# 2. Download data ----
+
+download_data <- TRUE
+
+if(download_data == TRUE){
+  
+  download.file(url = "https://www.ncei.noaa.gov/data/international-best-track-archive-for-climate-stewardship-ibtracs/v04r01/access/shapefile/IBTrACS.since1980.list.v04r01.points.zip",
+                destfile = "data/07_cyclones/IBTrACS.since1980.list.v04r01.points.zip", mode = "wb")
+  
+  unzip("data/07_cyclones/IBTrACS.since1980.list.v04r01.points.zip", exdir = "data/07_cyclones/")
+  
+  file.remove("data/07_cyclones/IBTrACS.since1980.list.v04r01.points.zip")
+  
+}
+
+# 3. Clean data ----
 
 data_ts_points <- st_read("data/07_cyclones/IBTrACS.since1980.list.v04r01.points.shp") %>% 
   st_transform(crs = 4326) %>% 
@@ -23,6 +38,7 @@ data_ts_points <- st_read("data/07_cyclones/IBTrACS.since1980.list.v04r01.points
   # Add max_windspeed and saffir simpson scale level
   group_by(ts_id) %>% 
   mutate(max_windspeed = max(windspeed, na.rm = TRUE)) %>% 
+  filter(time >= as.Date("1980-01-01") & time <= as.Date("2024-12-31")) %>% 
   filter(max_windspeed != -Inf) %>% 
   ungroup() %>% 
   mutate(saffir = case_when(max_windspeed < 119 ~ 0,
@@ -32,11 +48,11 @@ data_ts_points <- st_read("data/07_cyclones/IBTrACS.since1980.list.v04r01.points
                             max_windspeed > 210 & max_windspeed <= 251 ~ 4,
                             max_windspeed > 251 ~ 5))
 
-# 3. Export the data ----
+# 4. Export the data ----
 
 save(data_ts_points, file = "data/07_cyclones/01_cyclones_points.RData")
 
-# 4. Transform points to lines ----
+# 5. Transform points to lines ----
 
 data_ts_lines <- data_ts_points %>% 
   # Identify points lower or greater than 180
@@ -56,11 +72,11 @@ data_ts_lines <- data_ts_points %>%
   st_wrap_dateline(options = c("WRAPDATELINE=YES")) %>% 
   st_make_valid()
 
-# 5. Visual check ----
+# 6. Visual check ----
 
 ggplot() +
   geom_sf(data = data_ts_lines)
 
-# 6. Export the data ----
+# 7. Export the data ----
 
 save(data_ts_lines, file = "data/07_cyclones/01_cyclones_lines.RData")
