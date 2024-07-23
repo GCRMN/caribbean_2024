@@ -43,7 +43,8 @@ extract_cyclone <- function(territory_i){
     filter(territory == territory_i)
   
   data_reef_i <- data_reef %>% 
-    filter(territory == territory_i)
+    filter(territory == territory_i) %>% 
+    summarise(geometry = st_union(geometry))
   
   # Extract tropical storms passing within 100 km from a reef
   
