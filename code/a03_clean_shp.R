@@ -184,12 +184,30 @@ st_write(data_reefs, "data/01_maps/02_clean/02_reefs/reefs.shp", append = TRUE)
 
 # 4. Land (Princeton) ----
 
+## 4.1 List of shp to combine ----
+
 list_shp <- list.files(path = "data/01_maps/01_raw/05_princeton",
                        pattern = ".shp$", full.names = TRUE, recursive = TRUE)
+
+## 4.2 Combine shp ----
 
 data_land <- map_dfr(list_shp, ~st_read(.)) %>% 
   rename(TERRITORY1 = NAME_ENGLI) %>% 
   st_transform(crs = 4326) %>% 
-  select(TERRITORY1) 
+  select(TERRITORY1)
+
+## 4.3 Correct issue for grouped territories ----
+
+data_land <- data_land %>%
+  filter(TERRITORY1 == "Bonaire, Saint Eustatius and Saba") %>% 
+  st_cast(., "POLYGON") %>% 
+  mutate(TERRITORY1 = case_when(row_number() == 1 ~ "Bonaire",
+                                row_number() == 2 ~ "Bonaire",
+                                row_number() == 3 ~ "Saint Eustatius",
+                                row_number() == 4 ~ "Saba")) %>% 
+  bind_rows(data_land %>% 
+              filter(TERRITORY1 != "Bonaire, Saint Eustatius and Saba"), .)  
+
+## 4.4 Export the data ----
 
 st_write(data_land, "data/01_maps/02_clean/05_princeton/land.shp", append = TRUE)

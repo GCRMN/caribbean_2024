@@ -32,8 +32,8 @@ plot <- plot_region(scale = TRUE) +
     scale_color_manual(values = palette_second,
                        labels = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"), 
                        drop = FALSE, name = "Number of years with data") +
-  guides(colour = guide_legend(title.position = "top", title.hjust = 0.5, override.aes = list(size = 4))) +
-  coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35))
+    guides(colour = guide_legend(title.position = "top", title.hjust = 0.5, override.aes = list(size = 4))) +
+    coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35))
 
 ggsave(filename = "figs/01_part-1/fig-2.png", plot = plot,
        width = 7.5, height = 5.75, dpi = fig_resolution)
