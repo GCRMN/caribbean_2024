@@ -86,7 +86,7 @@ ggplot() +
                      values = c("red", "white")) +
   coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35))
 
-ggsave("figs/04_supp/overclaimed-territories.png")
+ggsave("figs/06_additional/overclaimed-territories.png")
 
 rm(data_eez2)
 

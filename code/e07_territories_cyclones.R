@@ -44,7 +44,8 @@ map_cyclone_plot <- function(territory_i){
                show.legend = c(shape = TRUE)) +
     geom_label_repel(data = data_cyclones_i %>% filter(position %in% 1:15), # Label only the first 15 cyclones
                      aes(label = ts_name, color = max_saffir), fill = "white", alpha = 0.9,
-                     label.r = unit(0.4, "lines"), show.legend = FALSE) +
+                     label.r = unit(0.4, "lines"), show.legend = FALSE,
+                     max.overlaps = getOption("ggrepel.max.overlaps", default = 15)) +
     scale_y_continuous(breaks = c(0, 50 ,100, 150, 200, 250, 300), limits = c(0, 300)) +
     scale_x_date(limits = c(ymd("1980-01-01"), ymd("2025-01-01"))) +
     coord_cartesian(ylim = c(14.25, 310)) +
