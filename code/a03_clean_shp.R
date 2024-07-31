@@ -205,9 +205,13 @@ data_land <- data_land %>%
                                 row_number() == 2 ~ "Bonaire",
                                 row_number() == 3 ~ "Saint Eustatius",
                                 row_number() == 4 ~ "Saba")) %>% 
-  bind_rows(data_land %>% 
-              filter(TERRITORY1 != "Bonaire, Saint Eustatius and Saba"), .)  
+  bind_rows(data_land, .) %>% 
+  filter(TERRITORY1 != "Bonaire, Saint Eustatius and Saba") %>% 
+  rename(territory = TERRITORY1) %>% 
+  mutate(territory = str_replace_all(territory, c("Virgin Islands, U.S." = "United States Virgin Islands",
+                                                  "Saint Eustatius" = "Sint-Eustatius",
+                                                  "Saint-Martin" = "Sint-Maarten")))
 
 ## 4.4 Export the data ----
 
-st_write(data_land, "data/01_maps/02_clean/05_princeton/land.shp", append = TRUE)
+st_write(data_land, "data/01_maps/02_clean/05_princeton/land.shp", append = FALSE, delete_dsn = TRUE)
