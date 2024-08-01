@@ -39,14 +39,14 @@ plot_region <- function(scale = TRUE){
   
   ## 3.4 EEZ ----
   
-  data_eez <- read_sf("data/01_maps/02_clean/03_eez/caribbean_eez.shp")
+  data_eez <- st_read("data/01_maps/02_clean/03_eez/caribbean_eez.shp")
 
   data_land_cropped <- st_intersection(data_land, data_crop)
   
   data_eez <- st_difference(data_eez, st_union(data_land_cropped))
 
   data_land <- st_read("data/01_maps/01_raw/04_natural-earth/ne_10m_admin_0_boundary_lines_land/ne_10m_admin_0_boundary_lines_land.shp")
-  
+
   # 4. Make the basic regional map ----
   
   caribbean_map <- ggplot() +

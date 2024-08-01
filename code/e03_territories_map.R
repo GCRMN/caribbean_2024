@@ -22,24 +22,33 @@ data_land_ne <- st_intersection(data_land_ne, data_crop)
 
 data_reefs <- read_sf("data/01_maps/02_clean/02_reefs/reefs.shp")
 
-data_eez <- read_sf("data/01_maps/02_clean/03_eez/caribbean_eez.shp")
+data_eez <- read_sf("data/01_maps/02_clean/03_eez/caribbean_eez_sub.shp")
+
+data_eez_us <- read_sf("data/01_maps/02_clean/03_eez/caribbean_eez.shp") %>% 
+  filter(territory == "United States")
 
 # 4. Create the function ----
 
 plot_territories <- function(territory_i){
   
-  data_circle <- tibble(territory = c("Montserrat", "Saint-Barthélemy", "Saba", "Sint-Eustatius"),
-                        lon = c(-62.192897, -62.826132, -63.236996, -62.975556),
-                        lat = c(16.731354, 17.897481, 17.631632, 17.487975)) %>% 
+  data_circle <- tibble(territory = c("Montserrat", "Saint-Barthélemy", "Saba",
+                                      "Sint-Eustatius", "Sint-Marteen - Saint-Martin",
+                                      "Saint Kitts and Nevis", "Saint Lucia"),
+                        lon = c(-62.192897, -62.826132, -63.236996, -62.975556, -63.058154, -62.665062, -60.966089),
+                        lat = c(16.731354, 17.897481, 17.631632, 17.487975, 18.063534, 17.270277, 13.903644)) %>% 
     st_as_sf(coords = c("lon", "lat"), 
              crs = 4326)
   
-  if(territory_i %in% c("Montserrat", "Saint-Barthélemy", "Saba", "Sint-Eustatius")){
+  if(territory_i %in% c("Montserrat", "Saint-Barthélemy", "Saba", "Sint-Eustatius",
+                        "Sint-Marteen - Saint-Martin", "Saint Kitts and Nevis", "Saint Lucia")){
 
     ggplot() +
+      geom_sf(data = data_eez_us, fill = NA, color = "lightgrey", linewidth = 0.05) +
       geom_sf(data = data_eez, fill = NA, color = "lightgrey", linewidth = 0.05) +
-      geom_sf(data = data_circle %>% filter(territory == territory_i) %>% st_buffer(dist = 1.5),
+      geom_sf(data = data_eez %>% filter(territory == territory_i),
               fill = "#d64541", color = "#d64541", alpha = 0.35, linewidth = 0.05) +
+      geom_sf(data = data_circle %>% filter(territory == territory_i) %>% st_buffer(dist = 2),
+              fill = "#d64541", color = NA, alpha = 0.2, linewidth = 0.05) +
       geom_sf(data = data_land_ne, linewidth = 0.1) +
       coord_sf(xlim = c(-105, -50), ylim = c(6, 38), expand = FALSE) +
       theme(axis.text = element_blank(),
@@ -50,6 +59,7 @@ plot_territories <- function(territory_i){
   }else{
       
     ggplot() +
+      geom_sf(data = data_eez_us, fill = NA, color = "lightgrey", linewidth = 0.05) +
       geom_sf(data = data_eez, fill = NA, color = "lightgrey", linewidth = 0.05) +
       geom_sf(data = data_eez %>% filter(territory == territory_i),
               fill = "#d64541", color = "#d64541", alpha = 0.35, linewidth = 0.05) +
@@ -62,12 +72,20 @@ plot_territories <- function(territory_i){
     
   }
   
-  ggsave(filename = paste0("figs/02_part-2/fig-1/", str_replace_all(str_to_lower(territory_i), " ", "-"), ".png"),
+  ggsave(filename = str_replace_all(paste0("figs/02_part-2/fig-1/", str_replace_all(str_to_lower(territory_i), " ", "-"), ".png"),
+                                    "---", "-"),
          height = 2.8, width = 4.4, dpi = fig_resolution)
   
 }
 
 # 5. Map over the function ----
 
-map(setdiff(unique(data_reefs$territory), c("Navassa Island", "Serrana Bank", "Quitasueño Bank")),
+map(setdiff(unique(data_eez$territory),
+            c("Overlapping claim Navassa Island: United States / Haiti / Jamaica",
+              "Overlapping claim: Venezuela / Netherlands (Aruba) / Dominican Republic",
+              "Overlapping claim: Colombia / Dominican Republic / Venezuela",
+              "Overlapping claim: United States (Puerto Rico) / Dominican Republic",
+              "Overlapping claim: Belize / Honduras",
+              "Serrana Bank",
+              "Quitasueño Bank")), # territories for which no chapter will be included
     ~plot_territories(territory_i = .))

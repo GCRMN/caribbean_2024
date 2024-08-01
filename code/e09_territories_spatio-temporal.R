@@ -20,7 +20,7 @@ data_land <- read_sf("data/01_maps/02_clean/05_princeton/land.shp")
 
 ## 3.2 EEZ ----
 
-data_eez <- read_sf("data/01_maps/02_clean/03_eez/caribbean_eez.shp")
+data_eez <- read_sf("data/01_maps/02_clean/03_eez/caribbean_eez_sub.shp")
 
 ## 3.3 Reefs ----
 
@@ -55,7 +55,7 @@ data_benthic <- data_benthic %>%
          interval_class = as.factor(interval_class)) %>% 
   st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
 
-## 3.6 Layer to mask adjecent territories ----
+## 3.6 Layer to mask adjacent territories ----
 
 data_crop <- tibble(lon = c(-105, -50), lat = c(6, 38)) %>% 
   st_as_sf(coords = c("lon", "lat"), 
@@ -71,12 +71,24 @@ plot_territories <- function(territory_i, legend_x, legend_y){
   
   data_land_i <- st_intersection(data_land, bbox_i %>% st_as_sfc() %>% st_buffer(1))
   
+  if(territory_i == "Florida"){
+    
+    data_land_i_bis <- data_land %>% 
+      filter(territory == "United States")
+  
+    }else{
+    
+      data_land_i_bis <- data_land %>% 
+        filter(territory == territory_i)
+      
+  }
+  
   plot <- ggplot() +
     geom_sf(data = data_reefs_buffer %>% filter(territory == territory_i),
             fill = NA, color = "#363737", linewidth = 0.25, linetype = "dashed") +
     geom_sf(data = data_land_i) +
     geom_sf(data = data_crop, fill = "white", color = NA, alpha = 0.6) +
-    geom_sf(data = data_land_i %>% filter(TERRITORY1 == territory_i)) +
+    geom_sf(data = data_land_i_bis) +
     geom_sf(data = data_benthic %>% arrange(interval_class) %>%
               filter(territory == territory_i),
             aes(color = interval_class)) +
@@ -93,42 +105,19 @@ plot_territories <- function(territory_i, legend_x, legend_y){
                      text_cex = 0.8, style = "bar", line_width = 1,  height = unit(0.045, "cm"), line_col = "black",
                      pad_x = unit(0.5, "cm"), pad_y = unit(0.35, "cm"), bar_cols = c("black", "black"))
   
-  ggsave(filename = paste0("figs/02_part-2/fig-6/", str_replace_all(str_to_lower(territory_i), " ", "-"), ".png"))
+    ggsave(filename = str_replace_all(paste0("figs/02_part-2/fig-6/", str_replace_all(str_to_lower(territory_i), " ", "-"), ".png"),
+                                    "---", "-"))
   
 }
 
 # 5. Map over the function ----
 
-plot_territories(territory_i = "Martinique", legend_x = 0.8, legend_y = 0.8)
-
-map(unique(data_reefs$territory), ~plot_territories(territory_i = ., legend_x = 0.8, legend_y = 0.8))
-
-
-
-
-
-
-
-
-
-
-
-
-##################
-
-
-data_land_ne <- read_sf("data/01_maps/01_raw/04_natural-earth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
-
-data_crop <- tibble(lon = c(-105, -50), lat = c(6, 38)) %>% 
-  st_as_sf(coords = c("lon", "lat"), 
-           crs = 4326) %>% 
-  st_bbox() %>% 
-  st_as_sfc()
-
-data_land_ne <- st_intersection(data_land_ne, data_crop)
-
-ggplot() +
-  geom_sf(data = data_eez) +
-  geom_sf(data = data_eez %>% filter(territory == "Puerto Rico"), fill = "red") +
-  geom_sf(data = data_land_ne)
-  
+map(setdiff(unique(data_eez$territory),
+            c("Overlapping claim Navassa Island: United States / Haiti / Jamaica",
+              "Overlapping claim: Venezuela / Netherlands (Aruba) / Dominican Republic",
+              "Overlapping claim: Colombia / Dominican Republic / Venezuela",
+              "Overlapping claim: United States (Puerto Rico) / Dominican Republic",
+              "Overlapping claim: Belize / Honduras",
+              "Serrana Bank",
+              "Quitasueño Bank")), # territories for which no chapter will be included
+    ~plot_territories(territory_i = ., legend_x = 0.8, legend_y = 0.8))
