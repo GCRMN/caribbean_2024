@@ -12,21 +12,48 @@ library(tidyterra)
 source("code/function/graphical_par.R")
 source("code/function/theme_map_territory.R")
 
-# 3. Load data ----
+# 3. Export file to complete with parameters for figures ----
 
-## 3.1 Country boundaries ----
+generate_file <- FALSE
+
+if(generate_file == TRUE){
+  
+  read_sf("data/01_maps/02_clean/03_eez/caribbean_eez_sub.shp") %>% 
+    filter(!(territory %in% c("Overlapping claim Navassa Island: United States / Haiti / Jamaica",
+                              "Overlapping claim: Venezuela / Netherlands (Aruba) / Dominican Republic",
+                              "Overlapping claim: Colombia / Dominican Republic / Venezuela",
+                              "Overlapping claim: United States (Puerto Rico) / Dominican Republic",
+                              "Overlapping claim: Belize / Honduras",
+                              "Serrana Bank",
+                              "Quitasueño Bank"))) %>% 
+    st_drop_geometry() %>% 
+    select(territory) %>% 
+    arrange(territory) %>% 
+    mutate(scale_bar_pos = NA,
+           legend_pos_x = NA,
+           legend_pos_y = NA,
+           fig_width = NA,
+           fig_height = NA) %>% 
+    write.csv2(., file = "data/02_misc/territories_spatio-temporal_params.csv",
+               row.names = FALSE, fileEncoding = "latin1")
+  
+}
+
+# 4. Load data ----
+
+## 4.1 Country boundaries ----
 
 data_land <- read_sf("data/01_maps/02_clean/05_princeton/land.shp")
 
-## 3.2 EEZ ----
+## 4.2 EEZ ----
 
 data_eez <- read_sf("data/01_maps/02_clean/03_eez/caribbean_eez_sub.shp")
 
-## 3.3 Reefs ----
+## 4.3 Reefs ----
 
 data_reefs <- read_sf("data/01_maps/02_clean/02_reefs/reefs.shp")
 
-## 3.4 Reefs buffer ----
+## 4.4 Reefs buffer ----
 
 data_reefs_buffer <- st_read("data/01_maps/02_clean/02_reefs/reefs_buffer_100.shp") %>% 
   # Correct the issue of encoding GEE export
@@ -39,7 +66,7 @@ data_reefs_buffer <- st_read("data/01_maps/02_clean/02_reefs/reefs_buffer_100.sh
   summarise(geometry = st_union(geometry)) %>% 
   ungroup()
 
-## 3.5 Select benthic data ----
+## 4.5 Select benthic data ----
 
 load("data/02_misc/data-benthic.RData")
 
@@ -55,17 +82,29 @@ data_benthic <- data_benthic %>%
          interval_class = as.factor(interval_class)) %>% 
   st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
 
-## 3.6 Layer to mask adjacent territories ----
+## 4.6 Layer to mask adjacent territories ----
 
 data_crop <- tibble(lon = c(-105, -50), lat = c(6, 38)) %>% 
-  st_as_sf(coords = c("lon", "lat"), 
-           crs = 4326) %>% 
+  st_as_sf(coords = c("lon", "lat"), crs = 4326) %>% 
   st_bbox() %>% 
   st_as_sfc()
 
-# 4. Create the function to plot territories
+## 4.7 Data with parameters for plots ----
 
-plot_territories <- function(territory_i, legend_x, legend_y){
+data_params <- read.csv2("data/02_misc/territories_spatio-temporal_params.csv", fileEncoding = "latin1")
+
+## 4.8 Create legend (to avoid absence of legend for territories with no data ----
+
+data_legend <- data_benthic %>% 
+  st_drop_geometry() %>% 
+  select(interval_class) %>%
+  distinct() %>% 
+  mutate(lat = -11.163136, lon = -55.311887) %>% 
+  st_as_sf(coords = c("lon", "lat"), crs = 4326)
+
+# 5. Create the function to plot territories
+
+plot_territories <- function(territory_i){
   
   bbox_i <- st_bbox(data_reefs_buffer %>% filter(territory == territory_i))
   
@@ -81,7 +120,9 @@ plot_territories <- function(territory_i, legend_x, legend_y){
       data_land_i_bis <- data_land %>% 
         filter(territory == territory_i)
       
-  }
+    }
+  
+  data_params_i <- data_params %>% filter(territory == territory_i)
   
   plot <- ggplot() +
     geom_sf(data = data_reefs_buffer %>% filter(territory == territory_i),
@@ -91,7 +132,8 @@ plot_territories <- function(territory_i, legend_x, legend_y){
     geom_sf(data = data_land_i_bis) +
     geom_sf(data = data_benthic %>% arrange(interval_class) %>%
               filter(territory == territory_i),
-            aes(color = interval_class)) +
+            aes(color = interval_class), show.legend = FALSE) +
+    geom_sf(data = data_legend, aes(color = interval_class)) +
     scale_color_manual(values = palette_second,
                        breaks = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"),
                        labels = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"), 
@@ -99,18 +141,22 @@ plot_territories <- function(territory_i, legend_x, legend_y){
                        name = "Number of years\nwith data") +
     guides(color = guide_legend(override.aes = list(size = 3.5))) +
     theme_map_territory() +
-    theme(legend.position.inside = c(legend_x, legend_y)) +
+    theme(legend.justification.inside = c(as.numeric(data_params_i$legend_pos_x),
+                                          as.numeric(data_params_i$legend_pos_y))) +
     coord_sf(xlim = c(bbox_i[1], bbox_i[3]), ylim = c(bbox_i[2], bbox_i[4])) +
-    annotation_scale(location = "bl", width_hint = 0.25, text_family = font_choose_map, text_col = "black",
+    annotation_scale(location = as.character(data_params_i$scale_bar_pos),
+                     width_hint = 0.25, text_family = font_choose_map, text_col = "black",
                      text_cex = 0.8, style = "bar", line_width = 1,  height = unit(0.045, "cm"), line_col = "black",
                      pad_x = unit(0.5, "cm"), pad_y = unit(0.35, "cm"), bar_cols = c("black", "black"))
   
     ggsave(filename = str_replace_all(paste0("figs/02_part-2/fig-6/", str_replace_all(str_to_lower(territory_i), " ", "-"), ".png"),
-                                    "---", "-"))
+                                    "---", "-"),
+           width = as.numeric(data_params_i$fig_width),
+           height = as.numeric(data_params_i$fig_height))
   
 }
 
-# 5. Map over the function ----
+# 6. Map over the function ----
 
 map(setdiff(unique(data_eez$territory),
             c("Overlapping claim Navassa Island: United States / Haiti / Jamaica",
@@ -120,4 +166,4 @@ map(setdiff(unique(data_eez$territory),
               "Overlapping claim: Belize / Honduras",
               "Serrana Bank",
               "Quitasueño Bank")), # territories for which no chapter will be included
-    ~plot_territories(territory_i = ., legend_x = 0.8, legend_y = 0.8))
+    ~plot_territories(territory_i = .))
