@@ -40,7 +40,14 @@ ggsave(filename = "figs/01_part-1/fig-6.png", plot = plot,
 
 ## 5.1 Transform data ----
 
-data_eez <- read_sf("data/01_maps/02_clean/03_eez/caribbean_eez.shp")
+data_eez <- read_sf("data/01_maps/02_clean/03_eez/caribbean_eez_sub.shp") %>%
+  filter(!(territory %in% c("Overlapping claim Navassa Island: United States / Haiti / Jamaica",
+                            "Overlapping claim: Venezuela / Netherlands (Aruba) / Dominican Republic",
+                            "Overlapping claim: Colombia / Dominican Republic / Venezuela",
+                            "Overlapping claim: United States (Puerto Rico) / Dominican Republic",
+                            "Overlapping claim: Belize / Honduras",
+                            "Serrana Bank",
+                            "Quitasueño Bank")))
 
 data_cyclones <- data_cyclones %>% 
   st_drop_geometry() %>% 
@@ -53,11 +60,11 @@ data_cyclones <- data_cyclones %>%
   bind_rows(., tibble(territory = setdiff(data_eez$territory, data_cyclones$territory),
                       n = rep(0, length(setdiff(data_eez$territory, data_cyclones$territory))),
                       n_tot = n)) %>% 
-  filter(!(territory %in% c("Quitasueño Bank", "Serrana Bank", "Navassa Island"))) %>% 
   mutate(territory = str_replace_all(territory, c("Islands" = "Isl.",
                                                   " and the " = " & ",
                                                   " and " = " & ",
-                                                  "Saint" = "St.")))
+                                                  "United States" = "U.S.",
+                                                  "Saint " = "St. ")))
 
 ## 5.2 Make the plot ----
 

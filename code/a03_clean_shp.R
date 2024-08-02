@@ -290,7 +290,7 @@ data_reefs <- data_reefs %>%
   summarise(geometry = st_union(geometry)) %>% 
   ungroup()
 
-st_write(data_reefs, "data/01_maps/02_clean/02_reefs/reefs.shp", append = TRUE)
+st_write(data_reefs, "data/01_maps/02_clean/02_reefs/reefs.shp", append = TRUE, delete_dsn = TRUE)
 
 # 4. Land (Princeton) ----
 

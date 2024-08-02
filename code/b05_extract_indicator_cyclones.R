@@ -16,7 +16,10 @@ load("data/07_cyclones/01_cyclones_points.RData")
 
 ## 2.3 Coral reef distribution ----
 
-data_reef <- st_read("data/01_maps/02_clean/02_reefs/reefs.shp")
+data_reef <- st_read("data/01_maps/02_clean/02_reefs/reefs.shp") %>% 
+  filter(!(territory %in% c("Overlapping claim: Belize / Honduras", "Quitasueño Bank",
+                            "Serrana Bank",
+                            "Overlapping claim Navassa Island: United States / Haiti / Jamaica")))
 
 ## 2.4 Coral reef distribution 100 km buffer --
 
@@ -25,6 +28,9 @@ data_reefs_buffer <- st_read("data/01_maps/02_clean/02_reefs/reefs_buffer_100.sh
   mutate(territory = str_replace_all(territory, c("Cura\\?ao" = "Curaçao",
                                                   "Quitasue\\?o Bank" = "Quitasueño Bank",
                                                   "Saint-Barth\\?lemy" = "Saint-Barthélemy"))) %>% 
+  filter(!(territory %in% c("Overlapping claim: Belize / Honduras", "Quitasueño Bank",
+                            "Serrana Bank",
+                            "Overlapping claim Navassa Island: United States / Haiti / Jamaica"))) %>% 
   st_transform(crs = 4326) %>% 
   st_make_valid() %>% 
   group_by(territory) %>% 
