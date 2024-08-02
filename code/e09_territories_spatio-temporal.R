@@ -4,8 +4,6 @@ library(tidyverse)
 library(sf)
 sf_use_s2(FALSE)
 library(ggspatial)
-library(terra)
-library(tidyterra)
 
 # 2. Load functions ----
 
@@ -102,7 +100,7 @@ data_legend <- data_benthic %>%
   mutate(lat = -11.163136, lon = -55.311887) %>% 
   st_as_sf(coords = c("lon", "lat"), crs = 4326)
 
-# 5. Create the function to plot territories
+# 5. Create the function to plot territories ----
 
 plot_territories <- function(territory_i){
   
