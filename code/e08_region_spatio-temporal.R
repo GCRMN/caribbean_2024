@@ -102,13 +102,25 @@ monitoring_descriptors <- data_benthic %>%
               st_drop_geometry()) %>% 
   mutate(across(c("nb_sites", "nb_surveys", "nb_datasets"), .fns = ~replace_na(.,0))) %>% 
   arrange(territory) %>% 
-  filter(!(territory %in% c("Quitasueño Bank", "Serrana Bank", "Navassa Island"))) %>% 
+  filter(!(territory %in% c("Overlapping claim Navassa Island: United States / Haiti / Jamaica",
+                            "Overlapping claim: Venezuela / Netherlands (Aruba) / Dominican Republic",
+                            "Overlapping claim: Colombia / Dominican Republic / Venezuela",
+                            "Overlapping claim: United States (Puerto Rico) / Dominican Republic",
+                            "Overlapping claim: Belize / Honduras",
+                            "Serrana Bank",
+                            "Quitasueño Bank"))) %>% 
   distinct()
 
 ## 7.2 Add total ----
 
 monitoring_descriptors <- data_benthic %>% 
-  filter(!(territory %in% c("Quitasueño Bank", "Serrana Bank", "Navassa Island"))) %>% 
+  filter(!(territory %in% c("Overlapping claim Navassa Island: United States / Haiti / Jamaica",
+                            "Overlapping claim: Venezuela / Netherlands (Aruba) / Dominican Republic",
+                            "Overlapping claim: Colombia / Dominican Republic / Venezuela",
+                            "Overlapping claim: United States (Puerto Rico) / Dominican Republic",
+                            "Overlapping claim: Belize / Honduras",
+                            "Serrana Bank",
+                            "Quitasueño Bank"))) %>% 
   data_descriptors() %>% 
   ungroup() %>% 
   mutate(territory = "Entire Caribbean region") %>% 

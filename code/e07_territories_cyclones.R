@@ -225,7 +225,7 @@ plot_territories <- function(territory_i){
           axis.ticks = element_blank(),
           panel.grid = element_blank(),
           plot.margin = unit(c(0, 0, 0, 0), "null"),
-          panel.background = element_blank(),
+          panel.background = element_rect(fill = "white", color = "black"),
           panel.border = element_blank(),
           plot.background = element_blank(),
           legend.position = "top",
