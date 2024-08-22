@@ -12,13 +12,11 @@ load("C:/Users/jwicquart/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_bentho
 
 data_benthic <- synthetic_data %>% 
   # Filter GCRMN region
-  filter(higherGeography == "Caribbean") %>% 
+  filter(region == "Caribbean") %>% 
   # Remove useless datasets
-  #filter(!(datasetID %in% c("0009", "0020", "0042"))) %>% 
-  # Filter the depth of shallow coral reefs
-  filter(verbatimDepth < 31) %>% 
+  #filter(!(datasetID %in% c())) %>% 
   # Filter data on the period of interest
-  filter(year >= 1980 & year <= 2023)
+  filter(year >= 1980 & year <= 2024)
 
 # 4. Save the data ----
 
