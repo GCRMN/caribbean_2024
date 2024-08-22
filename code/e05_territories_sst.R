@@ -49,7 +49,8 @@ data_sst <- data_sst %>%
   mutate(date_num = as.numeric(as_date(date)),
          sst_linear = slope*date_num+intercept) %>% 
   mutate(daymonth = str_sub(date, 6, 10),
-         year = year(date))
+         year = year(date),
+         territory = str_replace_all(territory, "Saint Vincent and the Grenadines", "St. Vincent & the Grenadines"))
 
 ## 5.2 Make the plots ----
 
@@ -109,7 +110,8 @@ data_sst_month <- data_sst %>%
                             year >= 1990 & year < 2000 ~ "1990s",
                             year >= 2000 & year < 2010 ~ "2000s",
                             year >= 2010 & year < 2020 ~ "2010s",
-                            year >= 2020 & year < 2030 ~ "2020s")) %>% 
+                            year >= 2020 & year < 2030 ~ "2020s"),
+         territory = str_replace_all(territory, "Saint Vincent and the Grenadines", "St. Vincent & the Grenadines")) %>% 
   arrange(decade)
 
 data_sst_month_mean <- data_sst_month %>% 
@@ -187,7 +189,7 @@ ggplot() +
   scale_y_continuous(labels = scales::number_format(accuracy = 0.1, decimal.mark = ".")) +
   facet_wrap(~territory, ncol = 3, scales = "free_y")
 
-ggsave(filename = "figs/05_supp-mat/sst_month_c.png", width = 10, height = 7.8, dpi = fig_resolution)
+ggsave(filename = "figs/05_supp-mat/sst_month_c.png", width = 10.25, height = 7.8, dpi = fig_resolution)
 
 # 7. SST anomaly (trend) for each territory ----
 
@@ -260,7 +262,8 @@ map(data_sst %>%
 load("data/02_misc/data-sst_processed.RData")
 
 data_sst <- data_sst %>% 
-  filter(!(territory %in% c("Entire Caribbean region")))
+  filter(!(territory %in% c("Entire Caribbean region"))) %>% 
+  mutate(territory = str_replace_all(territory, "Saint Vincent and the Grenadines", "St. Vincent & the Grenadines"))
 
 ## 8.2 Make the plots ----
 

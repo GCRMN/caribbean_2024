@@ -99,14 +99,20 @@ save(data_sst, file = "data/02_misc/data-sst_raw.RData")
 
 # 7. Derive other SST metrics ----
 
-## 7.1 Calculate long-term average SST ----
+## 7.1 Remove three aberrant SST values ----
+
+data_sst <- data_sst %>% 
+  mutate(date = as_date(date)) %>% 
+  filter(!(date == as.Date("2022-12-01") & territory %in% c("Guadeloupe", "Dominica", "Haiti")))
+
+## 7.2 Calculate long-term average SST ----
 
 data_sst <- data_sst %>% 
   group_by(territory) %>% 
   mutate(mean_sst = mean(sst, na.rm = TRUE)) %>% 
   ungroup()
 
-## 7.2 Map over extract_coeff function ----
+## 7.3 Map over extract_coeff function ----
 
 data_warming <- data_sst %>% 
   # Convert date as numeric
@@ -129,7 +135,7 @@ data_warming <- data_sst %>%
 
 write.csv(data_warming, "data/02_misc/data-warming.csv", row.names = FALSE)
 
-## 7.3 Calculate SST anomaly ----
+## 7.4 Calculate SST anomaly ----
 
 data_sst <- data_sst %>% 
   group_by(territory) %>% 

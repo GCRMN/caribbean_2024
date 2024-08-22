@@ -24,15 +24,16 @@ theme_set(theme_graph())
 ## 3.1 Load and transform data ----
 
 data_warming <- read.csv("data/02_misc/data-warming.csv") %>% 
-  filter(!(territory %in% c("Entire Caribbean region"))) %>% 
   select(territory, warming_rate, sst_increase) %>% 
-  # The number 0.88°C is coming from Technical summary IPCC, 2021 (TS.2.4, The Ocean, page 74)
-  add_row(territory = "Global Ocean", warming_rate = (0.88/(2020-1900))*(2022-1980), sst_increase = 0.88) %>% 
+  # The number 0.97°C is coming from Forster et al (2024) - Table 5, page 2638
+  add_row(territory = "Global Ocean", warming_rate = NA, sst_increase = 0.97) %>% 
   mutate(warming_rate = round(warming_rate, 3),
          color = case_when(territory == "Global Ocean" ~ "black",
-                           sst_increase > 0 & territory != "Global Ocean" ~ "#ce6693",
+                           territory == "Entire Caribbean region" ~ palette_second[4],
+                           sst_increase > 0 & territory != "Global Ocean" ~ palette_second[3],
                            sst_increase <= 0 & territory != "Global Ocean" ~ palette_first[2]),
-         territory = if_else(territory == "Global Ocean", "**Global Ocean**", territory)) %>% 
+         territory = if_else(territory == "Global Ocean", "**Global Ocean**", territory),
+         territory = if_else(territory == "Entire Caribbean region", "**Entire Caribbean region**", territory)) %>% 
   arrange(desc(sst_increase)) %>% 
   mutate(territory = str_replace_all(territory, c("Islands" = "Isl.",
                                                   " and the " = " & ",
@@ -146,16 +147,21 @@ data_sst <- data_sst %>%
   group_by(territory) %>% 
   summarise(mean = mean(sst)) %>% 
   ungroup() %>% 
-  left_join(., data_sst)
+  left_join(., data_sst) %>% 
+  mutate(territory = str_replace_all(territory, c("Islands" = "Isl.",
+                                                  " and the " = " & ",
+                                                  " and " = " & ",
+                                                  "United States" = "U.S.",
+                                                  "Saint " = "St. ")))
 
 ## 7.2 Make the plot ----
 
 ggplot(data = data_sst, aes(x = sst, y = fct_reorder(territory, mean))) +
-  geom_violin(draw_quantiles = c(0.5), fill = "#446CB3", alpha = 0.5) +
+  geom_violin(draw_quantiles = c(0.5), fill = palette_first[3], color = palette_first[4], alpha = 0.5) +
   labs(x = "SST (°C)", y = NULL) +
   theme_graph() +
   coord_cartesian(clip = "off")
 
 ## 7.3 Save the plot ----
 
-ggsave("figs/05_supp-mat/sst_distribution.png", height = 12, width = 8, dpi = fig_resolution)
+ggsave("figs/05_supp-mat/sst_distribution.png", height = 12, width = 6, dpi = fig_resolution)
