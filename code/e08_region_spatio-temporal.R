@@ -128,4 +128,4 @@ monitoring_descriptors <- data_benthic %>%
 
 ## 7.3 Export the table ----
 
-openxlsx::write.xlsx(monitoring_descriptors, file = "figs/01_part-1/table-4.xlsx")
+openxlsx::write.xlsx(monitoring_descriptors, file = "figs/01_part-1/tbl-4.xlsx")

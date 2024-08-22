@@ -91,7 +91,7 @@ data_crop <- tibble(lon = c(-105, -50), lat = c(6, 38)) %>%
 
 data_params <- read.csv2("data/02_misc/territories_spatio-temporal_params.csv", fileEncoding = "latin1")
 
-## 4.8 Create legend (to avoid absence of legend for territories with no data ----
+## 4.8 Create legend (to avoid absence of legend for territories with no data) ----
 
 data_legend <- data_benthic %>% 
   st_drop_geometry() %>% 

@@ -158,4 +158,4 @@ ggplot(data = data_sst, aes(x = sst, y = fct_reorder(territory, mean))) +
 
 ## 7.3 Save the plot ----
 
-ggsave("figs/05_supp-mat/sst-distribution_territories.png", height = 12, width = 8, dpi = fig_resolution)
+ggsave("figs/05_supp-mat/sst_distribution.png", height = 12, width = 8, dpi = fig_resolution)
