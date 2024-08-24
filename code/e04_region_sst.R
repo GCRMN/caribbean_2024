@@ -165,3 +165,83 @@ ggplot(data = data_sst, aes(x = sst, y = fct_reorder(territory, mean))) +
 ## 7.3 Save the plot ----
 
 ggsave("figs/05_supp-mat/sst_distribution.png", height = 12, width = 6, dpi = fig_resolution)
+
+# 8. Map of mean SST anomaly per year ----
+
+## 8.1 Load data ----
+
+data_land <- read_sf("data/01_maps/02_clean/05_princeton/land.shp")
+
+data_eez <- read_sf("data/01_maps/02_clean/03_eez/caribbean_eez.shp")
+
+## 8.2 List of files ----
+
+data_files <- tibble(path = list.files("data/06_sst-anom_year/", full.names = TRUE)) %>% 
+  mutate(year = as.numeric(str_sub(path, -8, -4)),
+         group = rep(1:50, each = 8, length.out = nrow(.))) # 8 is the number of subplots (i.e. years) per plot
+
+## 8.3 Create the function to make the plot for each year ----
+
+map_ssta_year <- function(year_i, data_files_i){
+  
+  # 1. Load data
+  
+  raster <- rast(data_files_i %>% filter(year == year_i) %>% select(path) %>% pull)
+  
+  # 2. Make the plot
+  
+  ggplot() +
+    geom_spatraster(data = raster) +
+    geom_sf(data = data_eez, fill = NA, linewidth = 0.15) +
+    geom_sf(data = data_land, fill = "#363737", col = "grey", linewidth = 0.15) +
+    scale_fill_gradientn(colours = c(rev(palette_first), "white", palette_second),
+                         limits = c(-5, 5),
+                         name = "Yearly average SST anomaly (°C)",
+                         guide = guide_colourbar(direction = "horizontal", 
+                                                 title.position = "top", 
+                                                 title.hjust = 0.5, 
+                                                 ticks.colour = "black",
+                                                 frame.colour = "black")) +
+    coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35)) +
+    labs(title = year_i) +
+    theme(text = element_text(family = "Open Sans"),
+          axis.ticks = element_blank(),
+          axis.text = element_blank(),
+          legend.text = element_text(family = "Open Sans"),
+          plot.title = element_text(family = "Open Sans", hjust = 0.5),
+          panel.border = element_rect(colour = "black", fill = NA),
+          legend.key.width = unit(2.5, "cm"),
+          legend.key.height = unit(0.4, "cm"),
+          legend.position = "bottom")
+  
+}
+
+## 8.4 Create the function to make the plot for each group ----
+
+map_ssta_plot <- function(group_i){
+  
+  # 1. Filter the data_files
+  
+  data_files_i <- data_files %>% 
+    filter(group == group_i)
+  
+  # 2. Create all the plots
+  
+  plots <- map(c(data_files_i$year), ~map_ssta_year(data_files_i = data_files_i, year_i = .))
+  
+  # 3. Combine plots
+  
+  combined_plots <- wrap_plots(plots) + 
+    plot_layout(guides = "collect", ncol = 2) & 
+    theme(legend.position = "bottom")
+  
+  # 4. Save the plot
+  
+  ggsave(filename = paste0("figs/05_supp-mat/map_sst-anom_", min(data_files_i$year), "-", max(data_files_i$year), ".png"),
+         height = 12, width = 9, combined_plots, dpi = 600)
+  
+}
+
+## 8.5 Map over the function ----
+
+map(unique(data_files$group), ~map_ssta_plot(group_i = .))
