@@ -8,7 +8,7 @@ library(terra)
 list_url <- data.frame(date = seq(from = ymd("1985-03-25"), to = ymd("2023-12-31"), by = "1 day")) %>% 
   mutate(year = year(date),
          date = str_remove_all(date, "-"),
-         url = paste0("https://www.star.nesdis.noaa.gov/pub/sod/mecb/crw/data/5km/v3.1_op/nc/v1.0/daily/ssta/",
+         url = paste0("https://www.star.nesdis.noaa.gov/pub/socd/mecb/crw/data/5km/v3.1_op/nc/v1.0/daily/ssta/",
                       year,
                       "/ct5km_ssta_v3.1_",
                       date,
@@ -58,5 +58,7 @@ aggregate_raster <- function(year_i){
 }
 
 # 4. Map over the function ----
+
+map(1985:1986, ~aggregate_raster(year_i = .))
 
 map(unique(list_url$year), ~aggregate_raster(year_i = .))
