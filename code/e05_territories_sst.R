@@ -196,7 +196,7 @@ ggsave(filename = "figs/05_supp-mat/sst_month_c.png", width = 10.25, height = 7.
 load("data/02_misc/data-sst_processed.RData")
 
 data_sst <- data_sst %>% 
-  filter(!(territory %in% c("Entire Pacific region"))) %>% 
+  filter(!(territory %in% c("Entire Caribbean region"))) %>% 
   drop_na(sst_anom_mean)
 
 data_sst <- data_sst %>% 
@@ -242,7 +242,7 @@ map_sst_anom <- function(group_territory_i){
     base_plot(territory_i = group_territory_i)
     
     ggsave(filename = paste0("figs/02_part-2/fig-2/",
-                             str_replace_all(str_to_lower(group_territory_i), " ", "-"), ".png"),
+                             str_replace_all(str_replace_all(str_to_lower(group_territory_i), " ", "-"), "---", "-"), ".png"),
            width = 6, height = 4, dpi = fig_resolution)
     
 }

@@ -238,7 +238,7 @@ map_ssta_plot <- function(group_i){
   # 4. Save the plot
   
   ggsave(filename = paste0("figs/05_supp-mat/map_sst-anom_", min(data_files_i$year), "-", max(data_files_i$year), ".png"),
-         height = 12, width = 9, combined_plots, dpi = 600)
+         height = 14, width = 9, combined_plots, dpi = 600)
   
 }
 
