@@ -96,7 +96,7 @@ monitoring_descriptors <- data_benthic %>%
   data_descriptors() %>% 
   ungroup() %>% 
   # Add missing territories (those with no data)
-  full_join(., st_read("data/01_maps/02_clean/03_eez/caribbean_eez.shp") %>%
+  full_join(., st_read("data/01_maps/02_clean/03_eez/caribbean_eez_sub.shp") %>%
               select(territory) %>% 
               distinct() %>% 
               st_drop_geometry()) %>% 
