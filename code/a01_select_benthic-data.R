@@ -10,6 +10,11 @@ load("C:/Users/jwicquart/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_bentho
 
 # 3. Filter required data ----
 
+# -------------------------------------------------------- #
+# /!\     MAKE SURE TO REMOVE DATASET ID WHOSE USE     /!\ #
+# /!\        IS NOT AUTHORISED FOR THIS REPORT         /!\ #
+# -------------------------------------------------------- #
+
 data_benthic <- synthetic_data %>% 
   # Filter GCRMN region
   filter(region == "Caribbean") %>% 

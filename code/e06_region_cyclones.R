@@ -33,7 +33,7 @@ plot <- plot_region(scale = TRUE) +
   guides(color = guide_legend(title.position = "top", title.hjust = 0.5, override.aes = list(linewidth = 1))) +
   coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35))
 
-ggsave(filename = "figs/01_part-1/fig-6.png", plot = plot,
+ggsave(filename = "figs/01_part-1/fig-3.png", plot = plot,
        width = 7.5, height = 5.75, dpi = fig_resolution)
 
 # 5. Comparison of cyclones occurrence ----
