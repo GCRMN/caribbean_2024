@@ -31,10 +31,11 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 ### Cleaning and selection (`a_`)
 
 * `a01_select_benthic-data.R`
+* `a02_benthic-data_sources.R`
 * `a03_clean_shp.R`
 * `a07_reef-buffer.js`
 * `a08_clean_cyclones.R`
-* `a09_extract_dhw-year.R`
+* `a09_extract_sst-anom-year.R`
 
 ### Extract indicators (`b_`)
 
@@ -42,6 +43,7 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 
 ### Models (benthic cover) (`c_`)
 
+* `c01_explo_benthic-data.R` Exploratory analyses of benthic cover data.
 
 ### Models (fish biomass) (`d_`)
 
@@ -50,8 +52,12 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 
 * `e02_region_map.R`
 * `e03_territories_map.R`
+* `e04_region_sst.R`
+* `e05_territories_sst.R`
 * `e06_region_cyclones.R` 
 * `e07_territories_cyclones.R` 
+* `e08_region_spatio-temporal.R`
+* `e09_territories_spatio-temporal.R`
 * `e11_other-indicators.R`
 
 ## 3. Reproducibility parameters

@@ -25,7 +25,7 @@ data_benthic_cover <- data_benthic %>%
                               subcategory == "Turf algae" ~ "Turf algae",
                               subcategory == "Coralline algae" ~ "Coralline algae",
                               TRUE ~ category)) %>% 
-  filter(category %in% c("Hard coral", "Macroalgae", "Turf algae", "Coralline algae")) %>% 
+  filter(category %in% c("Hard coral", "Other fauna", "Macroalgae", "Turf algae", "Coralline algae")) %>% 
   group_by(datasetID, region, subregion, ecoregion, country, territory, locality, habitat, parentEventID, eventID,
            decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, category) %>% 
   summarise(measurementValue = sum(measurementValue)) %>% 
@@ -37,7 +37,8 @@ data_benthic_cover <- data_benthic %>%
            decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, category) %>% 
   summarise(measurementValue = mean(measurementValue)) %>% 
   ungroup() %>% 
-  mutate(color = case_when(category == "Hard coral" ~ palette_second[2],
+  mutate(color = case_when(category == "Hard coral" ~ palette_second[1],
+                           category == "Other fauna" ~ palette_second[2],
                            category == "Coralline algae" ~ palette_second[3],
                            category == "Macroalgae" ~ palette_second[4],
                            category == "Turf algae" ~ palette_second[5]))
@@ -68,7 +69,7 @@ plot_b <- ggplot(data = data_benthic_cover, aes(x = year, y = measurementValue, 
 plot_a + plot_b + plot_layout(ncol = 1)
 
 ggsave(paste0("figs/06_additional/benthic-cover_region_density-trend.png"),
-       width = 14, height = 8, dpi = fig_resolution)
+       width = 16, height = 8, dpi = fig_resolution)
 
 ## 4.3 Countries and territories (density) ----
 
@@ -146,7 +147,7 @@ ggplot(data = data_benthic_cover, aes(x = year, y = measurementValue)) +
   geom_smooth(color = palette_first[3]) +
   facet_wrap(~genus, scales = "free_y", ncol = 7) +
   theme_graph() + 
-  lims(x = c(1980, 2025)) +
+  scale_x_continuous(limits = c(1980, 2025), breaks = c(1980, 2000, 2020)) + 
   labs(y = "Percentage cover", x = "Year") +
   theme(strip.text = element_text(face = "bold.italic"),
         strip.background = element_rect(color = NA, fill = "white"))
