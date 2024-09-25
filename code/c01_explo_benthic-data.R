@@ -101,11 +101,55 @@ ggplot(data = data_benthic_cover, aes(x = year, y = measurementValue, color = co
 ggsave(paste0("figs/06_additional/benthic-cover_territory_trend.png"),
        width = 10, height = 12, dpi = fig_resolution)
 
-# 5. Main hard coral genus ----
+# 5. Main hard coral genera ----
 
-## 5.1 Transform data ----
+## 5.1 Main genera per percentage cover ----
 
+data_benthic_cover <- data_benthic %>% 
+  filter(category == "Hard coral" & !is.na(genus)) %>% 
+  group_by(datasetID, region, subregion, ecoregion, country, territory, locality, habitat, parentEventID, eventID,
+           decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, genus) %>% 
+  summarise(measurementValue = sum(measurementValue)) %>% 
+  ungroup() %>% 
+  group_by(genus) %>% 
+  summarise(measurementValue = mean(measurementValue))
 
+ggplot(data = data_benthic_cover, aes(x = fct_reorder(genus, measurementValue), y = measurementValue)) +
+  geom_bar(stat = "identity", fill = palette_first[3], width = 0.8) +
+  coord_flip() +
+  labs(y = "Average percentage cover", x = NULL) +
+  theme_graph() +
+  theme(axis.text.y = element_text(face = "italic"))
 
+ggsave(paste0("figs/06_additional/benthic-cover_hcc-genera_barplot.png"),
+       width = 6, height = 10, dpi = fig_resolution)
 
+## 5.2 Trends of main hard coral genera ----
 
+data_benthic_cover <- data_benthic %>% 
+  filter(category == "Hard coral" & !is.na(genus)) %>% 
+  group_by(datasetID, region, subregion, ecoregion, country, territory, locality, habitat, parentEventID, eventID,
+           decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, genus) %>% 
+  summarise(measurementValue = sum(measurementValue)) %>% 
+  ungroup() %>% 
+  # 2. Summarise data at the transect level (i.e. mean of photo-quadrats)
+  # This avoid getting semi-quantitative data (e.g. when there is only 10 points per photo-quadrat)
+  # This is the case for datasets "0011", "0012", "0013", "0014", and "0043" at least
+  group_by(datasetID, region, subregion, ecoregion, country, territory, locality, habitat, parentEventID,
+           decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, genus) %>% 
+  summarise(measurementValue = mean(measurementValue)) %>% 
+  ungroup()
+
+ggplot(data = data_benthic_cover, aes(x = year, y = measurementValue)) +
+  geom_point(alpha = 0.1, color = "lightgrey") +
+  scale_color_identity() +
+  geom_smooth(color = palette_first[3]) +
+  facet_wrap(~genus, scales = "free_y", ncol = 7) +
+  theme_graph() + 
+  lims(x = c(1980, 2025)) +
+  labs(y = "Percentage cover", x = "Year") +
+  theme(strip.text = element_text(face = "bold.italic"),
+        strip.background = element_rect(color = NA, fill = "white"))
+
+ggsave(paste0("figs/06_additional/benthic-cover_hcc-genera_trend.png"),
+       width = 18, height = 8, dpi = fig_resolution)
