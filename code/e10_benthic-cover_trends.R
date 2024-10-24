@@ -41,11 +41,13 @@ plot_year_dataset <- function(territory_i){
     scale_y_discrete(limits = rev) +
     scale_x_continuous(expand = c(0, 0), limits = c(1979, 2025)) +
     theme(legend.title.position = "top")
-  
-  return(plot_i)
+
+  ggsave(filename = paste0("figs/02_part-2/fig-4/",
+                           str_replace_all(str_replace_all(str_to_lower(territory_i), " ", "-"), "---", "-"), ".png"),
+         plot = plot_i, height = 3.5, width = 9, dpi = fig_resolution)
   
 }
 
 # 6. Map over the function ----
 
-plot_year_dataset(territory_i = "Jamaica")
+map(unique(data_benthic$territory), ~plot_year_dataset(territory_i = .))

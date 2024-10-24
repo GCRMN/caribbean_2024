@@ -147,7 +147,7 @@ plot_territories <- function(territory_i){
                      text_cex = 0.8, style = "bar", line_width = 1,  height = unit(0.045, "cm"), line_col = "black",
                      pad_x = unit(0.5, "cm"), pad_y = unit(0.35, "cm"), bar_cols = c("black", "black"))
   
-    ggsave(filename = str_replace_all(paste0("figs/02_part-2/fig-6/", str_replace_all(str_to_lower(territory_i), " ", "-"), ".png"),
+    ggsave(filename = str_replace_all(paste0("figs/02_part-2/fig-1/", str_replace_all(str_to_lower(territory_i), " ", "-"), ".png"),
                                     "---", "-"),
            width = as.numeric(data_params_i$fig_width),
            height = as.numeric(data_params_i$fig_height))

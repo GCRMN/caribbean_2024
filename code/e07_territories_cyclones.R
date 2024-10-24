@@ -74,7 +74,7 @@ map_cyclone_plot <- function(territory_i){
   
   # 3. Save the plot
   
-  ggsave(filename = paste0("figs/02_part-2/fig-4/",
+  ggsave(filename = paste0("figs/02_part-2/fig-3/",
                            str_replace_all(str_replace_all(str_to_lower(territory_i), " ", "-"), "---", "-"), ".png"),
          plot = plot_i, height = 3.5, width = 9, dpi = fig_resolution)
   
