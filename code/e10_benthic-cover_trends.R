@@ -30,7 +30,7 @@ data_year_dataset <- data_benthic %>%
            fill = list(nb_sites = 0)) %>% 
   left_join(., data_sources) %>% 
   mutate(label = paste0("<b>", datasetID,
-                        " </b><br><span style = 'font-size:10pt'>(",
+                        "</b><br><span style = 'font-size:10pt'>(",
                         rightsHolder, ")</span>"))
 
 # 5. Create a function to produce the plot ----
@@ -56,24 +56,54 @@ plot_year_dataset <- function(territory_i){
           legend.justification = "right",
           axis.text.y = element_markdown())
   
-  if(max(data_year_dataset_i$nb_sites) <= 2){
+  if(max(data_year_dataset_i$nb_sites) == 1){
     
     plot_i <- plot_i +
-      scale_fill_stepsn(breaks = c(0, 1, 2, 2),
-                        colors = c("grey", "grey", palette_second[3],
-                                   palette_second[3], palette_second[4], palette_second[5], palette_second[5]),
+      scale_fill_stepsn(breaks = c(0, 1, 2),
+                        colors = c("lightgrey", "lightgrey", palette_second[2], palette_second[2]),
+                        limits = c(0, 2),
+                        values = scales::rescale(c(0, 1, 2)),
+                        labels = scales::label_number(accuracy = 1),
                         show.limits = TRUE,
+                        right = FALSE,
                         name = "NUMBER OF SITES")
+    
+  }else if(max(data_year_dataset_i$nb_sites) == 2){
+    
+    plot_i <- plot_i +
+      scale_fill_stepsn(breaks = c(0, 1, 2),
+                        colors = c("lightgrey", "lightgrey", palette_second[2], palette_second[2]),
+                        limits = c(0, max(data_year_dataset_i$nb_sites)),
+                        values = scales::rescale(c(0, 1, 2)),
+                        labels = scales::label_number(accuracy = 1),
+                        show.limits = TRUE,
+                        right = FALSE,
+                        name = "NUMBER OF SITES")
+    
+   }else if(max(data_year_dataset_i$nb_sites) == 3){
+      
+      plot_i <- plot_i +
+        scale_fill_stepsn(breaks = c(0, 1, 2, 3),
+                          colors = c("lightgrey", "lightgrey", palette_second[2], palette_second[2], palette_second[4]),
+                          limits = c(0, max(data_year_dataset_i$nb_sites)),
+                          values = scales::rescale(c(0, 1, 2, 3)),
+                          labels = scales::label_number(accuracy = 1),
+                          show.limits = TRUE,
+                          right = FALSE,
+                          name = "NUMBER OF SITES")
     
   }else{
     
     plot_i <- plot_i +
       scale_fill_stepsn(breaks = c(0, round(seq(1, max(data_year_dataset_i$nb_sites), length.out = 6), 0)),
-                        colors = c("grey", "grey", palette_second[2], palette_second[2], palette_second[3],
-                                   palette_second[3], palette_second[4], palette_second[5], palette_second[5]),
+                        colors = c("lightgrey", "lightgrey", palette_second[2], palette_second[2], palette_second[3],
+                                   palette_second[4], palette_second[5]),
+                        limits = c(0, max(data_year_dataset_i$nb_sites)),
+                        values = scales::rescale(c(0, round(seq(1, max(data_year_dataset_i$nb_sites), length.out = 6), 0))),
+                        labels = scales::label_number(accuracy = 1),
                         show.limits = TRUE,
+                        right = FALSE,
                         name = "NUMBER OF SITES")
-    
     
   }
   
