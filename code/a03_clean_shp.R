@@ -31,7 +31,7 @@ data_reefs <- st_intersection(data_reefs, data_regions) %>%
 ggplot() +
   geom_sf(data = data_reefs, fill = "red")
 
-# 3. EEZ ----
+# 3. Define areas to be used for countries and territories chapters ----
 
 ## 3.1 Filter EEZ with coral reefs ----
 
@@ -39,6 +39,10 @@ data_eez_intersects <- st_intersection(data_eez, data_reefs)
 
 data_eez <- data_eez %>% 
   filter(TERRITORY1 %in% unique(data_eez_intersects$TERRITORY1))
+
+ggplot() +
+  geom_sf(data = data_eez, fill = "lightblue") + 
+  coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35))
 
 ## 3.2 Identify overclaimed territories and joint regimes ----
 
@@ -48,7 +52,7 @@ data_eez2 <- data_eez %>%
 plot <- ggplot() +
   geom_sf(data = data_eez2, aes(fill = overclaimed)) +
   scale_fill_manual(breaks = c(TRUE, FALSE),
-                     values = c("red", "white")) +
+                    values = c("red", "white")) +
   coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35))
 
 ggsave("figs/06_additional/overclaimed-territories.png", height = 4)
@@ -77,7 +81,8 @@ data_eez <- data_eez %>%
   bind_rows(data_eez %>% 
               filter(!(SOVEREIGN1 == "United States" & 
                          GEONAME == "United States Exclusive Economic Zone")), .) %>% 
-  filter(GEONAME != "Joint regime area: United States / Russia")
+  filter(!(GEONAME %in% c("Joint regime area: United States / Russia",
+                          "Overlapping claim: United States (Puerto Rico) / Dominican Republic")))
 
 ### 3.3.2 Mexico ----
 
@@ -87,7 +92,7 @@ data_eez <- data_eez %>%
   filter(row_number() == 2) %>% 
   bind_rows(data_eez %>% 
               filter(!(SOVEREIGN1 == "Mexico")), .)
-  
+
 ### 3.3.3 Colombia ----
 
 data_eez <- data_eez %>% 
@@ -95,8 +100,7 @@ data_eez <- data_eez %>%
   st_cast(., "POLYGON") %>% 
   filter(row_number() == 2) %>% 
   bind_rows(data_eez %>% 
-              filter(!(SOVEREIGN1 == "Colombia" & 
-                         GEONAME == "Colombian Exclusive Economic Zone")), .)
+              filter(!(SOVEREIGN1 == "Colombia")), .)
 
 ### 3.3.4 Nicaragua ----
 
@@ -137,46 +141,10 @@ data_eez <- data_eez %>%
   nngeo::st_remove_holes(.) %>% 
   bind_rows(data_eez %>% 
               filter(GEONAME != "Honduran Exclusive Economic Zone"), .) %>% 
-  filter(GEONAME != "Joint regime area: Honduras / United Kingdom (Cayman Islands)")
+  filter(!(GEONAME %in% c("Joint regime area: Honduras / United Kingdom (Cayman Islands)",
+                          "Overlapping claim: Belize / Honduras")))
 
-### 3.3.8 Dominican Republic ----
-
-data_eez <- data_eez %>% 
-  filter(TERRITORY1 == "Dominican Republic") %>% 
-  filter(row_number() == 1) %>% 
-  bind_rows(data_eez %>% 
-              filter(TERRITORY1 != "Dominican Republic"), .)
-
-### 3.3.9 Jamaica ----
-
-data_eez_a <- data_eez %>% 
-  filter(TERRITORY1 == "Jamaica") %>% 
-  group_by(SOVEREIGN1, TERRITORY1) %>% 
-  summarise(geometry = st_union(geometry)) %>% 
-  ungroup() %>% 
-  st_buffer(0.1) %>% 
-  nngeo::st_remove_holes(.) %>% 
-  mutate(TERRITORY1 = "Jamaica")
-  
-data_eez <- st_difference(data_eez_a, st_union(data_eez %>% filter(TERRITORY1 != "Jamaica"))) %>% 
-  bind_rows(data_eez %>% 
-              filter(TERRITORY1 != "Jamaica"), .)
-
-rm(data_eez_a)
-
-### 3.3.10 Visual check ----
-
-ggplot() +
-  geom_sf(data = data_eez) +
-  geom_sf(data = data_reefs, col = "red") +
-  coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35))
-
-### 3.3.11 Tag overclaimed territories ----
-
-data_eez <- data_eez %>% 
-  mutate(TERRITORY1 = ifelse(str_detect(GEONAME, "Over") == TRUE, GEONAME, TERRITORY1))
-
-### 3.3.12 Remove useless columns ----
+## 3.4 Remove useless columns ----
 
 data_eez <- data_eez %>% 
   rename(country = SOVEREIGN1, territory = TERRITORY1) %>% 
@@ -185,39 +153,7 @@ data_eez <- data_eez %>%
   st_transform(crs = 4326) %>% 
   st_make_valid()
 
-### 3.3.13 Remove holes in EEZ ----
-
-ggplot() +
-  geom_sf(data = data_eez)
-
-data_eez_a <- data_eez %>% 
-  filter(territory == "Serrana Bank") %>% 
-  nngeo::st_remove_holes(.)
-
-data_eez_b <- data_eez %>% 
-  filter(territory == "Quitasueño Bank") %>% 
-  nngeo::st_remove_holes(.)
-
-data_eez_c <- data_eez %>% 
-  filter(territory == "Nicaragua")
-
-data_eez <- data_eez %>% 
-  filter(!(territory %in% c("Quitasueño Bank", "Serrana Bank", "Nicaragua"))) %>% 
-  nngeo::st_remove_holes(.) %>% 
-  bind_rows(., data_eez_a) %>% 
-  bind_rows(., data_eez_b) %>% 
-  bind_rows(., data_eez_c)
-
-ggplot() +
-  geom_sf(data = data_eez, fill = "lightblue")
-
-## 3.4 Export the data ----
-
-st_write(data_eez, "data/01_maps/02_clean/03_eez/caribbean_eez.shp", append = TRUE, delete_dsn = TRUE)
-
-rm(data_eez_a, data_eez_b, data_eez_c)
-
-## 3.5 Modified EEZ (non official EEZ, but needed for reporting) ----
+## 3.5 Particular cases ----
 
 ### 3.5.1 Flower Garden Banks ----
 
@@ -235,7 +171,7 @@ data_fk <- st_read("data/01_maps/01_raw/06_noaa/fknms_py2/fknms_py.shp") %>%
   summarise(geometry = st_union(geometry))
 
 data_fk <- tibble(long = c(-80.1, -80), 
-                       lat = c(25.5, 27.1)) %>% 
+                  lat = c(25.5, 27.1)) %>% 
   st_as_sf(coords = c("long", "lat"), crs = 4326) %>% 
   summarise() %>% 
   st_cast("LINESTRING") %>% 
@@ -244,69 +180,174 @@ data_fk <- tibble(long = c(-80.1, -80),
   summarise(geometry = st_union(geometry)) %>% 
   mutate(country = "United States", territory = "Florida")
 
-### 3.5.3 Combine Florida and FGB ----
-
-data_us <- bind_rows(data_fk, data_fgb)
-
-### 3.5.4 Visual check ----
-
-ggplot() +
-  geom_sf(data = data_us) +
-  geom_sf(data = data_reefs, fill = "red", color = "red") +
-  coord_sf(xlim = c(-95, -79), ylim = c(24, 29))
-
-### 3.5.5 Add to EEZ data ----
-
 data_eez <- data_eez %>% 
   filter(territory != "United States") %>% 
-  bind_rows(., data_us)
+  bind_rows(., data_fgb) %>% 
+  bind_rows(., data_fk)
 
-rm(data_us, data_fgb, data_fk, data_fk_supp)
+rm(data_eez_intersects, data_fgb, data_fk, data_regions)
 
-### 3.5.6 Merge Saint-Martin and Sint-Marteen ----
+### 3.5.3 Collectivity of Saint Martin and Sint Maarten ----
 
 data_eez <- data_eez %>% 
   filter(territory %in% c("Collectivity of Saint Martin", "Sint-Maarten")) %>% 
-  mutate(territory = "Sint-Marteen - Saint-Martin") %>% 
+  mutate(territory = "Sint-Maarten - Saint-Martin") %>% 
   group_by(territory) %>% 
   summarise(geometry = st_union(geometry)) %>% 
   ungroup() %>% 
   nngeo::st_remove_holes(.) %>% 
   bind_rows(data_eez %>% filter(!(territory %in% c("Collectivity of Saint Martin", "Sint-Maarten"))), .)
 
-### 3.5.7 Export the data ----
+### 3.5.4 Mexico (Caribbean Sea) ----
 
-st_write(data_eez, "data/01_maps/02_clean/03_eez/caribbean_eez_sub.shp", append = TRUE, delete_dsn = TRUE)
+data_meow <- st_read("data/01_maps/01_raw/07_meow/Marine_Ecoregions_Of_the_World__MEOW_.shp") %>% 
+  filter(ECO_CODE_X %in% c(68)) %>% 
+  st_transform(crs = 4326)
 
-## 3.6 Associate EEZ to reefs ----
+data_mex_cs <- data_eez %>% 
+  filter(territory == "Mexico") %>% 
+  st_intersection(., data_meow) %>% 
+  mutate(territory = "Mexico (Caribbean Sea)") %>% 
+  st_remove_holes()
+
+### 3.5.5 Mexico (Gulf of Mexico) ----
+
+data_eez <- data_eez %>% 
+  filter(territory == "Mexico") %>% 
+  st_difference(., data_meow) %>% 
+  st_remove_holes() %>% 
+  st_cast(., "POLYGON") %>% 
+  filter(row_number() != 3) %>% 
+  summarise(geometry = st_union(geometry)) %>% 
+  mutate(territory = "Mexico (Gulf of Mexico)") %>% 
+  bind_rows(data_eez %>% filter(territory != "Mexico"), .) %>% 
+  bind_rows(., data_mex_cs)
+
+rm(data_meow, data_mex_cs)
+
+### 3.5.6 Seaflower Biosphere Reserve ----
+
+data_seaflower <- st_read("data/01_maps/01_raw/08_seaflower/LimiteSeaflower.shp") %>% 
+  mutate(territory = "Seaflower Biosphere Reserve") %>% 
+  select(territory)
+
+data_eez <- st_difference(data_eez, data_seaflower) %>% 
+  bind_rows(., data_seaflower) %>% 
+  rename(area = territory) %>% 
+  select(area)
+
+## 3.6 Minor corrections ----
+
+### 3.6.1 Dominican Republic ----
+
+data_eez <- data_eez %>% 
+  filter(area == "Dominican Republic") %>% 
+  st_cast(., "POLYGON") %>% 
+  filter(row_number(.) == 1) %>% 
+  bind_rows(., data_eez %>% filter(area != "Dominican Republic"))
+
+### 3.6.2 Nicaragua ----
+
+data_eez <- data_eez %>% 
+  filter(area == "Nicaragua") %>% 
+  st_cast(., "POLYGON") %>% 
+  filter(row_number(.) == 1) %>% 
+  bind_rows(., data_eez %>% filter(area != "Nicaragua"))
+
+### 3.6.3 Costa Rica ----
+
+data_eez <- data_eez %>% 
+  filter(area == "Costa Rica") %>% 
+  st_cast(., "POLYGON") %>% 
+  filter(row_number(.) == 1) %>% 
+  bind_rows(., data_eez %>% filter(area != "Costa Rica"))
+
+### 3.6.4 Venezuela ----
+
+data_eez <- data_eez %>% 
+  filter(area == "Venezuela") %>% 
+  st_cast(., "POLYGON") %>% 
+  filter(row_number(.) == 2) %>% 
+  bind_rows(., data_eez %>% filter(area != "Venezuela"))
+
+### 3.6.5 Barbados ----
+
+data_eez <- data_eez %>% 
+  filter(area == "Barbados") %>% 
+  group_by(area) %>% 
+  summarise(geometry = st_union(geometry)) %>%
+  ungroup() %>% 
+  bind_rows(., data_eez %>% filter(area != "Barbados"))
+
+### 3.6.6 Colombia ----
+
+data_polygon <- tibble(lat = c(11, 15),
+                       lon = c(-79.5, -78)) %>% 
+  st_as_sf(coords = c("lon", "lat"), 
+           crs = 4326) %>% 
+  st_bbox() %>% 
+  st_as_sfc()
+
+data_eez <- data_eez %>% 
+  filter(area == "Colombia") %>% 
+  st_cast(., "POLYGON") %>% 
+  filter(row_number(.) == 1) %>% 
+  st_difference(., data_polygon) %>% 
+  bind_rows(., data_eez %>% filter(area != "Colombia"))
+
+### 3.6.7 Holes for all areas ----
+
+data_area <- data_eez %>%
+  group_by(area) %>% 
+  nngeo::st_remove_holes() %>% 
+  ungroup()
+
+## 3.7 Export the data ----
+
+st_write(data_area, "data/01_maps/02_clean/03_eez/caribbean_area.shp", append = TRUE, delete_dsn = TRUE)
+
+# 4. Intersect with reef data ----
 
 data_reefs <- data_reefs %>% 
   select(-GRIDCODE) %>% 
-  st_intersection(., data_eez) %>% 
+  st_intersection(., data_area) %>% 
   st_as_sf() %>% 
   st_transform(crs = 4326) %>% 
   st_make_valid() %>% 
-  group_by(country, territory) %>% 
+  group_by(area) %>% 
   summarise(geometry = st_union(geometry)) %>% 
   ungroup()
 
 st_write(data_reefs, "data/01_maps/02_clean/02_reefs/reefs.shp", append = TRUE, delete_dsn = TRUE)
 
-# 4. Land (Princeton) ----
+# 5. Intersect with benthic data ----
 
-## 4.1 List of shp to combine ----
+load("data/02_misc/data-benthic.RData")
+
+data_benthic_area <- data_benthic %>% 
+  st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326) %>% 
+  st_join(., data_area) %>% 
+  mutate(decimalLatitude = st_coordinates(.)[,2],
+         decimalLongitude = st_coordinates(.)[,1]) %>% 
+  st_drop_geometry()
+
+save(data_benthic_area, file = "data/02_misc/data-benthic_area.RData")
+
+# 6. Land (Princeton) ----
+
+## 6.1 List of shp to combine ----
 
 list_shp <- list.files(path = "data/01_maps/01_raw/05_princeton",
                        pattern = ".shp$", full.names = TRUE, recursive = TRUE)
 
-## 4.2 Combine shp ----
+## 6.2 Combine shp ----
 
 data_land <- map_dfr(list_shp, ~st_read(.)) %>% 
   rename(TERRITORY1 = NAME_ENGLI) %>% 
   st_transform(crs = 4326) %>% 
   select(TERRITORY1)
 
-## 4.3 Correct issue for grouped territories ----
+## 6.3 Correct issue for grouped territories ----
 
 data_land <- data_land %>%
   filter(TERRITORY1 == "Bonaire, Saint Eustatius and Saba") %>% 
@@ -322,6 +363,6 @@ data_land <- data_land %>%
                                                   "Saint Eustatius" = "Sint-Eustatius",
                                                   "Saint-Martin" = "Sint-Marteen - Saint-Martin")))
 
-## 4.4 Export the data ----
+## 6.4 Export the data ----
 
 st_write(data_land, "data/01_maps/02_clean/05_princeton/land.shp", append = FALSE, delete_dsn = TRUE)
