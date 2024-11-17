@@ -23,11 +23,22 @@ data_benthic <- synthetic_data %>%
   # Filter data on the period of interest
   filter(year >= 1980 & year <= 2024)
 
-# 4. Save the data ----
+# 4. Add area variable ----
+
+data_area <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp")
+
+data_benthic <- data_benthic %>% 
+  st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326) %>% 
+  st_join(., data_area) %>% 
+  mutate(decimalLatitude = st_coordinates(.)[,2],
+         decimalLongitude = st_coordinates(.)[,1]) %>% 
+  st_drop_geometry()
+
+# 5. Save the data ----
 
 save(data_benthic, file = "data/02_misc/data-benthic.RData")
 
-# 5. Export site coordinates (for predictors extraction) ----
+# 6. Export site coordinates (for predictors extraction) ----
 
 data_benthic %>% 
   select(decimalLatitude, decimalLongitude) %>% 

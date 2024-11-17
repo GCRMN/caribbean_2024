@@ -45,7 +45,7 @@ ggsave(filename = "figs/01_part-1/fig-2.png", plot = plot,
 load("data/02_misc/data-benthic.RData")
 
 data_benthic %>% 
-  select(territory, decimalLatitude, decimalLongitude, eventDate, year) %>% 
+  select(decimalLatitude, decimalLongitude, eventDate, year) %>% 
   st_drop_geometry() %>% 
   distinct() %>% 
   group_by(year) %>% 
@@ -70,7 +70,7 @@ ggsave(filename = "figs/01_part-1/fig-10.png", width = 5, height = 4, dpi = fig_
 ## 6.1 Make the plot ----
 
 data_benthic %>% 
-  select(territory, decimalLatitude, decimalLongitude, eventDate, year, verbatimDepth) %>% 
+  select(decimalLatitude, decimalLongitude, eventDate, year, verbatimDepth) %>% 
   st_drop_geometry() %>% 
   drop_na(verbatimDepth) %>% 
   distinct() %>% 
@@ -89,41 +89,26 @@ ggsave(filename = "figs/01_part-1/fig-11.png", width = 5, height = 4, dpi = fig_
 
 load("data/02_misc/data-benthic.RData")
 
-## 7.1 Add subterritories ----
+## 7.1 For areas ----
 
 monitoring_descriptors <- data_benthic %>% 
-  group_by(territory) %>% 
+  group_by(area) %>% 
   data_descriptors() %>% 
   ungroup() %>% 
   # Add missing territories (those with no data)
-  full_join(., st_read("data/01_maps/02_clean/03_eez/caribbean_eez_sub.shp") %>%
-              select(territory) %>% 
+  full_join(., st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp") %>%
+              select(area) %>% 
               distinct() %>% 
               st_drop_geometry()) %>% 
   mutate(across(c("nb_sites", "nb_surveys", "nb_datasets"), .fns = ~replace_na(.,0))) %>% 
-  arrange(territory) %>% 
-  filter(!(territory %in% c("Overlapping claim Navassa Island: United States / Haiti / Jamaica",
-                            "Overlapping claim: Venezuela / Netherlands (Aruba) / Dominican Republic",
-                            "Overlapping claim: Colombia / Dominican Republic / Venezuela",
-                            "Overlapping claim: United States (Puerto Rico) / Dominican Republic",
-                            "Overlapping claim: Belize / Honduras",
-                            "Serrana Bank",
-                            "Quitasueño Bank"))) %>% 
-  distinct()
+  arrange(area)
 
 ## 7.2 Add total ----
 
 monitoring_descriptors <- data_benthic %>% 
-  filter(!(territory %in% c("Overlapping claim Navassa Island: United States / Haiti / Jamaica",
-                            "Overlapping claim: Venezuela / Netherlands (Aruba) / Dominican Republic",
-                            "Overlapping claim: Colombia / Dominican Republic / Venezuela",
-                            "Overlapping claim: United States (Puerto Rico) / Dominican Republic",
-                            "Overlapping claim: Belize / Honduras",
-                            "Serrana Bank",
-                            "Quitasueño Bank"))) %>% 
   data_descriptors() %>% 
   ungroup() %>% 
-  mutate(territory = "Entire Caribbean region") %>% 
+  mutate(area = "Entire Caribbean region") %>% 
   bind_rows(monitoring_descriptors, .)
 
 ## 7.3 Export the table ----

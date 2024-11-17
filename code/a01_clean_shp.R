@@ -320,34 +320,21 @@ data_reefs <- data_reefs %>%
 
 st_write(data_reefs, "data/01_maps/02_clean/02_reefs/reefs.shp", append = TRUE, delete_dsn = TRUE)
 
-# 5. Intersect with benthic data ----
+# 5. Land (Princeton) ----
 
-load("data/02_misc/data-benthic.RData")
-
-data_benthic_area <- data_benthic %>% 
-  st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326) %>% 
-  st_join(., data_area) %>% 
-  mutate(decimalLatitude = st_coordinates(.)[,2],
-         decimalLongitude = st_coordinates(.)[,1]) %>% 
-  st_drop_geometry()
-
-save(data_benthic_area, file = "data/02_misc/data-benthic_area.RData")
-
-# 6. Land (Princeton) ----
-
-## 6.1 List of shp to combine ----
+## 5.1 List of shp to combine ----
 
 list_shp <- list.files(path = "data/01_maps/01_raw/05_princeton",
                        pattern = ".shp$", full.names = TRUE, recursive = TRUE)
 
-## 6.2 Combine shp ----
+## 5.2 Combine shp ----
 
 data_land <- map_dfr(list_shp, ~st_read(.)) %>% 
   rename(TERRITORY1 = NAME_ENGLI) %>% 
   st_transform(crs = 4326) %>% 
   select(TERRITORY1)
 
-## 6.3 Correct issue for grouped territories ----
+## 5.3 Correct issue for grouped territories ----
 
 data_land <- data_land %>%
   filter(TERRITORY1 == "Bonaire, Saint Eustatius and Saba") %>% 
@@ -363,6 +350,6 @@ data_land <- data_land %>%
                                                   "Saint Eustatius" = "Sint-Eustatius",
                                                   "Saint-Martin" = "Sint-Marteen - Saint-Martin")))
 
-## 6.4 Export the data ----
+## 5.4 Export the data ----
 
 st_write(data_land, "data/01_maps/02_clean/05_princeton/land.shp", append = FALSE, delete_dsn = TRUE)

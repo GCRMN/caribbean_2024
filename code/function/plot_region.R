@@ -39,7 +39,7 @@ plot_region <- function(scale = TRUE){
   
   ## 3.4 EEZ ----
   
-  data_eez <- st_read("data/01_maps/02_clean/03_eez/caribbean_eez.shp")
+  data_eez <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp")
 
   data_land_cropped <- st_intersection(data_land, data_crop)
   

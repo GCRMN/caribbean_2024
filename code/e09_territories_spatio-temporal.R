@@ -45,7 +45,7 @@ data_land <- read_sf("data/01_maps/02_clean/05_princeton/land.shp")
 
 ## 4.2 EEZ ----
 
-data_eez <- read_sf("data/01_maps/02_clean/03_eez/caribbean_eez_sub.shp")
+data_eez <- read_sf("data/01_maps/02_clean/03_eez/caribbean_area.shp")
 
 ## 4.3 Reefs ----
 
@@ -66,9 +66,9 @@ data_reefs_buffer <- st_read("data/01_maps/02_clean/02_reefs/reefs_buffer_100.sh
 
 ## 4.5 Select benthic data ----
 
-load("data/02_misc/data-benthic.RData")
+load("data/02_misc/data-benthic_area.RData")
 
-data_benthic <- data_benthic %>% 
+data_benthic <- data_benthic_area %>% 
   select(decimalLatitude, decimalLongitude, year, territory) %>% 
   distinct() %>% 
   group_by(decimalLatitude, decimalLongitude, territory) %>% 
