@@ -21,11 +21,11 @@ data_sources <- read_xlsx("C:/Users/jwicquart/Desktop/Recherche/03_projects/2022
   distinct()
 
 data_year_dataset <- data_benthic %>% 
-  group_by(datasetID, territory, year) %>% 
+  group_by(datasetID, area, year) %>% 
   data_descriptors() %>% 
   ungroup() %>% 
-  select(datasetID, territory, year, nb_sites) %>% 
-  complete(nesting(datasetID, territory),
+  select(datasetID, area, year, nb_sites) %>% 
+  complete(nesting(datasetID, area),
            year = 1980:2024,
            fill = list(nb_sites = 0)) %>% 
   left_join(., data_sources) %>% 
@@ -35,10 +35,10 @@ data_year_dataset <- data_benthic %>%
 
 # 5. Create a function to produce the plot ----
 
-plot_year_dataset <- function(territory_i){
+plot_year_dataset <- function(area_i){
   
   data_year_dataset_i <- data_year_dataset %>% 
-    filter(territory == territory_i)
+    filter(area == area_i)
   
   nb_datasets_i <- length(unique(data_year_dataset_i$datasetID))
   
@@ -108,11 +108,11 @@ plot_year_dataset <- function(territory_i){
   }
   
   ggsave(filename = paste0("figs/02_part-2/fig-4/",
-                           str_replace_all(str_replace_all(str_to_lower(territory_i), " ", "-"), "---", "-"), ".png"),
+                           str_replace_all(str_replace_all(str_to_lower(area_i), " ", "-"), "---", "-"), ".png"),
          plot = plot_i, height = (2 + (3*0.3*nb_datasets_i)), width = 9, dpi = fig_resolution)
   
 }
 
 # 6. Map over the function ----
 
-map(unique(data_benthic$territory), ~plot_year_dataset(territory_i = .))
+map(unique(data_benthic$area), ~plot_year_dataset(area_i = .))
