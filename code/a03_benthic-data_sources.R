@@ -5,6 +5,8 @@ library(readxl)
 
 # 2. Load data ----
 
+data_area <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp")
+
 load("data/02_misc/data-benthic.RData")
 
 # 3. DatasetID per territory ----
@@ -15,6 +17,8 @@ data_benthic %>%
   arrange(area, datasetID) %>% 
   group_by(area) %>% 
   summarise(datasetID = paste0(datasetID, collapse = ", ")) %>% 
+  left_join(data_area %>% st_drop_geometry(), .) %>% 
+  arrange(area) %>% 
   openxlsx::write.xlsx(., file = "figs/05_supp-mat/tbl-1.xlsx")
 
 # 4. List of contributors ----

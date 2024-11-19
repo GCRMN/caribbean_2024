@@ -38,7 +38,8 @@ ggplot() +
 data_eez_intersects <- st_intersection(data_eez, data_reefs)
 
 data_eez <- data_eez %>% 
-  filter(TERRITORY1 %in% unique(data_eez_intersects$TERRITORY1))
+  filter(TERRITORY1 %in% c(unique(data_eez_intersects$TERRITORY1),
+                           "Guatemala")) # Add Guatemala, no coral reefs based on WRI data
 
 ggplot() +
   geom_sf(data = data_eez, fill = "lightblue") + 
@@ -144,6 +145,16 @@ data_eez <- data_eez %>%
   filter(!(GEONAME %in% c("Joint regime area: Honduras / United Kingdom (Cayman Islands)",
                           "Overlapping claim: Belize / Honduras")))
 
+### 3.3.8 Guatemala ----
+
+data_eez <- data_eez %>% 
+  filter(GEONAME == "Guatemalan Exclusive Economic Zone") %>% 
+  st_cast(., "POLYGON") %>% 
+  filter(row_number() == 2) %>% 
+  nngeo::st_remove_holes(.) %>% 
+  bind_rows(data_eez %>% 
+              filter(GEONAME != "Guatemalan Exclusive Economic Zone"), .)
+
 ## 3.4 Remove useless columns ----
 
 data_eez <- data_eez %>% 
@@ -178,7 +189,12 @@ data_fk <- tibble(long = c(-80.1, -80),
   st_buffer(0.3) %>% 
   bind_rows(data_fk, .) %>% 
   summarise(geometry = st_union(geometry)) %>% 
-  mutate(country = "United States", territory = "Florida")
+  mutate(country = "United States", territory = "Florida") %>% 
+  st_buffer(0.4) %>% 
+  st_difference(., data_eez %>% 
+                  filter(country %in% c("Bahamas", "Cuba")) %>% 
+                  summarise(geometry = st_union(geometry))) %>% 
+  st_difference(., st_read("data/01_maps/01_raw/05_princeton/usa/USA_adm0.shp"))
 
 data_eez <- data_eez %>% 
   filter(territory != "United States") %>% 

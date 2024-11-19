@@ -27,12 +27,44 @@ data_benthic <- synthetic_data %>%
 
 data_area <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp")
 
-data_benthic <- data_benthic %>% 
+## 4.1 Visual check the size of the buffer -----
+
+ggplot() +
+  geom_sf(data = data_area %>% filter(area == "Costa Rica") %>% st_buffer(0.05), col = "red") +
+  geom_sf(data = data_area %>% filter(area == "Costa Rica"))
+
+ggplot() +
+  geom_sf(data = data_area %>% filter(area == "Costa Rica") %>% st_buffer(0.05), col = "red") +
+  geom_sf(data = data_area %>% filter(area == "Costa Rica")) +
+  coord_sf(xlim = c(-83.2, -82.8), ylim = c(9.8, 10.2))
+
+## 4.2 First assignation ----
+
+data_benthic_coords <- data_benthic %>% 
+  select(decimalLatitude, decimalLongitude) %>% 
+  distinct() %>% 
   st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326) %>% 
-  st_join(., data_area) %>% 
+  st_join(., data_area)
+
+## 4.3 Second assignation ----
+
+data_benthic <- data_benthic_coords %>% 
+  filter(is.na(area)) %>% 
+  select(-area) %>% 
+  st_join(., st_buffer(data_area, 0.05)) %>% 
+  bind_rows(data_benthic_coords %>% filter(!(is.na(area))), .) %>% 
   mutate(decimalLatitude = st_coordinates(.)[,2],
          decimalLongitude = st_coordinates(.)[,1]) %>% 
-  st_drop_geometry()
+  st_drop_geometry() %>% 
+  group_by(decimalLongitude, decimalLatitude) %>% 
+  mutate(n = n()) %>% 
+  ungroup() %>% 
+  mutate(area = if_else(n == 1, area, NA_character_)) %>% 
+  distinct() %>% 
+  select(-n) %>% 
+  left_join(data_benthic, .) %>% 
+  relocate("area", .after = "territory") %>% 
+  drop_na(area)
 
 # 5. Save the data ----
 
