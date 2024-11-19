@@ -26,14 +26,14 @@ data_benthic_cover <- data_benthic %>%
                               subcategory == "Coralline algae" ~ "Coralline algae",
                               TRUE ~ category)) %>% 
   filter(category %in% c("Hard coral", "Other fauna", "Macroalgae", "Turf algae", "Coralline algae")) %>% 
-  group_by(datasetID, region, subregion, ecoregion, country, territory, locality, habitat, parentEventID, eventID,
-           decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, category) %>% 
+  group_by(datasetID, region, subregion, ecoregion, country, territory, area, locality, habitat, parentEventID,
+           eventID, decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, category) %>% 
   summarise(measurementValue = sum(measurementValue)) %>% 
   ungroup() %>% 
   # 2. Summarise data at the transect level (i.e. mean of photo-quadrats)
   # This avoid getting semi-quantitative data (e.g. when there is only 10 points per photo-quadrat)
   # This is the case for datasets "0011", "0012", "0013", "0014", and "0043" at least
-  group_by(datasetID, region, subregion, ecoregion, country, territory, locality, habitat, parentEventID,
+  group_by(datasetID, region, subregion, ecoregion, country, territory, area, locality, habitat, parentEventID,
            decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, category) %>% 
   summarise(measurementValue = mean(measurementValue)) %>% 
   ungroup() %>% 
@@ -71,7 +71,7 @@ plot_a + plot_b + plot_layout(ncol = 1)
 ggsave(paste0("figs/06_additional/benthic-cover_region_density-trend.png"),
        width = 16, height = 8, dpi = fig_resolution)
 
-## 4.3 Countries and territories (density) ----
+## 4.3 Areas (density) ----
 
 ggplot(data = data_benthic_cover, aes(x = measurementValue, fill = color)) +
   geom_density() +
@@ -83,10 +83,10 @@ ggplot(data = data_benthic_cover, aes(x = measurementValue, fill = color)) +
   theme(strip.text.y = element_text(angle = 0, hjust = 0, vjust = 0),
         strip.background = element_rect(color = NA, fill = "white"))
 
-ggsave(paste0("figs/06_additional/benthic-cover_territory_density.png"),
+ggsave(paste0("figs/06_additional/benthic-cover_area_density.png"),
        width = 10, height = 12, dpi = fig_resolution)
 
-## 4.4 Countries and territories (trend) ----
+## 4.4 Areas (trend) ----
 
 ggplot(data = data_benthic_cover, aes(x = year, y = measurementValue, color = color)) +
   geom_point(alpha = 0.1, color = "lightgrey") +
@@ -99,7 +99,7 @@ ggplot(data = data_benthic_cover, aes(x = year, y = measurementValue, color = co
   theme(strip.text.y = element_text(angle = 0, hjust = 0, vjust = 0),
         strip.background = element_rect(color = NA, fill = "white"))
 
-ggsave(paste0("figs/06_additional/benthic-cover_territory_trend.png"),
+ggsave(paste0("figs/06_additional/benthic-cover_area_trend.png"),
        width = 10, height = 12, dpi = fig_resolution)
 
 # 5. Main hard coral genera ----

@@ -47,3 +47,26 @@ Export.table.toDrive({
   fileFormat:"SHP",
   description:"reefs_buffer_50"
 });
+
+// 4. Create 20 km reef buffer ----
+
+var reef_buffer = function(feature) {
+  return feature.buffer(20000); // 20 km  
+};
+
+var data_reefs_buffer = data_reefs.map(reef_buffer);
+  
+// 4.1 Data vizualisation ----
+
+Map.addLayer(data_reefs);
+Map.addLayer(data_reefs_buffer);
+
+// 4.2 Export the data ----
+
+Export.table.toDrive({
+  collection:data_reefs_buffer,
+  folder:"GEE",
+  fileNamePrefix:"reefs_buffer_20",
+  fileFormat:"SHP",
+  description:"reefs_buffer_20"
+});
