@@ -118,7 +118,7 @@ hyperparam_tuning <- function(category_i){
   result_pred_obs <- data_test %>% 
     mutate(yhat = predict(final_fitted, data_test)$.pred) %>% 
     rename(y = measurementValue) %>% 
-    select(territory, y, yhat) %>% 
+    select(area, y, yhat) %>% 
     mutate(category = category_i)
   
   # 4. Return the results

@@ -2,9 +2,9 @@
 
 // 1.1 Load sites with observed data and sites to predict ----
 
-var site_obs = ee.FeatureCollection("users/jeremywicquart/pacific_2023_site-coords_obs");
+var site_obs = ee.FeatureCollection("users/jeremywicquart/caribbean_2024_site-coords_obs");
     
-var site_pred = ee.FeatureCollection("users/jeremywicquart/pacific_2023_site-coords_pred");
+var site_pred = ee.FeatureCollection("users/jeremywicquart/caribbean_2024_site-coords_pred");
 
 // 1.2 Data vizualisation ----
 
