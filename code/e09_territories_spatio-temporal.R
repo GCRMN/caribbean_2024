@@ -1,6 +1,8 @@
 # 1. Load packages ----
 
 library(tidyverse)
+library(readxl)
+library(ggtext)
 library(sf)
 sf_use_s2(FALSE)
 library(ggspatial)
@@ -8,9 +10,134 @@ library(ggspatial)
 # 2. Load functions ----
 
 source("code/function/graphical_par.R")
+source("code/function/theme_graph.R")
+source("code/function/data_descriptors.R")
 source("code/function/theme_map_territory.R")
 
-# 3. Export file to complete with parameters for figures ----
+# 3. Plot of number of sites per year and per area ----
+
+## 3.1 Select benthic data ----
+
+load("data/02_misc/data-benthic.RData")
+
+## 3.2 Transform data ----
+
+data_sources <- read_xlsx("C:/Users/jwicquart/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/05_data-sources.xlsx") %>% 
+  select(datasetID, rightsHolder) %>% 
+  distinct()
+
+data_year_dataset <- data_benthic %>% 
+  group_by(datasetID, area, year) %>% 
+  data_descriptors() %>% 
+  ungroup() %>% 
+  select(datasetID, area, year, nb_sites) %>% 
+  complete(nesting(datasetID, area),
+           year = 1980:2024,
+           fill = list(nb_sites = 0)) %>% 
+  left_join(., data_sources) %>% 
+  mutate(label = paste0("<b>", datasetID,
+                        "</b><br><span style = 'font-size:10pt'>(",
+                        rightsHolder, ")</span>"))
+
+## 3.3 Create a function to produce the plot ----
+
+plot_year_dataset <- function(area_i){
+  
+  data_year_dataset_i <- data_year_dataset %>% 
+    filter(area == area_i)
+  
+  nb_datasets_i <- length(unique(data_year_dataset_i$datasetID))
+  
+  plot_i <- ggplot(data = data_year_dataset_i,
+                   aes(x = year, y = label, fill = nb_sites)) +
+    geom_tile(color = "white", height = 0.6, linewidth = 0.6) +
+    theme_graph() +
+    labs(y = NULL, x = "Year") +
+    scale_y_discrete(limits = rev) +
+    scale_x_continuous(expand = c(0, 0), limits = c(1979, 2025)) +
+    theme(legend.title.position = "top",
+          legend.title = element_text(size = 10, hjust = 1, face = "bold", color = "#2c3e50"),
+          legend.key.width = unit(1.5, "cm"),
+          legend.key.height = unit(0.4, "cm"),
+          legend.justification = "right",
+          axis.text.y = element_markdown())
+  
+  if(max(data_year_dataset_i$nb_sites) == 1){
+    
+    plot_i <- plot_i +
+      scale_fill_stepsn(breaks = c(0, 1, 2),
+                        colors = c("lightgrey", "lightgrey", palette_second[2], palette_second[2]),
+                        limits = c(0, 2),
+                        values = scales::rescale(c(0, 1, 2)),
+                        labels = scales::label_number(accuracy = 1),
+                        show.limits = TRUE,
+                        right = FALSE,
+                        name = "NUMBER OF SITES")
+    
+  }else if(max(data_year_dataset_i$nb_sites) == 2){
+    
+    plot_i <- plot_i +
+      scale_fill_stepsn(breaks = c(0, 1, 2),
+                        colors = c("lightgrey", "lightgrey", palette_second[2], palette_second[2]),
+                        limits = c(0, max(data_year_dataset_i$nb_sites)),
+                        values = scales::rescale(c(0, 1, 2)),
+                        labels = scales::label_number(accuracy = 1),
+                        show.limits = TRUE,
+                        right = FALSE,
+                        name = "NUMBER OF SITES")
+    
+  }else if(max(data_year_dataset_i$nb_sites) == 3){
+    
+    plot_i <- plot_i +
+      scale_fill_stepsn(breaks = c(0, 1, 2, 3),
+                        colors = c("lightgrey", "lightgrey", palette_second[2], palette_second[2], palette_second[4]),
+                        limits = c(0, max(data_year_dataset_i$nb_sites)),
+                        values = scales::rescale(c(0, 1, 2, 3)),
+                        labels = scales::label_number(accuracy = 1),
+                        show.limits = TRUE,
+                        right = FALSE,
+                        name = "NUMBER OF SITES")
+    
+  }else{
+    
+    plot_i <- plot_i +
+      scale_fill_stepsn(breaks = c(0, round(seq(1, max(data_year_dataset_i$nb_sites), length.out = 6), 0)),
+                        colors = c("lightgrey", "lightgrey", palette_second[2], palette_second[2], palette_second[3],
+                                   palette_second[4], palette_second[5]),
+                        limits = c(0, max(data_year_dataset_i$nb_sites)),
+                        values = scales::rescale(c(0, round(seq(1, max(data_year_dataset_i$nb_sites), length.out = 6), 0))),
+                        labels = scales::label_number(accuracy = 1),
+                        show.limits = TRUE,
+                        right = FALSE,
+                        name = "NUMBER OF SITES")
+    
+  }
+  
+  ggsave(filename = paste0("figs/02_part-2/fig-4/",
+                           str_replace_all(str_replace_all(str_to_lower(area_i), " ", "-"), "---", "-"), ".png"),
+         plot = plot_i, height = (2 + (3*0.3*nb_datasets_i)), width = 9, dpi = fig_resolution)
+  
+}
+
+## 3.4 Map over the function ----
+
+map(unique(data_benthic$area), ~plot_year_dataset(area_i = .))
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 4. Map of areas ----
+
+## 4.1 Export file to complete with parameters for figures ----
 
 generate_file <- FALSE
 
@@ -37,21 +164,21 @@ if(generate_file == TRUE){
   
 }
 
-# 4. Load data ----
+## 4.2 Load data ----
 
-## 4.1 Country boundaries ----
+### 4.2.1 Country boundaries ----
 
 data_land <- read_sf("data/01_maps/02_clean/05_princeton/land.shp")
 
-## 4.2 EEZ ----
+### 4.2.2 EEZ ----
 
 data_eez <- read_sf("data/01_maps/02_clean/03_eez/caribbean_area.shp")
 
-## 4.3 Reefs ----
+### 4.2.3 Reefs ----
 
 data_reefs <- read_sf("data/01_maps/02_clean/02_reefs/reefs.shp")
 
-## 4.4 Reefs buffer ----
+### 4.2.4 Reefs buffer ----
 
 data_reefs_buffer <- st_read("data/01_maps/02_clean/02_reefs/reefs_buffer_100.shp") %>% 
   # Correct the issue of encoding GEE export
@@ -64,14 +191,14 @@ data_reefs_buffer <- st_read("data/01_maps/02_clean/02_reefs/reefs_buffer_100.sh
   summarise(geometry = st_union(geometry)) %>% 
   ungroup()
 
-## 4.5 Select benthic data ----
+### 4.2.5 Select benthic data ----
 
-load("data/02_misc/data-benthic_area.RData")
+load("data/02_misc/data-benthic.RData")
 
-data_benthic <- data_benthic_area %>% 
-  select(decimalLatitude, decimalLongitude, year, territory) %>% 
+data_benthic <- data_benthic %>% 
+  select(decimalLatitude, decimalLongitude, year, area) %>% 
   distinct() %>% 
-  group_by(decimalLatitude, decimalLongitude, territory) %>% 
+  group_by(decimalLatitude, decimalLongitude, area) %>% 
   summarise(interval_years = max(year, na.rm = TRUE) - min(year, na.rm = TRUE)) %>%
   ungroup() %>% 
   mutate(interval_class = cut(interval_years, 
@@ -80,18 +207,18 @@ data_benthic <- data_benthic_area %>%
          interval_class = as.factor(interval_class)) %>% 
   st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
 
-## 4.6 Layer to mask adjacent territories ----
+### 4.2.6 Layer to mask adjacent territories ----
 
 data_crop <- tibble(lon = c(-105, -50), lat = c(6, 38)) %>% 
   st_as_sf(coords = c("lon", "lat"), crs = 4326) %>% 
   st_bbox() %>% 
   st_as_sfc()
 
-## 4.7 Data with parameters for plots ----
+### 4.2.7 Data with parameters for plots ----
 
 data_params <- read.csv2("data/02_misc/territories_spatio-temporal_params.csv", fileEncoding = "latin1")
 
-## 4.8 Create legend (to avoid absence of legend for territories with no data) ----
+### 4.2.8 Create legend (to avoid absence of legend for territories with no data) ----
 
 data_legend <- data_benthic %>% 
   st_drop_geometry() %>% 
@@ -100,7 +227,7 @@ data_legend <- data_benthic %>%
   mutate(lat = -11.163136, lon = -55.311887) %>% 
   st_as_sf(coords = c("lon", "lat"), crs = 4326)
 
-# 5. Create the function to plot territories ----
+## 4.3 Create the function to plot territories ----
 
 plot_territories <- function(territory_i){
   
@@ -154,7 +281,7 @@ plot_territories <- function(territory_i){
   
 }
 
-# 6. Map over the function ----
+## 4.4 Map over the function ----
 
 map(setdiff(unique(data_eez$territory),
             c("Overlapping claim Navassa Island: United States / Haiti / Jamaica",
