@@ -14,6 +14,8 @@ load("data/02_misc/data-benthic.RData")
 
 ## 3.1 Add area to each site ----
 
+### 3.1.1 First assignation ----
+
 data_area <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp")
 
 data_benthic_coords <- st_read("data/03_site-coords/site-coords_all.shp") %>% 
@@ -37,15 +39,29 @@ data_predictors <- data_predictors %>%
          year = 2000) %>% 
   tidyr::complete(year = seq(1980, 2024), nesting(site_id, type, area, decimalLongitude, decimalLatitude))
 
-## 3.2 Estimate human population for missing years ----
+## 3.2 Add territory to each site ----
 
-### 3.2.1 Load the data ----
+data_eez <- st_read("data/01_maps/01_raw/02_eez/eez_v12.shp")
+
+data_predictors <- st_read("data/03_site-coords/site-coords_all.shp") %>% 
+  st_join(., data_eez) %>% 
+  select(TERRITORY1, site_id, type) %>% 
+  rename(territory = TERRITORY1) %>%
+  mutate(decimalLongitude = st_coordinates(.)[,"X"],
+         decimalLatitude = st_coordinates(.)[,"Y"],
+         site_id = as.numeric(site_id)) %>% 
+  st_drop_geometry() %>% 
+  left_join(data_predictors, .)
+
+## 3.3 Estimate human population for missing years ----
+
+### 3.3.1 Load the data ----
 
 pred_human_pop <- read.csv("data/08_predictors/pred_human-pop.csv") %>% 
   rename(year = system.index) %>% 
   mutate(year = as.numeric(str_split_fixed(year, "_", 9)[,6]))
 
-### 3.2.2 Create the function ----
+### 3.3.2 Create the function ----
 
 extract_coeff <- function(data){
   
@@ -60,7 +76,7 @@ extract_coeff <- function(data){
   
 }
 
-### 3.2.3 Map over the function ----
+### 3.3.3 Map over the function ----
 
 pred_human_pop <- pred_human_pop %>% 
   # Extract linear model coefficients
@@ -76,7 +92,7 @@ pred_human_pop <- pred_human_pop %>%
 
 data_predictors <- left_join(data_predictors, pred_human_pop)
 
-## 3.3 Add other predictors ----
+## 3.4 Add other predictors ----
 
 data_predictors <- read.csv("data/08_predictors/pred_elevation.csv") %>% 
   mutate(pred_elevation = replace_na(pred_elevation, 0)) %>% 
@@ -131,7 +147,7 @@ data_predictors <- read.csv("data/08_predictors/pred_sst_sd.csv") %>%
 #  left_join(data_predictors, .) %>% 
 #  mutate(across(c(wind_speed_y5, nb_cyclones, nb_cyclones_y5), ~replace_na(.x, 0)))
 
-# 3.4 Round values of predictors ----
+# 3.5 Round values of predictors ----
 
 data_predictors <- data_predictors %>% 
   # Change unit for SST (°C)
@@ -156,7 +172,7 @@ data_predictors <- data_predictors %>%
 ## 4.1 Find correlation coefficients between predictors ----
 
 data_correlation <- data_predictors %>% 
-  select(-site_id, -year, -type, -area) %>% 
+  select(-site_id, -year, -type, -area, -territory) %>% 
   cor(., use = "complete.obs") %>% 
   round(., 2) %>% 
   as_tibble(.) %>% 
@@ -223,7 +239,7 @@ data_benthic_hc <- data_benthic %>%
   left_join(., data_predictors %>%
               filter(type == "obs") %>% 
               # Remove lat and long because GEE slightly modify these, which break the join
-              select(-decimalLongitude, -decimalLatitude),
+              select(-decimalLongitude, -decimalLatitude, -territory),
             by = c("site_id", "year", "area", "type")) %>% 
   select(-site_id, -type)
 
@@ -259,7 +275,7 @@ data_benthic <- data_benthic %>%
   left_join(., data_predictors %>%
               filter(type == "obs") %>% 
               # Remove lat and long because GEE slightly modify these, which break the join
-              select(-decimalLongitude, -decimalLatitude),
+              select(-decimalLongitude, -decimalLatitude, -territory),
             by = c("site_id", "year", "area", "type")) %>% 
   select(-site_id, -type) %>% 
   bind_rows(., data_benthic_hc)
