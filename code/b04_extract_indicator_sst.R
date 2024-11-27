@@ -15,15 +15,7 @@ plan(multisession, workers = 4) # Set parallelization with 4 cores
 
 ## 2.1 Load file ----
 
-data_reef <- st_read("data/01_maps/02_clean/02_reefs/reefs.shp") %>% 
-  select(-country) %>% 
-  filter(!(territory %in% c("Overlapping claim Navassa Island: United States / Haiti / Jamaica",
-                            "Overlapping claim: Venezuela / Netherlands (Aruba) / Dominican Republic",
-                            "Overlapping claim: Colombia / Dominican Republic / Venezuela",
-                            "Overlapping claim: United States (Puerto Rico) / Dominican Republic",
-                            "Overlapping claim: Belize / Honduras",
-                            "Serrana Bank",
-                            "Quitasueño Bank")))
+data_reef <- st_read("data/01_maps/02_clean/02_reefs/reefs.shp")
   
 ## 2.2 Add Entire Caribbean region ----
 
@@ -31,7 +23,7 @@ data_reef <- data_reef %>%
   st_union() %>% 
   as_tibble() %>% 
   st_as_sf(crs = 4326) %>% 
-  mutate(territory = "Entire Caribbean region") %>% 
+  mutate(area = "Entire Caribbean region") %>% 
   bind_rows(data_reef, .)
 
 # 3. List files of SST to download ----
@@ -46,7 +38,7 @@ list_url <- data.frame(date = seq(from = ymd("1985-01-01"), to = ymd("2024-08-01
                       ".nc"),
          filename = str_split_fixed(url, "/", Inf)[,16])
 
-# 4. Create the function to extract mean SST over territories' coral reefs ----
+# 4. Create the function to extract mean SST over area' coral reefs ----
 
 extract_sst <- function(row_nb, data_reef = data_reef){
   
@@ -103,12 +95,12 @@ save(data_sst, file = "data/02_misc/data-sst_raw.RData")
 
 data_sst <- data_sst %>% 
   mutate(date = as_date(date)) %>% 
-  filter(!(date == as.Date("2022-12-01") & territory %in% c("Guadeloupe", "Dominica", "Haiti")))
+  filter(!(date == as.Date("2022-12-01") & area %in% c("Guadeloupe", "Dominica", "Haiti")))
 
 ## 7.2 Calculate long-term average SST ----
 
 data_sst <- data_sst %>% 
-  group_by(territory) %>% 
+  group_by(area) %>% 
   mutate(mean_sst = mean(sst, na.rm = TRUE)) %>% 
   ungroup()
 
@@ -118,7 +110,7 @@ data_warming <- data_sst %>%
   # Convert date as numeric
   mutate(date = as.numeric(as_date(date))) %>% 
   # Extract linear model coefficients
-  group_by(territory) %>% 
+  group_by(area) %>% 
   group_modify(~extract_coeff(data = .x, var_y = "sst", var_x = "date")) %>% 
   ungroup() %>% 
   # Calculate increase in SST over the period
@@ -128,9 +120,9 @@ data_warming <- data_sst %>%
   select(-min_date, -max_date) %>% 
   # Calculate the warming rate (°C per year)
   mutate(warming_rate = sst_increase/(year(max(data_sst$date))-year(min(data_sst$date)))) %>% 
-  # Add mean_sst for each territory
+  # Add mean_sst for each area
   left_join(., data_sst %>% 
-              select(territory, mean_sst) %>% 
+              select(area, mean_sst) %>% 
               distinct())
 
 write.csv(data_warming, "data/02_misc/data-warming.csv", row.names = FALSE)
@@ -138,7 +130,7 @@ write.csv(data_warming, "data/02_misc/data-warming.csv", row.names = FALSE)
 ## 7.4 Calculate SST anomaly ----
 
 data_sst <- data_sst %>% 
-  group_by(territory) %>% 
+  group_by(area) %>% 
   mutate(mean_sst = mean(sst, na.rm = TRUE),
          sst_anom = sst - mean_sst,
          sst_anom_mean = roll_mean(x = sst_anom, n = 365, align = "center", fill = NA)) %>% 
