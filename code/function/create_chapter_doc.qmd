@@ -1,0 +1,19 @@
+---
+title: "`r area_i`"
+format: docx
+editor: source
+---
+
+blalalalalalalalalala
+
+```{r echo=FALSE, message=FALSE}
+
+figure_path <- paste0("C:/Users/jwicquart/Desktop/Recherche/03_projects/2024-06-16_caribbean_2024/caribbean_2024/figs/02_part-2/fig-0/", territory_name, ".png")
+
+```
+
+
+
+![](`r figure_path`)
+
+Figure 1. Map of `r area_i`.
