@@ -4,6 +4,8 @@ library(tidyverse) # Core tidyverse packages
 library(sf)
 sf_use_s2(FALSE) # Switch from S2 to GEOS
 library(nngeo)
+library(terra)
+library(tidyterra)
 
 # 2. Coral reefs ----
 
@@ -369,3 +371,13 @@ data_land <- data_land %>%
 ## 5.4 Export the data ----
 
 st_write(data_land, "data/01_maps/02_clean/05_princeton/land.shp", append = FALSE, delete_dsn = TRUE)
+
+# 6. Topography ----
+
+data_topo <- terra::rast("data/01_maps/01_raw/09_topography/topography.tif")
+
+data_topo <- terra::crop(data_topo, as_spatvector(data_land))
+
+data_topo <- terra::mask(data_topo, as_spatvector(data_land), touches = TRUE)
+
+terra::writeRaster(data_topo, "data/01_maps/02_clean/06_topography/topography.tif")

@@ -6,13 +6,16 @@ library(ggtext)
 library(sf)
 sf_use_s2(FALSE)
 library(ggspatial)
+library(terra)
+library(tidyterra)
+library(ggnewscale)
 
 # 2. Load functions ----
 
 source("code/function/graphical_par.R")
 source("code/function/theme_graph.R")
 source("code/function/data_descriptors.R")
-source("code/function/theme_map_territory.R")
+source("code/function/theme_map_area.R")
 
 # 3. Plot of number of sites per year and per area ----
 
@@ -123,77 +126,20 @@ plot_year_dataset <- function(area_i){
 
 map(unique(data_benthic$area), ~plot_year_dataset(area_i = .))
 
-
-
-
-
-
-
-
-
-
-
-
-
 # 4. Map of areas ----
 
-## 4.1 Export file to complete with parameters for figures ----
+## 4.1 Load data ----
 
-generate_file <- FALSE
+### 4.1.1 Plotting parameters ----
 
-if(generate_file == TRUE){
-  
-  read_sf("data/01_maps/02_clean/03_eez/caribbean_eez_sub.shp") %>% 
-    filter(!(territory %in% c("Overlapping claim Navassa Island: United States / Haiti / Jamaica",
-                              "Overlapping claim: Venezuela / Netherlands (Aruba) / Dominican Republic",
-                              "Overlapping claim: Colombia / Dominican Republic / Venezuela",
-                              "Overlapping claim: United States (Puerto Rico) / Dominican Republic",
-                              "Overlapping claim: Belize / Honduras",
-                              "Serrana Bank",
-                              "Quitasueño Bank"))) %>% 
-    st_drop_geometry() %>% 
-    select(territory) %>% 
-    arrange(territory) %>% 
-    mutate(scale_bar_pos = NA,
-           legend_pos_x = NA,
-           legend_pos_y = NA,
-           fig_width = NA,
-           fig_height = NA) %>% 
-    write.csv2(., file = "data/02_misc/territories_spatio-temporal_params.csv",
-               row.names = FALSE, fileEncoding = "latin1")
-  
-}
+data_params <- read.csv2("data/02_misc/map_areas_params.csv", encoding = "latin1")
 
-## 4.2 Load data ----
+### 4.1.2 Labels ----
 
-### 4.2.1 Country boundaries ----
+data_labels <- read.csv2("data/02_misc/map_areas_labels.csv", encoding = "latin1") %>% 
+  st_as_sf(coords = c("long", "lat"), crs = 4326)
 
-data_land <- read_sf("data/01_maps/02_clean/05_princeton/land.shp")
-
-### 4.2.2 EEZ ----
-
-data_eez <- read_sf("data/01_maps/02_clean/03_eez/caribbean_area.shp")
-
-### 4.2.3 Reefs ----
-
-data_reefs <- read_sf("data/01_maps/02_clean/02_reefs/reefs.shp")
-
-### 4.2.4 Reefs buffer ----
-
-data_reefs_buffer <- st_read("data/01_maps/02_clean/02_reefs/reefs_buffer_100.shp") %>% 
-  # Correct the issue of encoding GEE export
-  mutate(territory = str_replace_all(territory, c("Cura\\?ao" = "Curaçao",
-                                                  "Quitasue\\?o Bank" = "Quitasueño Bank",
-                                                  "Saint-Barth\\?lemy" = "Saint-Barthélemy"))) %>% 
-  st_transform(crs = 4326) %>% 
-  st_make_valid() %>% 
-  group_by(territory) %>% 
-  summarise(geometry = st_union(geometry)) %>% 
-  ungroup()
-
-### 4.2.5 Select benthic data ----
-
-load("data/02_misc/data-benthic.RData")
+### 4.1.3 Benthic sites ----
 
 data_benthic <- data_benthic %>% 
   select(decimalLatitude, decimalLongitude, year, area) %>% 
@@ -207,88 +153,115 @@ data_benthic <- data_benthic %>%
          interval_class = as.factor(interval_class)) %>% 
   st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
 
-### 4.2.6 Layer to mask adjacent territories ----
+### 4.1.4 Topography ----
 
-data_crop <- tibble(lon = c(-105, -50), lat = c(6, 38)) %>% 
-  st_as_sf(coords = c("lon", "lat"), crs = 4326) %>% 
-  st_bbox() %>% 
-  st_as_sfc()
+data_topo <- terra::rast("data/01_maps/02_clean/06_topography/topography.tif")
 
-### 4.2.7 Data with parameters for plots ----
+### 4.1.5 Bathymetry ----
 
-data_params <- read.csv2("data/02_misc/territories_spatio-temporal_params.csv", fileEncoding = "latin1")
+data_bathy <- st_read("data/01_maps/02_clean/07_bathymetry/bathymetry.shp") %>% 
+  st_transform(crs = 4326)
 
-### 4.2.8 Create legend (to avoid absence of legend for territories with no data) ----
+### 4.1.6 Land ----
 
-data_legend <- data_benthic %>% 
-  st_drop_geometry() %>% 
-  select(interval_class) %>%
-  distinct() %>% 
-  mutate(lat = -11.163136, lon = -55.311887) %>% 
-  st_as_sf(coords = c("lon", "lat"), crs = 4326)
+data_land <- read_sf("data/01_maps/02_clean/05_princeton/land.shp") %>% 
+  rename(area = territory) ##### TO CORRECT ON PRINCETON DIRECTLY
 
-## 4.3 Create the function to plot territories ----
+## 4.2 Create a function to produce the maps ----
 
-plot_territories <- function(territory_i){
+plot_map_area <- function(area_i){
   
-  bbox_i <- st_bbox(data_reefs_buffer %>% filter(territory == territory_i))
+  # 1. Select parameters for the area
   
-  data_land_i <- st_intersection(data_land, bbox_i %>% st_as_sfc() %>% st_buffer(1))
+  data_params_i <- data_params %>% 
+    filter(area == area_i)
   
-  if(territory_i == "Florida"){
-    
-    data_land_i_bis <- data_land %>% 
-      filter(territory == "United States")
+  data_topo_i <- st_bbox(c(xmin = as.numeric(data_params_i$xmin),
+                           xmax = as.numeric(data_params_i$xmax),
+                           ymax = as.numeric(data_params_i$ymax),
+                           ymin = as.numeric(data_params_i$ymin)),
+                         crs = st_crs(4326)) %>% 
+    st_as_sfc() %>% 
+    st_as_sf() %>% 
+    terra::crop(data_topo, .)
   
-    }else{
-    
-      data_land_i_bis <- data_land %>% 
-        filter(territory == territory_i)
-      
-    }
+  # 2. Make the plot 
   
-  data_params_i <- data_params %>% filter(territory == territory_i)
-  
-  plot <- ggplot() +
-    geom_sf(data = data_reefs_buffer %>% filter(territory == territory_i),
-            fill = NA, color = "#363737", linewidth = 0.25, linetype = "dashed") +
-    geom_sf(data = data_land_i) +
-    geom_sf(data = data_crop, fill = "white", color = NA, alpha = 0.6) +
-    geom_sf(data = data_land_i_bis) +
-    geom_sf(data = data_benthic %>% arrange(interval_class) %>%
-              filter(territory == territory_i),
-            aes(color = interval_class), show.legend = FALSE) +
-    geom_sf(data = data_legend, aes(color = interval_class)) +
+  plot_i <- ggplot() +
+    geom_sf(data = data_bathy, aes(fill = zone, color = zone), show.legend = FALSE) +
+    scale_fill_gradient2(low = "#dff2f9", mid = "#def6ff", high = "#a7e3fa", midpoint = 4, guide = "none") +
+    scale_color_gradient2(low = "#dff2f9", mid = "#def6ff", high = "#a7e3fa", midpoint = 4, guide = "none") +
+    ggnewscale::new_scale_fill() +
+    ggnewscale::new_scale_color() +
+    geom_spatraster(data = data_topo_i, maxcell = 5e+100, show.legend = FALSE) +
+    scale_fill_gradientn(values =  c(0, 0.05, 0.1, 0.2, 0.3, 0.6, 1),
+                         colours = c("#ecf0f1",  "#eeeeee", "#dadfe1", "#bdc3c7", "darkgrey", "#6c7a89"),
+                         na.value = "transparent", guide = "none") +
+    ggnewscale::new_scale_fill() +
+    geom_sf(data = data_land, fill = NA, color = "darkgrey", linewidth = 0.1) +
+    geom_sf(data = data_benthic %>% filter(area == area_i) %>% arrange(interval_class),
+            size = 1.5,
+            aes(color = interval_class), show.legend = TRUE) +
     scale_color_manual(values = palette_second,
                        breaks = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"),
                        labels = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"), 
                        drop = FALSE,
-                       name = "Number of years\nwith data") +
+                       name = "NUMBER OF YEARS\nWITH DATA") +
     guides(color = guide_legend(override.aes = list(size = 3.5))) +
-    theme_map_territory() +
-    theme(legend.justification.inside = c(as.numeric(data_params_i$legend_pos_x),
-                                          as.numeric(data_params_i$legend_pos_y))) +
-    coord_sf(xlim = c(bbox_i[1], bbox_i[3]), ylim = c(bbox_i[2], bbox_i[4])) +
-    annotation_scale(location = as.character(data_params_i$scale_bar_pos),
-                     width_hint = 0.25, text_family = font_choose_map, text_col = "black",
-                     text_cex = 0.8, style = "bar", line_width = 1,  height = unit(0.045, "cm"), line_col = "black",
-                     pad_x = unit(0.5, "cm"), pad_y = unit(0.35, "cm"), bar_cols = c("black", "black"))
+    geom_sf_text(data = data_labels %>% filter(area == area_i & type == "ocean"),
+                 aes(label = label), size = 3,
+                 col = "#88b6cd", fontface = "italic", family = font_choose_map) +
+    geom_sf_text(data = data_labels %>% filter(area == area_i & type == "area"),
+                 aes(label = label), size = 2.25,
+                 col = "#2c3e50", fontface = "bold", family = font_choose_map) +
+    geom_sf_text(data = data_labels %>% filter(area == area_i & type == "island"),
+                 aes(label = label), size = 2, 
+                 col = "#6c7a89", family = font_choose_map) +
+    annotation_scale(location = as.character(data_params_i$scalebar_pos),
+                     width_hint = 0.25, text_family = font_choose_map, text_col = "#2c3e50",
+                     text_cex = 0.7, style = "bar", line_width = 1, height = unit(0.04, "cm"), line_col = "#2c3e50",
+                     pad_x = unit(0.5, "cm"), pad_y = unit(0.5, "cm"), bar_cols = c("#2c3e50", "#2c3e50")) +
+    coord_sf(xlim = c(as.numeric(data_params_i$xmin), as.numeric(data_params_i$xmax)),
+             ylim = c(as.numeric(data_params_i$ymin), as.numeric(data_params_i$ymax)),
+             expand = FALSE,
+             label_axes = list(bottom = "E", top = "E", left = "N")) +
+    scale_x_continuous(breaks = eval(parse(text = data_params_i$scale_x))) +
+    scale_y_continuous(breaks = eval(parse(text = data_params_i$scale_y))) +
+    theme_map_area() +
+    labs(x = NULL, y = NULL)
   
-    ggsave(filename = str_replace_all(paste0("figs/02_part-2/fig-1/", str_replace_all(str_to_lower(territory_i), " ", "-"), ".png"),
+  # 3. Export the plot
+  
+  ggsave(filename = str_replace_all(paste0("figs/02_part-2/fig-1/", str_replace_all(str_to_lower(area_i), " ", "-"), ".png"),
                                     "---", "-"),
-           width = as.numeric(data_params_i$fig_width),
-           height = as.numeric(data_params_i$fig_height))
+         plot = plot_i,
+         width = as.numeric(data_params_i$export_width),
+         height = as.numeric(data_params_i$export_height))
   
 }
 
-## 4.4 Map over the function ----
+## 4.3 Map over the function ----
 
-map(setdiff(unique(data_eez$territory),
-            c("Overlapping claim Navassa Island: United States / Haiti / Jamaica",
-              "Overlapping claim: Venezuela / Netherlands (Aruba) / Dominican Republic",
-              "Overlapping claim: Colombia / Dominican Republic / Venezuela",
-              "Overlapping claim: United States (Puerto Rico) / Dominican Republic",
-              "Overlapping claim: Belize / Honduras",
-              "Serrana Bank",
-              "Quitasueño Bank")), # territories for which no chapter will be included
-    ~plot_territories(territory_i = .))
+data_params <- read.csv2("data/02_misc/map_areas_params.csv", encoding = "latin1")
+
+plot_map_area(area_i = "Panama")
+
+map(c("Guadeloupe", "Martinique", "Puerto Rico", "Dominica"), ~plot_map_area(area_i = .))
+
+
+
+#### TEST LABELS
+
+
+data_labels <- tibble(area = "Guadeloupe",
+                      label = c("Atlantic\nOcean", "Caribbean\nSea", "GUADELOUPE", "MONTSERRAT", "DOMINICA",
+                                "La Désirade"),
+                      type = c("ocean", "ocean", "area", "area", "area", "island"),
+                      lat = c(16.6, 15.8, 16.1, 16.7, 15.68, 16.35),
+                      long = c(-60.6, -62, -60.85, -61.975, -61.45, -60.85)) %>% 
+  st_as_sf(coords = c("long", "lat"), crs = 4326)
+
+
+data_labels <- read_xlsx("data/02_misc/test.xlsx") %>% 
+  st_as_sf(coords = c("long", "lat"), crs = 4326)
+
