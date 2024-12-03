@@ -33,6 +33,23 @@ figure_path <- paste0("../../figs/02_part-2/fig-0/", territory_name, ".png")
 
 ```{r echo=FALSE, message=FALSE}
 
+read_xlsx("../../figs/01_part-1/tbl-1.xlsx") %>% 
+  filter(area == area_i) %>% 
+  select(reef_area_abs, reef_area_rel) %>% 
+  t() %>% 
+  as.data.frame() %>% 
+  bind_cols(V2 =  c("Coral reef extent (km^2)", "Coral reef extent relative to the Caribbean"), .) %>% 
+  flextable() %>% 
+  delete_part(part = "header") %>% 
+  theme_box() %>% 
+  set_table_properties(., width = 0.95, layout = "autofit")
+
+```
+
+\newpage
+
+```{r echo=FALSE, message=FALSE}
+
 figure_path <- paste0("../../figs/02_part-2/fig-1/", territory_name, ".png")
 
 ```
@@ -44,6 +61,20 @@ figure_path <- paste0("../../figs/02_part-2/fig-1/", territory_name, ".png")
 \newpage
 
 ## 2. Major threats
+
+### 2.1 Thermal regime
+
+\
+
+```{r echo=FALSE, message=FALSE}
+
+figure_path <- paste0("../../figs/02_part-2/fig-2/", territory_name, ".png")
+
+```
+
+![](`r figure_path`)
+
+**Figure 2.X.2.** Average Sea Surface Temperature (SST) anomaly from 1985 to 2024 over coral reefs of `r area_i`. The black line is the long-term trend in SST anomaly, values below this line are negative SST anomalies (*i.e.* cooler than long-term trend), and values above this line are positive SST anomalies (*i.e.* warmer than long-term trend).
 
 \
 
@@ -70,6 +101,12 @@ The long-term average in SST from 1985 to 2024 over coral reefs of `r area_i` wa
 
 \
 
+\newpage
+
+### 2.2 Hurricanes
+
+\
+
 ```{r echo=FALSE, message=FALSE}
 
 figure_path <- paste0("../../figs/02_part-2/fig-3/", territory_name, ".png")
@@ -79,6 +116,12 @@ figure_path <- paste0("../../figs/02_part-2/fig-3/", territory_name, ".png")
 ![](`r figure_path`)
 
 **Figure 2.X.3.** Maximum sustained wind speed of tropical storms passing within 100 km of a coral reef between 1980 and 2023 in `r area_i`. Colors correspond to the cyclone’s Saffir-Simpson category along its entire track. However, the values of sustained wind speed are extracted from the nearest tropical storm position from a coral reef. For this reason, some sustained wind speed values are below the lower threshold of category 1 Saffir-Simpson scale (*i.e.* 119 km.h^-1^). Note that cyclones passing more than 100 km away from coral reefs of `r area_i` are not represented, although they can have had an impact.
+
+\newpage
+
+### 2.3 Other threats
+
+\
 
 \newpage
 
@@ -119,3 +162,7 @@ figure_path <- paste0("../../figs/02_part-2/fig-4/", territory_name, ".png")
 \newpage
 
 ## References
+
+\
+
+TO BE ADDED
