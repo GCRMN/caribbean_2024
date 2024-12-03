@@ -60,6 +60,10 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 * `e09_territories_spatio-temporal.R`
 * `e11_other-indicators.R`
 
+### Writing and sharing (`f_`)
+
+* `f01_create-chapters.R`
+
 ## 3. Reproducibility parameters
 
 ```{r echo=FALSE, message=FALSE}

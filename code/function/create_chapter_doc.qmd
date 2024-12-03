@@ -1,19 +1,84 @@
 ---
 title: "`r area_i`"
-format: docx
+format:
+  docx:
+    fig-align: "center"
 editor: source
 ---
 
-blalalalalalalalalala
+\
+\
+
+## 1. Introduction
+
+\
 
 ```{r echo=FALSE, message=FALSE}
 
-figure_path <- paste0("C:/Users/jwicquart/Desktop/Recherche/03_projects/2024-06-16_caribbean_2024/caribbean_2024/figs/02_part-2/fig-0/", territory_name, ".png")
+figure_path <- paste0("../../figs/02_part-2/fig-1/", territory_name, ".png")
 
 ```
 
+![](`r figure_path`)
 
+**Figure 2.X.1** Spatio-temporal distribution of benthic cover monitoring sites across `r area_i`. Sites that were monitored for the longest period of time are represented on top of the sites monitored for fewer years.
+
+\newpage
+
+## 2. Major threats
+
+\
+
+```{r echo=FALSE, message=FALSE}
+
+figure_path <- paste0("../../figs/02_part-2/fig-3/", territory_name, ".png")
+
+```
 
 ![](`r figure_path`)
 
-Figure 1. Map of `r area_i`.
+**Figure 2.X.3.** Maximum sustained wind speed of tropical storms passing within 100 km of a coral reef between 1980 and 2023 in `r area_i`. Colors correspond to the cyclone’s Saffir-Simpson category along its entire track. However, the values of sustained wind speed are extracted from the nearest tropical storm position from a coral reef. For this reason, some sustained wind speed values are below the lower threshold of category 1 Saffir-Simpson scale (*i.e.* 119 km.h^-1^). Note that cyclones passing more than 100 km away from coral reefs of `r area_i` are not represented, although they can have had an impact.
+
+\newpage
+
+## 3. Trends in benthic cover
+
+\
+
+**Table 2.X.2.** Summary of monitoring data used to model temporal trends of major benthic categories.
+
+```{r echo=FALSE, message=FALSE}
+
+require(tidyverse)
+require(readxl)
+require(flextable)
+
+read_xlsx("../../figs/01_part-1/tbl-4.xlsx") %>% 
+  filter(area == area_i) %>% 
+  select(nb_sites, nb_surveys, nb_datasets, first_year, last_year) %>% 
+  t() %>% 
+  as.data.frame() %>% 
+  bind_cols(V2 =  c("Number of sites", "Number of surveys", "Number of datasets",
+                    "First year with data", "Last year with data"), .) %>% 
+  flextable() %>% 
+  delete_part(part = "header") %>% 
+  theme_box() %>% 
+  set_table_properties(., width = 0.95, layout = "autofit")
+
+```
+
+\
+
+```{r echo=FALSE, message=FALSE}
+
+figure_path <- paste0("../../figs/02_part-2/fig-4/", territory_name, ".png")
+
+```
+
+![](`r figure_path`)
+
+**Figure 2.X.4.** Temporal distribution of surveys from datasets included in the analyses to model temporal trends of major benthic categories.
+
+\newpage
+
+## References
