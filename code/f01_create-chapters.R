@@ -17,4 +17,4 @@ data_area <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp") %>%
 
 map(unique(data_area$area), ~render_qmd(area_i = .x))
 
-render_qmd(area_i = "Guadeloupe")
+render_qmd(area_i = "Martinique")

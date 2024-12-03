@@ -6,10 +6,28 @@ format:
 editor: source
 ---
 
+```{r echo=FALSE, message=FALSE}
+
+require(tidyverse)
+require(readxl)
+require(flextable)
+
+```
+
 \
 \
 
 ## 1. Introduction
+
+\
+
+```{r echo=FALSE, message=FALSE}
+
+figure_path <- paste0("../../figs/02_part-2/fig-0/", territory_name, ".png")
+
+```
+
+![](`r figure_path`){width=30%}
 
 \
 
@@ -26,6 +44,29 @@ figure_path <- paste0("../../figs/02_part-2/fig-1/", territory_name, ".png")
 \newpage
 
 ## 2. Major threats
+
+\
+
+```{r echo=FALSE, message=FALSE}
+
+sst_lt <- read_xlsx("../../figs/01_part-1/tbl-3.xlsx") %>% 
+  filter(territory == area_i) %>% 
+  select(mean_sst) %>% 
+  pull()
+
+sst_trend <- read_xlsx("../../figs/01_part-1/tbl-3.xlsx") %>% 
+  filter(territory == area_i) %>% 
+  select(sst_increase) %>% 
+  pull()
+
+sst_rate <- read_xlsx("../../figs/01_part-1/tbl-3.xlsx") %>% 
+  filter(territory == area_i) %>% 
+  select(warming_rate) %>% 
+  pull()
+
+```
+
+The long-term average in SST from 1985 to 2024 over coral reefs of `r area_i` was `r sst_lt` °C. Over this period, SST increased by `r sst_trend` °C, representing a warming rate of `r sst_rate` °C per year
 
 \
 
@@ -48,10 +89,6 @@ figure_path <- paste0("../../figs/02_part-2/fig-3/", territory_name, ".png")
 **Table 2.X.2.** Summary of monitoring data used to model temporal trends of major benthic categories.
 
 ```{r echo=FALSE, message=FALSE}
-
-require(tidyverse)
-require(readxl)
-require(flextable)
 
 read_xlsx("../../figs/01_part-1/tbl-4.xlsx") %>% 
   filter(area == area_i) %>% 
