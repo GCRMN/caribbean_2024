@@ -209,7 +209,7 @@ rm(data_eez_intersects, data_fgb, data_fk, data_regions)
 
 data_eez <- data_eez %>% 
   filter(territory %in% c("Collectivity of Saint Martin", "Sint-Maarten")) %>% 
-  mutate(territory = "Sint-Maarten - Saint-Martin") %>% 
+  mutate(territory = "Sint Maarten - Saint-Martin") %>% 
   group_by(territory) %>% 
   summarise(geometry = st_union(geometry)) %>% 
   ungroup() %>% 
@@ -348,25 +348,24 @@ list_shp <- list.files(path = "data/01_maps/01_raw/05_princeton",
 ## 5.2 Combine shp ----
 
 data_land <- map_dfr(list_shp, ~st_read(.)) %>% 
-  rename(TERRITORY1 = NAME_ENGLI) %>% 
+  rename(area = NAME_ENGLI) %>% 
   st_transform(crs = 4326) %>% 
-  select(TERRITORY1)
+  select(area)
 
 ## 5.3 Correct issue for grouped territories ----
 
 data_land <- data_land %>%
-  filter(TERRITORY1 == "Bonaire, Saint Eustatius and Saba") %>% 
+  filter(area == "Bonaire, Saint Eustatius and Saba") %>% 
   st_cast(., "POLYGON") %>% 
-  mutate(TERRITORY1 = case_when(row_number() == 1 ~ "Bonaire",
+  mutate(area = case_when(row_number() == 1 ~ "Bonaire",
                                 row_number() == 2 ~ "Bonaire",
                                 row_number() == 3 ~ "Saint Eustatius",
                                 row_number() == 4 ~ "Saba")) %>% 
   bind_rows(data_land, .) %>% 
-  filter(TERRITORY1 != "Bonaire, Saint Eustatius and Saba") %>% 
-  rename(territory = TERRITORY1) %>% 
-  mutate(territory = str_replace_all(territory, c("Virgin Islands, U.S." = "United States Virgin Islands",
-                                                  "Saint Eustatius" = "Sint-Eustatius",
-                                                  "Saint-Martin" = "Sint-Marteen - Saint-Martin")))
+  filter(area != "Bonaire, Saint Eustatius and Saba") %>% 
+  mutate(area = str_replace_all(area, c("Virgin Islands, U.S." = "United States Virgin Islands",
+                                        "Saint Eustatius" = "Sint-Eustatius",
+                                        "Saint-Martin" = "Sint Maarten - Saint-Martin")))
 
 ## 5.4 Export the data ----
 
@@ -380,4 +379,5 @@ data_topo <- terra::crop(data_topo, as_spatvector(data_land))
 
 data_topo <- terra::mask(data_topo, as_spatvector(data_land), touches = TRUE)
 
-terra::writeRaster(data_topo, "data/01_maps/02_clean/06_topography/topography.tif")
+terra::writeRaster(data_topo, "data/01_maps/02_clean/06_topography/topography.tif",
+                   overwrite = TRUE)

@@ -164,8 +164,7 @@ data_bathy <- st_read("data/01_maps/02_clean/07_bathymetry/bathymetry.shp") %>%
 
 ### 4.1.6 Land ----
 
-data_land <- read_sf("data/01_maps/02_clean/05_princeton/land.shp") %>% 
-  rename(area = territory) ##### TO CORRECT ON PRINCETON DIRECTLY
+data_land <- read_sf("data/01_maps/02_clean/05_princeton/land.shp")
 
 ## 4.2 Create a function to produce the maps ----
 
@@ -185,50 +184,104 @@ plot_map_area <- function(area_i){
     st_as_sf() %>% 
     terra::crop(data_topo, .)
   
-  # 2. Make the plot 
+  # 2. Make the plot
   
-  plot_i <- ggplot() +
-    geom_sf(data = data_bathy, aes(fill = zone, color = zone), show.legend = FALSE) +
-    scale_fill_gradient2(low = "#dff2f9", mid = "#def6ff", high = "#a7e3fa", midpoint = 4, guide = "none") +
-    scale_color_gradient2(low = "#dff2f9", mid = "#def6ff", high = "#a7e3fa", midpoint = 4, guide = "none") +
-    ggnewscale::new_scale_fill() +
-    ggnewscale::new_scale_color() +
-    geom_spatraster(data = data_topo_i, maxcell = 5e+100, show.legend = FALSE) +
-    scale_fill_gradientn(values =  c(0, 0.05, 0.1, 0.2, 0.3, 0.6, 1),
-                         colours = c("#ecf0f1",  "#eeeeee", "#dadfe1", "#bdc3c7", "darkgrey", "#6c7a89"),
-                         na.value = "transparent", guide = "none") +
-    ggnewscale::new_scale_fill() +
-    geom_sf(data = data_land, fill = NA, color = "darkgrey", linewidth = 0.1) +
-    geom_sf(data = data_benthic %>% filter(area == area_i) %>% arrange(interval_class),
-            size = 1.5,
-            aes(color = interval_class), show.legend = TRUE) +
-    scale_color_manual(values = palette_second,
-                       breaks = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"),
-                       labels = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"), 
-                       drop = FALSE,
-                       name = "NUMBER OF YEARS\nWITH DATA") +
-    guides(color = guide_legend(override.aes = list(size = 3.5))) +
-    geom_sf_text(data = data_labels %>% filter(area == area_i & type == "ocean"),
-                 aes(label = label), size = 3,
-                 col = "#88b6cd", fontface = "italic", family = font_choose_map) +
-    geom_sf_text(data = data_labels %>% filter(area == area_i & type == "area"),
-                 aes(label = label), size = 2.25,
-                 col = "#2c3e50", fontface = "bold", family = font_choose_map) +
-    geom_sf_text(data = data_labels %>% filter(area == area_i & type == "island"),
-                 aes(label = label), size = 2, 
-                 col = "#6c7a89", family = font_choose_map) +
-    annotation_scale(location = as.character(data_params_i$scalebar_pos),
-                     width_hint = 0.25, text_family = font_choose_map, text_col = "#2c3e50",
-                     text_cex = 0.7, style = "bar", line_width = 1, height = unit(0.04, "cm"), line_col = "#2c3e50",
-                     pad_x = unit(0.5, "cm"), pad_y = unit(0.5, "cm"), bar_cols = c("#2c3e50", "#2c3e50")) +
-    coord_sf(xlim = c(as.numeric(data_params_i$xmin), as.numeric(data_params_i$xmax)),
-             ylim = c(as.numeric(data_params_i$ymin), as.numeric(data_params_i$ymax)),
-             expand = FALSE,
-             label_axes = list(bottom = "E", top = "E", left = "N")) +
-    scale_x_continuous(breaks = eval(parse(text = data_params_i$scale_x))) +
-    scale_y_continuous(breaks = eval(parse(text = data_params_i$scale_y))) +
-    theme_map_area() +
-    labs(x = NULL, y = NULL)
+  if(area_i == "Flower Garden Banks"){
+    
+    plot_i <- ggplot() +
+      geom_sf(data = data_bathy, aes(fill = zone, color = zone), show.legend = FALSE) +
+      scale_fill_gradient2(low = "#dff2f9", mid = "#def6ff", high = "#a7e3fa", midpoint = 4, guide = "none") +
+      scale_color_gradient2(low = "#dff2f9", mid = "#def6ff", high = "#a7e3fa", midpoint = 4, guide = "none") +
+      ggnewscale::new_scale_fill() +
+      ggnewscale::new_scale_color() +
+      geom_sf(data = data_land, fill = NA, color = "darkgrey", linewidth = 0.1) +
+      geom_sf(data = data_benthic %>% filter(area == area_i) %>% arrange(interval_class) %>% 
+                # Add point outside map range to show the legend when no data
+                bind_rows(., tibble(interval_class = unique(data_benthic$interval_class),
+                                    lat = 0,
+                                    long = 0) %>% 
+                            st_as_sf(coords = c("long", "lat"), crs = 4326)),
+              size = 1.5,
+              aes(color = interval_class), show.legend = TRUE) +
+      scale_color_manual(values = palette_second,
+                         breaks = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"),
+                         labels = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"), 
+                         drop = FALSE,
+                         name = "NUMBER OF YEARS\nWITH DATA") +
+      guides(color = guide_legend(override.aes = list(size = 3.5))) +
+      geom_sf_text(data = data_labels %>% filter(area == area_i & type == "ocean"),
+                   aes(label = label), size = 3,
+                   col = "#88b6cd", fontface = "italic", family = font_choose_map) +
+      geom_sf_text(data = data_labels %>% filter(area == area_i & type == "area"),
+                   aes(label = label), size = 2.25,
+                   col = "#2c3e50", fontface = "bold", family = font_choose_map) +
+      geom_sf_text(data = data_labels %>% filter(area == area_i & type == "island"),
+                   aes(label = label), size = 2, 
+                   col = "#6c7a89", family = font_choose_map) +
+      annotation_scale(location = as.character(data_params_i$scalebar_pos),
+                       width_hint = 0.25, text_family = font_choose_map, text_col = "#2c3e50",
+                       text_cex = 0.7, style = "bar", line_width = 1, height = unit(0.04, "cm"), line_col = "#2c3e50",
+                       pad_x = unit(0.5, "cm"), pad_y = unit(0.5, "cm"), bar_cols = c("#2c3e50", "#2c3e50")) +
+      coord_sf(xlim = c(as.numeric(data_params_i$xmin), as.numeric(data_params_i$xmax)),
+               ylim = c(as.numeric(data_params_i$ymin), as.numeric(data_params_i$ymax)),
+               expand = FALSE,
+               label_axes = list(bottom = "E", top = "E", left = "N")) +
+      scale_x_continuous(breaks = eval(parse(text = data_params_i$scale_x))) +
+      scale_y_continuous(breaks = eval(parse(text = data_params_i$scale_y))) +
+      theme_map_area() +
+      labs(x = NULL, y = NULL)
+    
+  }else{
+    
+    plot_i <- ggplot() +
+      geom_sf(data = data_bathy, aes(fill = zone, color = zone), show.legend = FALSE) +
+      scale_fill_gradient2(low = "#dff2f9", mid = "#def6ff", high = "#a7e3fa", midpoint = 4, guide = "none") +
+      scale_color_gradient2(low = "#dff2f9", mid = "#def6ff", high = "#a7e3fa", midpoint = 4, guide = "none") +
+      ggnewscale::new_scale_fill() +
+      ggnewscale::new_scale_color() +
+      geom_spatraster(data = data_topo_i, maxcell = 5e+100, show.legend = FALSE) +
+      scale_fill_gradientn(values =  c(0, 0.05, 0.1, 0.2, 0.3, 0.6, 1),
+                           colours = c("#ecf0f1",  "#eeeeee", "#dadfe1", "#bdc3c7", "darkgrey", "#6c7a89"),
+                           na.value = "transparent", guide = "none") +
+      ggnewscale::new_scale_fill() +
+      geom_sf(data = data_land, fill = NA, color = "darkgrey", linewidth = 0.1) +
+      geom_sf(data = data_benthic %>% filter(area == area_i) %>% arrange(interval_class) %>% 
+                # Add point outside map range to show the legend when no data
+                bind_rows(., tibble(interval_class = unique(data_benthic$interval_class),
+                                    lat = 0,
+                                    long = 0) %>% 
+                            st_as_sf(coords = c("long", "lat"), crs = 4326)),
+              size = 1.5,
+              aes(color = interval_class), show.legend = TRUE) +
+      scale_color_manual(values = palette_second,
+                         breaks = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"),
+                         labels = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"), 
+                         drop = FALSE,
+                         name = "NUMBER OF YEARS\nWITH DATA") +
+      guides(color = guide_legend(override.aes = list(size = 3.5))) +
+      geom_sf_text(data = data_labels %>% filter(area == area_i & type == "ocean"),
+                   aes(label = label), size = 3,
+                   col = "#88b6cd", fontface = "italic", family = font_choose_map) +
+      geom_sf_text(data = data_labels %>% filter(area == area_i & type == "area"),
+                   aes(label = label), size = 2.25,
+                   col = "#2c3e50", fontface = "bold", family = font_choose_map) +
+      geom_sf_text(data = data_labels %>% filter(area == area_i & type == "island"),
+                   aes(label = label), size = 2, 
+                   col = "#6c7a89", family = font_choose_map) +
+      annotation_scale(location = as.character(data_params_i$scalebar_pos),
+                       width_hint = 0.25, text_family = font_choose_map, text_col = "#2c3e50",
+                       text_cex = 0.7, style = "bar", line_width = 1, height = unit(0.04, "cm"), line_col = "#2c3e50",
+                       pad_x = unit(0.5, "cm"), pad_y = unit(0.5, "cm"), bar_cols = c("#2c3e50", "#2c3e50")) +
+      coord_sf(xlim = c(as.numeric(data_params_i$xmin), as.numeric(data_params_i$xmax)),
+               ylim = c(as.numeric(data_params_i$ymin), as.numeric(data_params_i$ymax)),
+               expand = FALSE,
+               label_axes = list(bottom = "E", top = "E", left = "N")) +
+      scale_x_continuous(breaks = eval(parse(text = data_params_i$scale_x))) +
+      scale_y_continuous(breaks = eval(parse(text = data_params_i$scale_y))) +
+      theme_map_area() +
+      labs(x = NULL, y = NULL)
+    
+  }
   
   # 3. Export the plot
   
@@ -242,16 +295,19 @@ plot_map_area <- function(area_i){
 
 ## 4.3 Map over the function ----
 
-data_params <- read.csv2("data/02_misc/map_areas_params.csv", encoding = "latin1")
+data_area <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp") %>% 
+  st_drop_geometry() %>% 
+  filter(!(area %in% c("Navassa Island", "Guatemala"))) %>% 
+  distinct() %>% 
+  arrange(area)
 
-plot_map_area(area_i = "Panama")
-
-map(c("Guadeloupe", "Martinique", "Puerto Rico", "Dominica"), ~plot_map_area(area_i = .))
+map(data_area, ~plot_map_area(area_i = .))
 
 
 
-#### TEST LABELS
 
+
+#### TEST LABELS ##################
 
 data_labels <- tibble(area = "Guadeloupe",
                       label = c("Atlantic\nOcean", "Caribbean\nSea", "GUADELOUPE", "MONTSERRAT", "DOMINICA",
@@ -260,8 +316,3 @@ data_labels <- tibble(area = "Guadeloupe",
                       lat = c(16.6, 15.8, 16.1, 16.7, 15.68, 16.35),
                       long = c(-60.6, -62, -60.85, -61.975, -61.45, -60.85)) %>% 
   st_as_sf(coords = c("long", "lat"), crs = 4326)
-
-
-data_labels <- read_xlsx("data/02_misc/test.xlsx") %>% 
-  st_as_sf(coords = c("long", "lat"), crs = 4326)
-
