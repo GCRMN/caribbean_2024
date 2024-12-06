@@ -17,6 +17,12 @@ data_area <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp") %>%
 
 # 4. Create docx files for each area ----
 
-map(unique(data_area$area), ~render_qmd(area_i = .x))
+data_area <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp") %>% 
+  st_drop_geometry() %>% 
+  filter(!(area %in% c("Navassa Island", "Guatemala"))) %>% 
+  distinct() %>% 
+  arrange(area)
 
-render_qmd(area_i = "Grenada")
+map(data_area, ~render_qmd(area_i = .))
+
+#render_qmd(area_i = "Guadeloupe")

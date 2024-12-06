@@ -299,7 +299,8 @@ data_area <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp") %>%
   st_drop_geometry() %>% 
   filter(!(area %in% c("Navassa Island", "Guatemala"))) %>% 
   distinct() %>% 
-  arrange(area)
+  arrange(area) %>% 
+  pull()
 
 map(data_area, ~plot_map_area(area_i = .))
 
