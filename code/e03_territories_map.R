@@ -22,7 +22,8 @@ data_land_ne <- st_intersection(data_land_ne, data_crop)
 
 data_reefs <- read_sf("data/01_maps/02_clean/02_reefs/reefs.shp")
 
-data_area <- read_sf("data/01_maps/02_clean/03_eez/caribbean_area.shp")
+data_area <- read_sf("data/01_maps/02_clean/03_eez/caribbean_area.shp") %>% 
+  filter(!(area %in% c("Navassa Island", "Guatemala")))
 
 # 4. Create the function ----
 
@@ -64,6 +65,7 @@ plot_areas <- function(area_i){
       coord_sf(xlim = c(-105, -50), ylim = c(6, 38), expand = FALSE) +
       theme(axis.text = element_blank(),
             axis.ticks = element_blank(),
+            panel.grid = element_blank(),
             panel.background = element_blank(),
             panel.border = element_rect(fill = NA, color = "black", linewidth = 0.5))
     

@@ -23,7 +23,7 @@ data_warming <- read.csv("data/02_misc/data-warming.csv")
 ## 4.1 Transform the table ----
 
 data_table_3 <- data_warming %>% 
-  filter(area != "Entire Caribbean region") %>% 
+  filter(!(area %in% c("Entire Caribbean region", "Navassa Island"))) %>% 
   bind_rows(., data_warming %>% 
               filter(area == "Entire Caribbean region")) %>% 
   select(area, mean_sst, sst_increase, warming_rate) %>% 
@@ -42,8 +42,8 @@ openxlsx::write.xlsx(data_table_3, file = "figs/01_part-1/tbl-3.xlsx")
 load("data/02_misc/data-sst_processed.RData")
 
 data_sst <- data_sst %>% 
-  filter(!(area %in% c("Entire Caribbean region")))
-
+  filter(!(area %in% c("Entire Caribbean region", "Navassa Island")))
+  
 data_sst <- data_sst %>% 
   left_join(., data_warming %>% select(-mean_sst), by = "area") %>% 
   mutate(date_num = as.numeric(as_date(date)),
@@ -196,7 +196,7 @@ ggsave(filename = "figs/05_supp-mat/sst_month_c.png", width = 10.25, height = 7.
 load("data/02_misc/data-sst_processed.RData")
 
 data_sst <- data_sst %>% 
-  filter(!(area %in% c("Entire Caribbean region"))) %>% 
+  filter(!(area %in% c("Entire Caribbean region", "Navassa Island"))) %>% 
   drop_na(sst_anom_mean)
 
 data_sst <- data_sst %>% 
@@ -262,7 +262,7 @@ map(data_sst %>%
 load("data/02_misc/data-sst_processed.RData")
 
 data_sst <- data_sst %>% 
-  filter(!(area %in% c("Entire Caribbean region"))) %>% 
+  filter(!(area %in% c("Entire Caribbean region", "Navassa Island"))) %>% 
   mutate(area = str_replace_all(area, "Saint Vincent and the Grenadines", "St. Vincent & the Grenadines"))
 
 ## 8.2 Make the plots ----

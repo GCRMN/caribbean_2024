@@ -30,6 +30,7 @@ data_sources <- read_xlsx("C:/Users/jwicquart/Desktop/Recherche/03_projects/2022
   distinct()
 
 data_year_dataset <- data_benthic %>% 
+  filter(!(area %in% c("Navassa Island", "Guatemala"))) %>% 
   group_by(datasetID, area, year) %>% 
   data_descriptors() %>% 
   ungroup() %>% 
@@ -124,7 +125,7 @@ plot_year_dataset <- function(area_i){
 
 ## 3.4 Map over the function ----
 
-map(unique(data_benthic$area), ~plot_year_dataset(area_i = .))
+map(unique(data_year_dataset$area), ~plot_year_dataset(area_i = .))
 
 # 4. Map of areas ----
 
