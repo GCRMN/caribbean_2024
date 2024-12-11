@@ -21,7 +21,9 @@ data_benthic <- synthetic_data %>%
   # Remove useless datasets
   #filter(!(datasetID %in% c())) %>% 
   # Filter data on the period of interest
-  filter(year >= 1980 & year <= 2024)
+  filter(year >= 1980 & year <= 2024) %>% 
+  # Filter depth of shallow coral reefs
+  filter(is.na(verbatimDepth) | verbatimDepth <= 30)
 
 # 4. Add area variable ----
 
