@@ -34,11 +34,18 @@ figure_path <- paste0("../../figs/02_part-2/fig-0/", territory_name, ".png")
 ```{r echo=FALSE, message=FALSE}
 
 read_xlsx("../../figs/01_part-1/tbl-1.xlsx") %>% 
+  left_join(., read_xlsx("../../figs/01_part-1/tbl-2.xlsx")) %>% 
   filter(area == area_i) %>% 
-  select(reef_area_abs, reef_area_rel) %>% 
+  select(reef_area_abs, reef_area_rel, pop_reef_2020, pop_percent, pop_reef_change) %>% 
+  mutate(across(c("reef_area_rel", "pop_percent", "pop_reef_change"), ~paste0(.x, " %")),
+         reef_area_abs = paste0(reef_area_abs, " km²")) %>% 
   t() %>% 
   as.data.frame() %>% 
-  bind_cols(V2 =  c("Coral reef extent (km^2)", "Coral reef extent relative to the Caribbean"), .) %>% 
+  bind_cols(V2 =  c("Coral reef extent",
+                    "Coral reef extent relative to the Caribbean",
+                    "Number of inhabitants living within 20 km from a reef (in 2020)",
+                    "Number of inhabitants living within 20 km from a reef relative to the total number of inhabitants (in 2020)",
+                    "Change in the number of inhabitants living within 20 km from a reef between 2000 and 2020"), .) %>% 
   flextable() %>% 
   delete_part(part = "header") %>% 
   theme_box() %>% 
@@ -81,17 +88,17 @@ figure_path <- paste0("../../figs/02_part-2/fig-2/", territory_name, ".png")
 ```{r echo=FALSE, message=FALSE}
 
 sst_lt <- read_xlsx("../../figs/01_part-1/tbl-3.xlsx") %>% 
-  filter(territory == area_i) %>% 
+  filter(area == area_i) %>% 
   select(mean_sst) %>% 
   pull()
 
 sst_trend <- read_xlsx("../../figs/01_part-1/tbl-3.xlsx") %>% 
-  filter(territory == area_i) %>% 
+  filter(area == area_i) %>% 
   select(sst_increase) %>% 
   pull()
 
 sst_rate <- read_xlsx("../../figs/01_part-1/tbl-3.xlsx") %>% 
-  filter(territory == area_i) %>% 
+  filter(area == area_i) %>% 
   select(warming_rate) %>% 
   pull()
 
