@@ -86,3 +86,104 @@ data_reef_area_caribbean %>%
                       reef_area_abs = sum(data_reef_area_caribbean$reef_area_abs),
                       reef_area_rel = 100)) %>% 
   openxlsx::write.xlsx(., file = "figs/01_part-1/tbl-1.xlsx")
+
+# 4. Human population ----
+
+## 4.1 Human population per EEZ / area ----
+
+data_population_eez <- read.csv("data/02_misc/ind_human-pop_eez.csv") %>% 
+  mutate(year = as.numeric(str_sub(date, 1, 4)),
+         area = case_when(area == "Cura�ao" ~ "Curaçao",
+                          area == "Saint-Barth�lemy" ~ "Saint-Barthélemy",
+                          TRUE ~ area)) %>% 
+  select(-date)
+
+data_population_eez <- data_population_eez %>% 
+  # Duplicate values for United States (FGB and Florida)
+  filter(area == "United States") %>% 
+  mutate(area = "Flower Garden Banks") %>% 
+  bind_rows(., data_population_eez %>% 
+              filter(area == "United States") %>% 
+              mutate(area = "Florida")) %>% 
+  # Duplicate values for Mexico (Caribbean Sea and Gulf of Mexico)
+  bind_rows(., data_population_eez %>% 
+              filter(area == "Mexico") %>% 
+              mutate(area = "Mexico (Caribbean Sea)")) %>% 
+  bind_rows(., data_population_eez %>% 
+              filter(area == "Mexico") %>% 
+              mutate(area = "Mexico (Gulf of Mexico)")) %>% 
+  bind_rows(., data_population_eez %>% 
+              filter(!(area %in% c("Mexico", "United States")))) %>% 
+  pivot_wider(names_from = year, values_from = sum, names_prefix = "pop_eez_")
+
+## 4.2 Human population from 20 km reef buffer ----
+
+data_population_reef <- read.csv("data/02_misc/ind_human-pop_20km.csv") %>% 
+  mutate(year = as.numeric(str_sub(date, 1, 4)),
+         area = case_when(area == "Cura�ao" ~ "Curaçao",
+                          area == "Saint-Barth�lemy" ~ "Saint-Barthélemy",
+                          TRUE ~ area)) %>% 
+  select(-date) %>% 
+  pivot_wider(names_from = year, values_from = sum, names_prefix = "pop_reef_")
+
+## 4.3 Calculate population indicators ----
+
+### 4.3.1 Join population EEZ and reef buffer ----
+
+data_population <- left_join(data_population_eez, data_population_reef) %>% 
+  filter(!(area %in% c("Navassa Island", "Guatemala"))) %>% 
+  arrange(area)
+
+### 4.3.2 Add the total for the Caribbean region ----
+
+data_population <- bind_rows(data_population, data_population %>% 
+                               summarise(across(c("pop_reef_2000", "pop_reef_2020", "pop_eez_2000", "pop_eez_2020"),
+                                                ~sum(.x))) %>% 
+                               mutate(area = "Entire Caribbean region"))
+
+### 4.3.3 Calculate indicators ----
+
+data_population <- data_population %>% 
+  mutate(pop_reef_change = ((pop_reef_2020-pop_reef_2000)/pop_reef_2000)*100,
+         pop_percent = (pop_reef_2020*100)/pop_eez_2020) %>% 
+  mutate(across(c("pop_reef_change", "pop_percent"), ~if_else(is.na(.x), 0, .x))) %>% 
+  select(area, pop_reef_2020, pop_percent, pop_reef_change) %>% 
+  # Reformat the data
+  mutate(pop_reef_2020 = format(round(pop_reef_2020, 0), big.mark = ",", scientific = FALSE),
+         pop_percent = format(round(pop_percent, 2), nsmall = 2),
+         pop_reef_change = format(round(pop_reef_change, 2), nsmall = 2))
+
+## 4.4 Export the table ----
+
+openxlsx::write.xlsx(data_population, file = "figs/01_part-1/tbl-2.xlsx")
+
+## 4.5 Caribbean population plot ----
+
+data_population_reef %>% 
+  pivot_longer(2:ncol(.), names_to = "year", values_to = "population") %>% 
+  mutate(year = as.numeric(str_sub(year, 10, 14)),
+         area_type = case_when(area %in% c("Haiti", "Cuba", "Florida", "Dominican Republic") ~ area,
+                               TRUE ~ "Other territories"),
+         population = population*1e-06) %>% # Convert to million
+  group_by(area_type, year) %>% 
+  summarise(population = sum(population, na.rm = TRUE)) %>% 
+  ungroup() %>% 
+  ggplot(data = ., aes(x = year, y = population, fill = area_type, label = area_type)) +
+  #geom_area(show.legend = TRUE, color = "white", linewidth = 0.25) + # To know where to place text
+  geom_area(show.legend = FALSE, color = "white", linewidth = 0.25) +
+  scale_fill_manual(values = rev(palette_first)) +
+  labs(x = "Year", y = "Inhabitants (millions)") +
+  theme_graph() +
+  lims(y = c(0, 60)) +
+  annotate(geom = "text", label = "Cuba", x = 2019, y = 43, 
+           family = font_choose_graph, color = "white", hjust = 1, size = 3) +
+  annotate(geom = "text", label = "DR", x = 2019, y = 37, 
+           family = font_choose_graph, color = "white", hjust = 1, size = 3) +
+  annotate(geom = "text", label = "Florida", x = 2019, y = 31, 
+           family = font_choose_graph, color = "white", hjust = 1, size = 3) +
+  annotate(geom = "text", label = "Haiti", x = 2019, y = 23.5, 
+           family = font_choose_graph, color = "white", hjust = 1, size = 3) +
+  annotate(geom = "text", label = "Other territories", x = 2019, y = 8, 
+           family = font_choose_graph, color = "black", hjust = 1, size = 3)
+
+ggsave("figs/01_part-1/fig-8.png", height = 4, width = 5, dpi = fig_resolution)
