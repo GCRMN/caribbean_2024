@@ -17,6 +17,19 @@ require(flextable)
 \
 \
 
+```{r echo=FALSE, message=FALSE}
+
+list_authors <- read_xlsx("../../figs/05_supp-mat/tbl-4.xlsx") %>% 
+  filter(area == area_i) %>% 
+  select(name) %>% 
+  pull()
+
+```
+
+**Authors:** `r list_authors`
+
+\
+
 ## 1. Introduction
 
 \

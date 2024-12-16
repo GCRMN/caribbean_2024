@@ -38,3 +38,21 @@ read_xlsx("C:/Users/jwicquart/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_b
   arrange(last_name) %>% 
   openxlsx::write.xlsx(., file = "figs/05_supp-mat/tbl-3.xlsx")
 
+# 6. List of contributors per area ----
+
+read_xlsx("C:/Users/jwicquart/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/05_data-sources.xlsx") %>% 
+  filter(datasetID %in% unique(data_benthic$datasetID)) %>% 
+  select(datasetID, last_name, first_name) %>% 
+  full_join(data_benthic %>% 
+              select(datasetID, area) %>% 
+              distinct(),
+            .) %>% 
+  arrange(area, last_name) %>% 
+  mutate(last_name = str_to_title(last_name),
+         name = paste0(first_name, " ", last_name)) %>% 
+  select(-datasetID, -last_name, -first_name) %>% 
+  distinct() %>% 
+  group_by(area) %>% 
+  mutate(name = paste0(name, collapse = ", ")) %>% 
+  distinct() %>% 
+  openxlsx::write.xlsx(., file = "figs/05_supp-mat/tbl-4.xlsx")
