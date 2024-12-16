@@ -3,6 +3,7 @@
 library(tidyverse)
 library(rmarkdown)
 library(sf)
+library(googledrive)
 
 # 2. Load functions ----
 
@@ -23,6 +24,6 @@ data_area <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp") %>%
   distinct() %>% 
   arrange(area)
 
-map(data_area, ~render_qmd(area_i = .))
+map(data_area, ~render_qmd(area_i = ., upload_drive = TRUE))
 
-#render_qmd(area_i = "Guadeloupe")
+#render_qmd(area_i = "Martinique", upload_drive = TRUE)
