@@ -8,8 +8,8 @@ library(openxlsx)
 # 2. Create the tibble ----
 
 data_contribution <- read_xlsx("figs/05_supp-mat/tbl-2.xlsx") %>% 
-  mutate(last_name = str_to_title(last_name)) %>% 
-  select(first_name, last_name) %>% 
+  drop_na(first_name) %>% # Remove NA (datasets from paper) 
+  select(first_name, last_name, email) %>% 
   distinct() %>% 
   mutate(`Data acquisition` = "X") %>% 
   # Add contributors who are not data contributors
@@ -30,14 +30,19 @@ data_contribution <- read_xlsx("figs/05_supp-mat/tbl-2.xlsx") %>%
          `Layout` = NA,
          `Communication` = NA) %>% 
   relocate(`Data acquisition`, .before = `Data integration`) %>% 
-  arrange(last_name) %>% 
-  mutate(across(c(first_name, last_name), ~str_squish(.x)))
-
+  arrange(last_name, .locale = "en") %>% 
+  mutate(across(c(first_name, last_name), ~str_squish(.x))) %>% 
+  # Concatenate email address
+  group_by(first_name, last_name) %>% 
+  mutate(email = paste0(email, collapse = ", ")) %>% 
+  ungroup() %>% 
+  distinct()
+  
 # 3. Export the file ----
 
 ## 3.1 Create the function to export the file with Excel formatting ----
 
-export_contributions <- function(data){
+export_contributions <- function(data, path = "figs/00_misc/authors_contribution.xlsx"){
 
   wb <- createWorkbook()
   
@@ -56,7 +61,7 @@ export_contributions <- function(data){
   addStyle(wb, "Sheet1",
            cols = seq(from = 3, to = ncol(data_contribution), by = 1),
            rows = seq(from = 2, to = nrow(data_contribution)+1, by = 1),
-           style = createStyle(textDecoration = "Bold", halign = "center"),
+           style = createStyle(halign = "center"),
            gridExpand = TRUE)
   
   writeData(wb = wb,
@@ -64,7 +69,7 @@ export_contributions <- function(data){
             x = data,
             headerStyle = createStyle(textDecoration = "Bold", textRotation = 90, halign = "center"))
   
-  saveWorkbook(wb, "figs/00_misc/authors_contribution.xlsx", overwrite = TRUE)
+  saveWorkbook(wb, path, overwrite = TRUE)
 
 }
 
@@ -94,7 +99,18 @@ if(file.exists("figs/00_misc/authors_contribution.xlsx") == FALSE){
 # /!\        3) MODIFICATIONS MUST BE DONE ON LOCAL FILE NOT ON GOOGLE DRIVE      /!\ #
 # ----------------------------------------------------------------------------------- #
 
-# 4. Export to Google Drive ----
+# 4. Export to Google Drive (without email) ----
 
-drive_put(media = "figs/00_misc/authors_contribution.xlsx",
+data_contribution <- read_xlsx("figs/00_misc/authors_contribution.xlsx")
+
+data_contribution <- data_contribution %>% 
+  select(-email)
+
+export_contributions(data = data_contribution, path = "figs/00_misc/authors_contribution_temp.xlsx")
+
+drive_put(media = "figs/00_misc/authors_contribution_temp.xlsx",
           path = "GCRMN Caribbean report/10_authors-contribution.xlsx")
+
+# Select Google account before running the last line of code
+
+file.remove("figs/00_misc/authors_contribution_temp.xlsx")
