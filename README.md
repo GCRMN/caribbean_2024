@@ -9,55 +9,73 @@
 
 ### Functions
 
+- `create_chapter_doc.qmd` Countries and territories chapter template.
 - `data_descriptors.R` Get number of sites, surveys, datasets, first and
   last year of monitoring.
+- `extract_coeff.R` Extract linear models *a* and *b* coefficients.
 - `graphical_par.R` Graphical parameters, including colors and fonts.
 - `plot_region.R` Regional background map.
-- `theme_graph.R` Main ggplot theme for the plots of the reports.
-- `theme_map.R` Main ggplot theme for the maps of the reports.
+- `render_qmd.R` Render script *create_chapter_doc.qmd*
+- `theme_graph.R` Main ggplot theme for plots.
+- `theme_map_area.R` ggplot theme for countries and territories maps.
+- `theme_map.R` Main ggplot theme for the maps.
 
 ### Cleaning and selection (`a_`)
 
-- `a01_select_benthic-data.R`
-- `a02_benthic-data_sources.R`
-- `a03_clean_shp.R`
-- `a07_reef-buffer.js`
-- `a08_clean_cyclones.R`
-- `a09_extract_sst-anom-year.R`
+- `a01_select_topo-bathy.js` Extract topography and bathymetry using
+  Google Earth Engine (GEE).
+- `a02_clean_shp.R` Clean shapefiles from different sources.
+- `a03_select_benthic-data.R` Extract benthic cover data from
+  [gcrmndb_benthos](https://github.com/GCRMN/gcrmndb_benthos).
+- `a04_benthic-data_sources.R` Extract lists of datasetID and
+  contributors details.
+- `a05_reef-buffer.js` Create coral reef buffer polygons at 20, 50, and
+  100 km using GEE.
+- `a06_reef-buffer-area.R` Join reef buffer with areas’ boundaries.
+- `a07_clean_cyclones.R` Clean cyclones data.
+- `a08_extract_sst-anom-year.R`
 
-### Extract indicators (`b_`)
+### Indicators’ extraction (`b_`)
 
-- `b05_extract_indicator_cyclones`
+- `b03_extract_indicator_population.js` Extract population indicator
+  using GEE.
+- `b04_extract_indicator_sst.R` Extract SST indicators.
+- `b05_extract_indicator_cyclones.R` Extract cyclones indicators.
 
 ### Models (benthic cover) (`c_`)
 
 - `c01_explo_benthic-data.R` Exploratory analyses of benthic cover data.
-- `c09_model_tuning_rf.R` Hyper parameters tuning for Random Forest
+- `c09_model_tuning_rf.R` Perform hyper parameters tuning for Random
+  Forest models.
+- `c09_model_tuning_xgb.R` Perform hyper parameters tuning for XGBoost
   models.
-- `c09_model_tuning_xgb.R` Hyper parameters tuning for XGBoost models.
-- `c10_model_bootstrap_rf.R` Bootstrap predictions using Random Forest
-  models.
-- `c10_model_bootstrap_xgb.R` Bootstrap predictions using XGBoost
+- `c10_model_bootstrap_rf.R` Run bootstrap predictions using Random
+  Forest models.
+- `c10_model_bootstrap_xgb.R` Run bootstrap predictions using XGBoost
   models.
 
 ### Models (fish biomass) (`d_`)
 
 ### Figures and tables (`e_`)
 
-- `e02_region_map.R`
-- `e03_territories_map.R`
-- `e04_region_sst.R`
-- `e05_territories_sst.R`
-- `e06_region_cyclones.R`
-- `e07_territories_cyclones.R`
-- `e08_region_spatio-temporal.R`
-- `e09_territories_spatio-temporal.R`
-- `e11_other-indicators.R`
+- `e02_region_map.R` Produce map of the region.
+- `e03_areas_map.R` Produce contextual maps for areas.
+- `e04_region_sst.R` Produce figures for SST for the region.
+- `e05_areas_sst.R` Produce figures for SST for areas.
+- `e06_region_cyclones.R` Produce figures for cyclones for the region.
+- `e07_areas_cyclones.R` Produce figures for cyclones for areas.
+- `e08_region_spatio-temporal.R` Produce figures for spatio-temporal
+  distribution of monitoring for the region.
+- `e09_areas_spatio-temporal.R` Produce figures for spatio-temporal
+  distribution of monitoring for areas.
+- `e10_benthic-cover_trends.R` Produce figures for benthic cover
+  temporal trends.
+- `e11_other-indicators.R` Produce figures, tables, and numbers for
+  other indicators.
 
 ### Writing and sharing (`f_`)
 
-- `f01_create-chapters.R` Generate .docx chapters for countries and
-  territories.
+- `f01_create-chapters.R` Generate .docx chapters for areas.
 - `f02_authors-contribution.R` Export author’s contributions .xlsx file.
 
 ## 3. Reproducibility parameters

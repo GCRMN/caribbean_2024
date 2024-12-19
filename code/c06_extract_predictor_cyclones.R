@@ -10,26 +10,26 @@ library(RcppRoll)
 
 # 2.1 Site coordinates --
 
-data_sites <- st_read("data/04_site-coords/site-coords_all.shp") %>% 
+data_sites <- st_read("data/03_site-coords/site-coords_all.shp") %>% 
   st_transform(crs = 4326)
 
 # 2.2 Cyclones lines --
 
-load("data/05_cyclones/01_cyclones_lines.RData")
+load("data/07_cyclones/01_cyclones_lines.RData")
 
 data_ts_lines <- data_ts_lines %>% 
   st_transform(crs = 4326)
 
 # 2.3 Cyclones points --
 
-load("data/05_cyclones/01_cyclones_points.RData")
+load("data/07_cyclones/01_cyclones_points.RData")
 
 data_ts_points <- data_ts_points %>% 
   st_transform(crs = 4326)
 
 # 2.4 Coral reef distribution 100 km buffer --
 
-data_reef_buffer <- st_read("data/03_reefs-area_wri/clean_buffer/reef_buffer.shp") %>% 
+data_reef_buffer <- st_read("data/01_maps/02_clean/02_reefs/reefs_buffer_100.shp") %>% 
   st_transform(crs = 4326) %>% 
   st_wrap_dateline() %>% 
   st_make_valid()
@@ -40,7 +40,7 @@ data_ts_lines_reef <- st_intersection(data_reef_buffer, data_ts_lines)
 
 data_ts_points <- data_ts_points %>% 
   filter(ts_id %in% unique(data_ts_lines_reef$ts_id)) %>% 
-  filter(wind_speed >= 119)
+  filter(windspeed >= 119)
 
 # 4. Create buffer of 111 km around sites with coral reefs ----
 
@@ -55,34 +55,34 @@ data_sites_buffer <- data_sites %>%
 pred_cyclones <- st_intersection(data_sites_buffer, data_ts_points) %>% 
   mutate(year = year(time)) %>% 
   st_drop_geometry() %>% 
-  select(site_id, type, year, ts_id, name, wind_speed) %>% 
+  select(site_id, type, year, ts_id, ts_name, windspeed) %>% 
   distinct() %>% 
-  group_by(site_id, type, year, ts_id, name) %>% 
-  filter(wind_speed == max(wind_speed)) %>% 
+  group_by(site_id, type, year, ts_id, ts_name) %>% 
+  filter(windspeed == max(windspeed)) %>% 
   ungroup()
 
 # 6. Transform data to create predictors ----
 
 pred_cyclones <- pred_cyclones %>% 
   group_by(site_id, type, year) %>% 
-  mutate(wind_speed = max(wind_speed),
+  mutate(windspeed = max(windspeed),
          nb_cyclones = n()) %>% 
   ungroup() %>% 
-  select(-ts_id, -name) %>%
+  select(-ts_id, -ts_name) %>%
   distinct() %>% 
   tidyr::complete(year = seq(1980, 2023), nesting(site_id, type), 
-                  fill = list(ts_id = NA, name = NA, wind_speed = NA)) %>% 
+                  fill = list(ts_id = NA, ts_name = NA, windspeed = NA)) %>% 
   # Wind speed of cyclones over year n-5 (five past years)
   arrange(site_id, type, year) %>% 
-  mutate(wind_speed_y5 = roll_max(wind_speed, n = 5, align = "right", fill = NA, na.rm = TRUE),
-         wind_speed_y5 = if_else(wind_speed_y5 == -Inf, 0, wind_speed_y5)) %>% 
+  mutate(windspeed_y5 = roll_max(windspeed, n = 5, align = "right", fill = NA, na.rm = TRUE),
+         windspeed_y5 = if_else(windspeed_y5 == -Inf, 0, windspeed_y5)) %>% 
   # Number of cyclones over year n-5 (five past years)
   mutate(nb_cyclones_y5 = roll_sum(nb_cyclones, n = 5, align = "right", fill = NA, na.rm = TRUE)) %>% 
   group_by(site_id, type) %>% 
   mutate(nb_cyclones = sum(nb_cyclones, na.rm = TRUE)) %>% 
   ungroup() %>% 
-  select(-wind_speed)
+  select(-windspeed)
 
 # 7. Export the results ----
 
-write.csv(pred_cyclones, file = "data/10_predictors/pred_cyclones.csv", row.names = FALSE)
+write.csv(pred_cyclones, file = "data/08_predictors/pred_cyclones.csv", row.names = FALSE)
