@@ -113,8 +113,8 @@ data_predictors <- read.csv("data/08_predictors/pred_chla_sd.csv") %>%
 data_predictors <- read.csv("data/08_predictors/pred_gravity.csv") %>% 
   left_join(data_predictors, .)
 
-#data_predictors <- read.csv("data/08_predictors/pred_enso.csv") %>% 
-#  left_join(data_predictors, .)
+data_predictors <- read.csv("data/08_predictors/pred_enso.csv") %>% 
+  left_join(data_predictors, .)
 
 data_predictors <- read.csv("data/08_predictors/pred_sst_mean.csv") %>% 
   arrange(site_id, type, year) %>% 
@@ -143,9 +143,9 @@ data_predictors <- read.csv("data/08_predictors/pred_sst_sd.csv") %>%
 #  mutate(pred_dhw_max_y1 = lag(pred_dhw_max, n = 1)) %>% 
 #  left_join(data_predictors, .)
 
-#data_predictors <- read.csv("data/08_predictors/pred_cyclones.csv") %>% 
-#  left_join(data_predictors, .) %>% 
-#  mutate(across(c(wind_speed_y5, nb_cyclones, nb_cyclones_y5), ~replace_na(.x, 0)))
+data_predictors <- read.csv("data/08_predictors/pred_cyclones.csv") %>% 
+  left_join(data_predictors, .) %>% 
+  mutate(across(c(windspeed_y5, nb_cyclones, nb_cyclones_y5), ~replace_na(.x, 0)))
 
 # 3.5 Round values of predictors ----
 
@@ -156,8 +156,7 @@ data_predictors <- data_predictors %>%
                   pred_sst_max_y1, pred_sst_mean_y1), ~.x/100)) %>%
   # Round to 3 digits
   mutate(across(c(pred_elevation, pred_reefextent, pred_land,
-                  #pred_enso,
-                  pred_chla_mean, pred_chla_sd),
+                  pred_enso, pred_chla_mean, pred_chla_sd),
                 ~ round(.x, digits = 3))) %>% 
   # Round to 2 digits
   mutate(across(c(pred_sst_sd, pred_sst_skewness,
@@ -186,7 +185,7 @@ data_correlation <- data_predictors %>%
 ## 4.2 Remove useless predictors based on correlation ----
 
 data_predictors <- data_predictors %>% 
-  select(-pred_sst_mean)
+  select(-pred_sst_mean_y1)
 
 # 5. Export predictors for data to predict ----
 

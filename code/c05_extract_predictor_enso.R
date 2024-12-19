@@ -5,7 +5,7 @@ library(RcppRoll)
 
 # 2. Load and transform SOI data ----
 
-data_enso <- read_table("data/09_misc/nino34.long.anom.data.txt", skip = 1, col_names = FALSE, n_max = 154) %>% 
+read_table("data/02_misc/nino34.long.anom.data.txt", skip = 1, col_names = FALSE, n_max = 154) %>% 
   rename(year = 1) %>% 
   filter(year >= 1980 & year <= 2023) %>% 
   pivot_longer(2:ncol(.), values_to = "nino", names_to = "month") %>% 
@@ -17,4 +17,4 @@ data_enso <- read_table("data/09_misc/nino34.long.anom.data.txt", skip = 1, col_
   filter(month == "12") %>% 
   select(year, enso) %>% 
   rename(pred_enso = enso) %>% 
-  write.csv(., file = "data/10_predictors/pred_enso.csv", row.names = FALSE)
+  write.csv(., file = "data/08_predictors/pred_enso.csv", row.names = FALSE)

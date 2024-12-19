@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 options(tibble.print_min = 5, tibble.print_max = 5)
 ```
 
-# **Status and Trends of Caribbean Coral Reefs: 1970-2024**
+# **Status and Trends of Caribbean Coral Reefs: 1980-2024**
 
 
 ## 1. Introduction
@@ -44,6 +44,10 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 ### Models (benthic cover) (`c_`)
 
 * `c01_explo_benthic-data.R` Exploratory analyses of benthic cover data.
+* `c09_model_tuning_rf.R` Hyper parameters tuning for Random Forest models.
+* `c09_model_tuning_xgb.R` Hyper parameters tuning for XGBoost models.
+* `c10_model_bootstrap_rf.R` Bootstrap predictions using Random Forest models.
+* `c10_model_bootstrap_xgb.R` Bootstrap predictions using XGBoost models.
 
 ### Models (fish biomass) (`d_`)
 
@@ -62,7 +66,8 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 
 ### Writing and sharing (`f_`)
 
-* `f01_create-chapters.R`
+* `f01_create-chapters.R` Generate .docx chapters for countries and territories.
+* `f02_authors-contribution.R` Export author's contributions .xlsx file. 
 
 ## 3. Reproducibility parameters
 
