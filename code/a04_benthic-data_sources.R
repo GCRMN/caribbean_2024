@@ -47,6 +47,7 @@ read_xlsx("C:/Users/jwicquart/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_b
               select(datasetID, area) %>% 
               distinct(),
             .) %>% 
+  drop_na(last_name) %>% 
   arrange(area, last_name) %>% 
   mutate(last_name = str_to_title(last_name),
          name = paste0(first_name, " ", last_name)) %>% 
