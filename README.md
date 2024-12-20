@@ -18,27 +18,27 @@
 - `render_qmd.R` Render script *create_chapter_doc.qmd*
 - `theme_graph.R` Main ggplot theme for plots.
 - `theme_map_area.R` ggplot theme for countries and territories maps.
-- `theme_map.R` Main ggplot theme for the maps.
+- `theme_map.R` Main ggplot theme for maps.
 
 ### Cleaning and selection (`a_`)
 
 - `a01_select_topo-bathy.js` Extract topography and bathymetry using
-  Google Earth Engine (GEE).
+  [Google Earth Engine](https://earthengine.google.com/) (GEE).
 - `a02_clean_shp.R` Clean shapefiles from different sources.
 - `a03_select_benthic-data.R` Extract benthic cover data from
   [gcrmndb_benthos](https://github.com/GCRMN/gcrmndb_benthos).
 - `a04_benthic-data_sources.R` Extract lists of datasetID and
   contributors details.
 - `a05_reef-buffer.js` Create coral reef buffer polygons at 20, 50, and
-  100 km using GEE.
+  100 km using [GEE](https://earthengine.google.com/).
 - `a06_reef-buffer-area.R` Join reef buffer with areas’ boundaries.
 - `a07_clean_cyclones.R` Clean cyclones data.
 - `a08_extract_sst-anom-year.R`
 
 ### Indicators’ extraction (`b_`)
 
-- `b03_extract_indicator_population.js` Extract population indicator
-  using GEE.
+- `b03_extract_indicator_population.js` Extract population indicators
+  using [GEE](https://earthengine.google.com/).
 - `b04_extract_indicator_sst.R` Extract SST indicators.
 - `b05_extract_indicator_cyclones.R` Extract cyclones indicators.
 
@@ -58,6 +58,8 @@
 
 ### Figures and tables (`e_`)
 
+- `e01_materials-and-methods.R` Produce figures for the Materials and
+  Methods.
 - `e02_region_map.R` Produce map of the region.
 - `e03_areas_map.R` Produce contextual maps for areas.
 - `e04_region_sst.R` Produce figures for SST for the region.
@@ -90,7 +92,7 @@
      collate  French_France.utf8
      ctype    French_France.utf8
      tz       Europe/Paris
-     date     2024-12-19
+     date     2024-12-20
      pandoc   3.2 @ C:/Program Files/RStudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)
 
     ─ Packages ───────────────────────────────────────────────────────────────────
