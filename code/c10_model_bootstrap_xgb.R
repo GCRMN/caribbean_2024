@@ -12,7 +12,7 @@ library(future)
 library(furrr)
 
 options(future.globals.maxSize = 100000*1024^2) # 100 Gb
-plan(strategy = multisession, workers = 6)
+plan(strategy = multisession, workers = 4)
 
 # 2. Load data ----
 

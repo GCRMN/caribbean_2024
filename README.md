@@ -9,6 +9,7 @@
 
 ### Functions
 
+- `combine_model_data.R` Combine benthic cover model results.
 - `create_chapter_doc.qmd` Countries and territories chapter template.
 - `data_descriptors.R` Get number of sites, surveys, datasets, first and
   last year of monitoring.
@@ -92,7 +93,7 @@
      collate  French_France.utf8
      ctype    French_France.utf8
      tz       Europe/Paris
-     date     2024-12-20
+     date     2024-12-23
      pandoc   3.2 @ C:/Program Files/RStudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)
 
     ─ Packages ───────────────────────────────────────────────────────────────────

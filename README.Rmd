@@ -22,6 +22,7 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 
 ### Functions
 
+* `combine_model_data.R` Combine benthic cover model results.
 * `create_chapter_doc.qmd` Countries and territories chapter template.
 * `data_descriptors.R` Get number of sites, surveys, datasets, first and last year of monitoring.
 * `extract_coeff.R` Extract linear models _a_ and _b_ coefficients.

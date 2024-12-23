@@ -27,6 +27,7 @@ data_contribution <- read_xlsx("figs/05_supp-mat/tbl-2.xlsx") %>%
          `Syntheses for count. and terr.` = NA,
          `Case studies` = NA,
          `Materials and Methods` = NA,
+         `Supplementary Materials` = NA,
          `Layout` = NA,
          `Communication` = NA) %>% 
   relocate(`Data acquisition`, .before = `Data integration`) %>% 
