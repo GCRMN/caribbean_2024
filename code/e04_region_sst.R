@@ -24,18 +24,18 @@ theme_set(theme_graph())
 ## 3.1 Load and transform data ----
 
 data_warming <- read.csv("data/02_misc/data-warming.csv") %>% 
-  select(territory, warming_rate, sst_increase) %>% 
+  select(area, warming_rate, sst_increase) %>% 
   # The number 0.97°C is coming from Forster et al (2024) - Table 5, page 2638
-  add_row(territory = "Global Ocean", warming_rate = NA, sst_increase = 0.97) %>% 
+  add_row(area = "Global Ocean", warming_rate = NA, sst_increase = 0.97) %>% 
   mutate(warming_rate = round(warming_rate, 3),
-         color = case_when(territory == "Global Ocean" ~ "black",
-                           territory == "Entire Caribbean region" ~ palette_second[4],
-                           sst_increase > 0 & territory != "Global Ocean" ~ palette_second[3],
-                           sst_increase <= 0 & territory != "Global Ocean" ~ palette_first[2]),
-         territory = if_else(territory == "Global Ocean", "**Global Ocean**", territory),
-         territory = if_else(territory == "Entire Caribbean region", "**Entire Caribbean region**", territory)) %>% 
+         color = case_when(area == "Global Ocean" ~ "black",
+                           area == "Entire Caribbean region" ~ palette_second[4],
+                           sst_increase > 0 & area != "Global Ocean" ~ palette_second[3],
+                           sst_increase <= 0 & area != "Global Ocean" ~ palette_first[2]),
+         area = if_else(area == "Global Ocean", "**Global Ocean**", area),
+         area = if_else(area == "Entire Caribbean region", "**Entire Caribbean region**", area)) %>% 
   arrange(desc(sst_increase)) %>% 
-  mutate(territory = str_replace_all(territory, c("Islands" = "Isl.",
+  mutate(area = str_replace_all(area, c("Islands" = "Isl.",
                                                   " and the " = " & ",
                                                   " and " = " & ",
                                                   "United States" = "U.S.",
@@ -43,7 +43,7 @@ data_warming <- read.csv("data/02_misc/data-warming.csv") %>%
 
 ## 3.2 Make the plot ----
 
-ggplot(data = data_warming, aes(x = sst_increase, y = fct_reorder(territory, sst_increase))) +
+ggplot(data = data_warming, aes(x = sst_increase, y = fct_reorder(area, sst_increase))) +
   geom_bar(stat = "identity", aes(fill = color), width = 0.6, color = "white") +
   scale_fill_identity() +
   scale_color_identity() +
@@ -65,7 +65,7 @@ ggsave("figs/01_part-1/fig-4.png", height = 12, width = 6, dpi = fig_resolution)
 load("data/02_misc/data-sst_processed.RData")
 
 data_sst_caribbean <- data_sst %>% 
-  filter(territory == "Entire Caribbean region") %>% 
+  filter(area == "Entire Caribbean region") %>% 
   drop_na(sst_anom_mean) %>% 
   mutate(date = as_date(date))
 
@@ -97,12 +97,12 @@ ggsave("figs/01_part-1/fig-6a.png", plot = plot_anom, height = 4, width = 5, dpi
 load("data/02_misc/data-sst_processed.RData")
 
 data_sst_caribbean <- data_sst %>% 
-  filter(territory == "Entire Caribbean region") %>% 
+  filter(area == "Entire Caribbean region") %>% 
   drop_na(sst_anom_mean)
 
 data_sst_caribbean <- data_sst_caribbean %>% 
   mutate(date = as.numeric(as_date(date))) %>% 
-  group_by(territory) %>% 
+  group_by(area) %>% 
   # Extract linear model coefficients
   group_modify(~extract_coeff(data = .x, var_y = "sst_anom_mean", var_x = "date")) %>% 
   ungroup() %>% 
@@ -143,12 +143,12 @@ ggsave("figs/01_part-1/fig-6.png", height = 8, width = 5, dpi = fig_resolution)
 ## 7.1 Transform data ----
 
 data_sst <- data_sst %>% 
-  filter(!(territory %in% c("Entire Caribbean region"))) %>% 
-  group_by(territory) %>% 
+  filter(!(area %in% c("Entire Caribbean region"))) %>% 
+  group_by(area) %>% 
   summarise(mean = mean(sst)) %>% 
   ungroup() %>% 
   left_join(., data_sst) %>% 
-  mutate(territory = str_replace_all(territory, c("Islands" = "Isl.",
+  mutate(area = str_replace_all(area, c("Islands" = "Isl.",
                                                   " and the " = " & ",
                                                   " and " = " & ",
                                                   "United States" = "U.S.",
@@ -156,7 +156,7 @@ data_sst <- data_sst %>%
 
 ## 7.2 Make the plot ----
 
-ggplot(data = data_sst, aes(x = sst, y = fct_reorder(territory, mean))) +
+ggplot(data = data_sst, aes(x = sst, y = fct_reorder(area, mean))) +
   geom_violin(draw_quantiles = c(0.5), fill = palette_first[3], color = palette_first[4], alpha = 0.5) +
   labs(x = "SST (°C)", y = NULL) +
   theme_graph() +
@@ -172,7 +172,7 @@ ggsave("figs/05_supp-mat/sst_distribution.png", height = 12, width = 6, dpi = fi
 
 data_land <- read_sf("data/01_maps/02_clean/05_princeton/land.shp")
 
-data_eez <- read_sf("data/01_maps/02_clean/03_eez/caribbean_eez.shp")
+data_eez <- read_sf("data/01_maps/02_clean/03_eez/caribbean_area.shp")
 
 ## 8.2 List of files ----
 
