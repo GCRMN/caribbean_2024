@@ -153,10 +153,14 @@ model_bootstrap <- function(category_i, bootstrap_i, pdp){
   model_description <- model_hyperparams_i %>% 
     mutate(model = "XGBoost")
   
+  model_pred_obs <- tuning_results$result_pred_obs %>% 
+    mutate(model = "XGBoost")
+  
   if(pdp == TRUE){
     
     return(lst(model_description,
                model_performance,
+               model_pred_obs,
                result_vip,
                result_pdp,
                result_trends))
@@ -165,6 +169,7 @@ model_bootstrap <- function(category_i, bootstrap_i, pdp){
     
     return(lst(model_description,
                model_performance,
+               model_pred_obs,
                result_vip,
                result_trends))
     
