@@ -95,7 +95,7 @@ save(data_sst, file = "data/02_misc/data-sst_raw.RData")
 
 data_sst <- data_sst %>% 
   mutate(date = as_date(date)) %>% 
-  filter(!(date == as.Date("2022-12-01") & area %in% c("Guadeloupe", "Dominica", "Haiti")))
+  filter(!(date == as.Date("2022-12-01") & area %in% c("Guadeloupe", "Dominica", "Haiti", "Montserrat")))
 
 ## 7.2 Calculate long-term average SST ----
 

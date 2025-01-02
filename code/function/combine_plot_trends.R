@@ -20,7 +20,8 @@ combine_plot_trends <- function(area_i, categ_type){
       
     }else{
       
-      ggsave(filename = paste0("figs/02_part-2/fig-5/", str_replace_all(str_to_lower(area_i), " ", "-"), ".png"),
+      ggsave(filename = paste0("figs/02_part-2/fig-5/",
+                               str_replace_all(str_replace_all(str_to_lower(area_i), " ", "-"), "---", "-"), ".png"),
              plot = plot_i, height = 12, width = 5, dpi = fig_resolution)
       
     }
@@ -45,7 +46,8 @@ combine_plot_trends <- function(area_i, categ_type){
       
     }else{
       
-      ggsave(filename = paste0("figs/02_part-2/fig-7/", str_replace_all(str_to_lower(area_i), " ", "-"), ".png"),
+      ggsave(filename = paste0("figs/02_part-2/fig-7/",
+                               str_replace_all(str_replace_all(str_to_lower(area_i), " ", "-"), "---", "-"), ".png"),
              plot = plot_i, height = 4, width = 12, dpi = fig_resolution)
       
     }
