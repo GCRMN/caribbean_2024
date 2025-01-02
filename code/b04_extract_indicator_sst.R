@@ -28,7 +28,7 @@ data_reef <- data_reef %>%
 
 # 3. List files of SST to download ----
 
-list_url <- data.frame(date = seq(from = ymd("1985-01-01"), to = ymd("2024-08-01"), by = "1 day")) %>% 
+list_url <- data.frame(date = seq(from = ymd("1985-01-01"), to = ymd("2024-12-31"), by = "1 day")) %>% 
   mutate(year = year(date),
          date = str_remove_all(date, "-"),
          url = paste0("https://www.star.nesdis.noaa.gov/pub/socd/mecb/crw/data/5km/v3.1_op/nc/v1.0/daily/sst/",
