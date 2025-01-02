@@ -76,7 +76,7 @@ ggsave(paste0("figs/06_additional/benthic-cover_region_density-trend.png"),
 ggplot(data = data_benthic_cover, aes(x = measurementValue, fill = color)) +
   geom_density() +
   scale_fill_identity() +
-  facet_grid(territory~category, drop = FALSE) +
+  facet_grid(area~category, drop = FALSE, scale = "free_y") +
   theme_graph() + 
   lims(x = c(0, 100)) +
   labs(x = "Percentage cover") +
@@ -84,7 +84,7 @@ ggplot(data = data_benthic_cover, aes(x = measurementValue, fill = color)) +
         strip.background = element_rect(color = NA, fill = "white"))
 
 ggsave(paste0("figs/06_additional/benthic-cover_area_density.png"),
-       width = 10, height = 12, dpi = fig_resolution)
+       width = 15, height = 28, dpi = fig_resolution)
 
 ## 4.4 Areas (trend) ----
 
@@ -92,7 +92,7 @@ ggplot(data = data_benthic_cover, aes(x = year, y = measurementValue, color = co
   geom_point(alpha = 0.1, color = "lightgrey") +
   scale_color_identity() +
   geom_smooth() +
-  facet_grid(territory~category, drop = FALSE) +
+  facet_grid(area~category, drop = FALSE) +
   theme_graph() + 
   lims(y = c(-2, 100), x = c(1980, 2025)) +
   labs(y = "Percentage cover", x = "Year") +
@@ -100,7 +100,38 @@ ggplot(data = data_benthic_cover, aes(x = year, y = measurementValue, color = co
         strip.background = element_rect(color = NA, fill = "white"))
 
 ggsave(paste0("figs/06_additional/benthic-cover_area_trend.png"),
-       width = 10, height = 12, dpi = fig_resolution)
+       width = 15, height = 28, dpi = fig_resolution)
+
+## 4.5 DatasetID (density) ----
+
+ggplot(data = data_benthic_cover, aes(x = measurementValue, fill = color)) +
+  geom_density() +
+  scale_fill_identity() +
+  facet_grid(datasetID~category, drop = FALSE, scale = "free_y") +
+  theme_graph() + 
+  lims(x = c(0, 100)) +
+  labs(x = "Percentage cover") +
+  theme(strip.text.y = element_text(angle = 0, hjust = 0, vjust = 0),
+        strip.background = element_rect(color = NA, fill = "white"))
+
+ggsave(paste0("figs/06_additional/benthic-cover_dataset_density.png"),
+       width = 15, height = 28, dpi = fig_resolution)
+
+## 4.6 DatasetID (trend) ----
+
+ggplot(data = data_benthic_cover, aes(x = year, y = measurementValue, color = color)) +
+  geom_point(alpha = 0.1, color = "lightgrey") +
+  scale_color_identity() +
+  geom_smooth() +
+  facet_grid(datasetID~category, drop = FALSE) +
+  theme_graph() + 
+  lims(y = c(-2, 100), x = c(1980, 2025)) +
+  labs(y = "Percentage cover", x = "Year") +
+  theme(strip.text.y = element_text(angle = 0, hjust = 0, vjust = 0),
+        strip.background = element_rect(color = NA, fill = "white"))
+
+ggsave(paste0("figs/06_additional/benthic-cover_dataset_trend.png"),
+       width = 15, height = 28, dpi = fig_resolution)
 
 # 5. Main hard coral genera ----
 
