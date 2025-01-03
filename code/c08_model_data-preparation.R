@@ -221,7 +221,6 @@ data_benthic_hc <- data_benthic %>%
   ungroup() %>% 
   # 2. Summarise data at the transect level (i.e. mean of photo-quadrats)
   # This avoid getting semi-quantitative data (e.g. when there is only 10 points per photo-quadrat)
-  # This is the case for datasets "0011", "0012", "0013", "0014", and "0043" at least
   group_by(datasetID, region, subregion, ecoregion, country, territory, area, locality, habitat, parentEventID,
            decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, category) %>% 
   summarise(measurementValue = mean(measurementValue)) %>% 
@@ -257,20 +256,27 @@ data_benthic <- data_benthic %>%
   ungroup() %>% 
   # 2. Summarise data at the transect level (i.e. mean of photo-quadrats)
   # This avoid getting semi-quantitative data (e.g. when there is only 10 points per photo-quadrat)
-  # This is the case for datasets "0011", "0012", "0013", "0014", and "0043" at least
   group_by(datasetID, region, subregion, ecoregion, country, territory, area, locality, habitat, parentEventID,
            decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, category) %>% 
   summarise(measurementValue = mean(measurementValue)) %>% 
   ungroup() %>% 
-  # 3. Remove values greater than 100 (unlikely but included to avoid any issues later)
+  # 3. Regenerate 0 values
+  group_by(datasetID) %>% 
+  complete(category,
+           nesting(region, subregion, ecoregion, country, territory, area, locality,
+                   habitat, parentEventID, decimalLatitude, decimalLongitude, verbatimDepth,
+                   year, month, day, eventDate),
+           fill = list(measurementValue = 0)) %>%
+  ungroup() %>%
+  # 4. Remove values greater than 100 (unlikely but included to avoid any issues later)
   filter(measurementValue <= 100) %>% 
-  # 4. Remove useless variables
+  # 5. Remove useless variables
   select(-region, -subregion, -ecoregion, -country, -locality, -habitat, -eventDate) %>% 
-  # 5. Convert to factors
+  # 6. Convert to factors
   mutate_if(is.character, factor) %>% 
-  # 6. Add site_id and type (to join on step 7)
+  # 7. Add site_id and type (to join on step 7)
   left_join(., data_site_coords_obs) %>% 
-  # 7. Add predictors
+  # 8. Add predictors
   left_join(., data_predictors %>%
               filter(type == "obs") %>% 
               # Remove lat and long because GEE slightly modify these, which break the join
