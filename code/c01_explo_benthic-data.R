@@ -86,7 +86,26 @@ ggplot(data = data_benthic_cover, aes(x = measurementValue, fill = color)) +
 ggsave(paste0("figs/06_additional/benthic-cover_area_density.png"),
        width = 15, height = 28, dpi = fig_resolution)
 
-## 4.4 Areas (trend) ----
+## 4.4 Areas (minimum values) ----
+
+data_benthic_cover %>%
+  group_by(category, area) %>% 
+  summarise(min = min(measurementValue)) %>% 
+  ungroup() %>% 
+  arrange(area) %>% 
+  mutate(color = case_when(min == 0 ~ "#89c4f4",
+                           min >= 0 ~ "#f1828d",
+                           is.na(min) ~ "lightgrey")) %>% 
+  ggplot(., aes(x = category, y = area)) +
+    geom_tile(aes(fill = color)) +
+    scale_fill_identity() +
+    scale_y_discrete(limits = rev) +
+    geom_text(aes(label = round(min, 1)))
+
+ggsave(paste0("figs/06_additional/benthic-cover_area_min-value.png"),
+       width = 12, height = 20, dpi = fig_resolution)
+
+## 4.5 Areas (trend) ----
 
 ggplot(data = data_benthic_cover, aes(x = year, y = measurementValue, color = color)) +
   geom_point(alpha = 0.1, color = "lightgrey") +
@@ -102,7 +121,7 @@ ggplot(data = data_benthic_cover, aes(x = year, y = measurementValue, color = co
 ggsave(paste0("figs/06_additional/benthic-cover_area_trend.png"),
        width = 15, height = 28, dpi = fig_resolution)
 
-## 4.5 DatasetID (density) ----
+## 4.6 DatasetID (density) ----
 
 ggplot(data = data_benthic_cover, aes(x = measurementValue, fill = color)) +
   geom_density() +
@@ -117,7 +136,26 @@ ggplot(data = data_benthic_cover, aes(x = measurementValue, fill = color)) +
 ggsave(paste0("figs/06_additional/benthic-cover_dataset_density.png"),
        width = 15, height = 28, dpi = fig_resolution)
 
-## 4.6 DatasetID (trend) ----
+## 4.7 DatasetID (minimum values) ----
+
+data_benthic_cover %>%
+  group_by(category, datasetID) %>% 
+  summarise(min = min(measurementValue)) %>% 
+  ungroup() %>% 
+  arrange(datasetID) %>% 
+  mutate(color = case_when(min == 0 ~ "#89c4f4",
+                           min >= 0 ~ "#f1828d",
+                           is.na(min) ~ "lightgrey")) %>% 
+  ggplot(., aes(x = category, y = datasetID)) +
+  geom_tile(aes(fill = color)) +
+  scale_fill_identity() +
+  scale_y_discrete(limits = rev) +
+  geom_text(aes(label = round(min, 1)))
+
+ggsave(paste0("figs/06_additional/benthic-cover_dataset_min-value.png"),
+       width = 12, height = 20, dpi = fig_resolution)
+
+## 4.8 DatasetID (trend) ----
 
 ggplot(data = data_benthic_cover, aes(x = year, y = measurementValue, color = color)) +
   geom_point(alpha = 0.1, color = "lightgrey") +
