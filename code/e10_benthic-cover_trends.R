@@ -191,3 +191,24 @@ if(FALSE){
               upper_ci_80 = mean(upper_ci_80))
   
 }
+
+## 5.4 Figure for Executive Summary ----
+
+data_ex_summ <- data_trends$smoothed_trends %>% 
+  filter(area == "All")
+
+data_ex_summ <- data_ex_summ %>% 
+  group_by(year) %>% 
+  summarise(mean = sum(mean)) %>% 
+  ungroup() %>% 
+  # Generate the others category (difference between 100 and sum of all categories)
+  mutate(mean = 100 - mean, 
+         category = "Others") %>% 
+  bind_rows(data_ex_summ, .)
+
+ggplot(data = data_ex_summ, aes(x = year, y = mean, fill = category)) +
+  geom_area() +
+  theme_graph() +
+  labs(x = "Year", y = "Benthic cover (%)")
+
+ggsave("figs/00_misc/benthic-trends.png", width = 6, height = 4, dpi = fig_resolution)
