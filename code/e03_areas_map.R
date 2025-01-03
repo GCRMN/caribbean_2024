@@ -30,8 +30,8 @@ data_area <- read_sf("data/01_maps/02_clean/03_eez/caribbean_area.shp") %>%
 plot_areas <- function(area_i){
   
   data_circle <- tibble(area = c("Montserrat", "Saint-Barthélemy", "Saba",
-                                      "Sint-Eustatius", "Sint-Marteen - Saint-Martin",
-                                      "Saint Kitts and Nevis", "Saint Lucia", "Guatemala"),
+                                 "Sint-Eustatius", "Sint Maarten - Saint-Martin",
+                                 "Saint Kitts and Nevis", "Saint Lucia", "Guatemala"),
                         lon = c(-62.192897, -62.826132, -63.236996, -62.975556, -63.058154,
                                 -62.665062, -60.966089, -88.719313),
                         lat = c(16.731354, 17.897481, 17.631632, 17.487975, 18.063534,
@@ -40,7 +40,7 @@ plot_areas <- function(area_i){
              crs = 4326)
   
   if(area_i %in% c("Montserrat", "Saint-Barthélemy", "Saba", "Sint-Eustatius", "Guatemala",
-                        "Sint-Marteen - Saint-Martin", "Saint Kitts and Nevis", "Saint Lucia")){
+                   "Sint Maarten - Saint-Martin", "Saint Kitts and Nevis", "Saint Lucia")){
 
     ggplot() +
       geom_sf(data = data_area, fill = NA, color = "lightgrey", linewidth = 0.05) +
