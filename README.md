@@ -10,16 +10,25 @@
 ### Functions
 
 - `combine_model_data.R` Combine benthic cover model results.
+- `combine_plot_trends.R` Combine temporal trend plots produced by the
+  function *plot_trends.R*.
 - `create_chapter_doc.qmd` Countries and territories chapter template.
 - `data_descriptors.R` Get number of sites, surveys, datasets, first and
   last year of monitoring.
 - `extract_coeff.R` Extract linear models *a* and *b* coefficients.
+- `extract_mankendall.R` Calculate temporal trends using Man Kendall
+  test.
 - `graphical_par.R` Graphical parameters, including colors and fonts.
+- `plot_pred_obs.R` Plot predicted *vs* observed values (model
+  evaluation).
 - `plot_region.R` Regional background map.
+- `plot_residuals.R` Plot residuals (model evaluation).
+- `plot_trends.R` Plot temporal trends.
+- `plot_vimp.R` Plot Variable Importance Plot (VIMP).
 - `render_qmd.R` Render script *create_chapter_doc.qmd*
 - `theme_graph.R` Main ggplot theme for plots.
-- `theme_map_area.R` ggplot theme for countries and territories maps.
 - `theme_map.R` Main ggplot theme for maps.
+- `theme_map_area.R` ggplot theme for countries and territories maps.
 
 ### Cleaning and selection (`a_`)
 
@@ -86,14 +95,14 @@
     ─ Session info ───────────────────────────────────────────────────────────────
      setting  value
      version  R version 4.4.2 (2024-10-31 ucrt)
-     os       Windows 10 x64 (build 18363)
+     os       Windows 11 x64 (build 22631)
      system   x86_64, mingw32
      ui       RTerm
      language (EN)
      collate  French_France.utf8
      ctype    French_France.utf8
      tz       Europe/Paris
-     date     2024-12-23
+     date     2025-01-03
      pandoc   3.2 @ C:/Program Files/RStudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)
 
     ─ Packages ───────────────────────────────────────────────────────────────────
@@ -149,7 +158,7 @@
      glue            1.8.0      2024-09-30 [1] CRAN (R 4.4.1)
      googledrive     2.1.1      2023-06-11 [1] CRAN (R 4.4.1)
      googlesheets4   1.1.1      2023-06-11 [1] CRAN (R 4.4.1)
-     gower           1.0.1      2022-12-22 [1] CRAN (R 4.4.0)
+     gower           1.0.2      2024-12-17 [1] CRAN (R 4.4.2)
      GPfit           1.0-8      2019-02-08 [1] CRAN (R 4.4.2)
      gtable          0.3.6      2024-10-25 [1] CRAN (R 4.4.1)
      hardhat         1.4.0      2024-06-02 [1] CRAN (R 4.4.2)
@@ -187,8 +196,8 @@
      nlme            3.1-166    2024-08-14 [1] CRAN (R 4.4.2)
      nnet            7.3-19     2023-05-03 [1] CRAN (R 4.4.2)
      numDeriv        2016.8-1.1 2019-06-06 [1] CRAN (R 4.4.0)
-     openssl         2.2.2      2024-09-20 [1] CRAN (R 4.4.2)
-     parallelly      1.40.1     2024-12-04 [1] CRAN (R 4.4.2)
+     openssl         2.3.0      2024-12-16 [1] CRAN (R 4.4.2)
+     parallelly      1.41.0     2024-12-18 [1] CRAN (R 4.4.2)
      parsnip         1.2.1      2024-03-22 [1] CRAN (R 4.4.2)
      patchwork       1.3.0      2024-09-16 [1] CRAN (R 4.4.1)
      pillar          1.10.0     2024-12-17 [1] CRAN (R 4.4.2)
@@ -229,10 +238,10 @@
      SQUAREM         2021.1     2021-01-13 [1] CRAN (R 4.4.0)
      stringi         1.8.4      2024-05-06 [1] CRAN (R 4.4.0)
      stringr         1.5.1      2023-11-14 [1] CRAN (R 4.4.1)
-     survival        3.7-0      2024-06-05 [1] CRAN (R 4.4.2)
+     survival        3.8-3      2024-12-17 [1] CRAN (R 4.4.2)
      sys             3.4.3      2024-10-04 [1] CRAN (R 4.4.1)
      systemfonts     1.1.0      2024-05-15 [1] CRAN (R 4.4.1)
-     terra           1.7-83     2024-10-14 [1] CRAN (R 4.4.2)
+     terra           1.8-5      2024-12-12 [1] CRAN (R 4.4.2)
      textshaping     0.4.1      2024-12-06 [1] CRAN (R 4.4.2)
      tibble          3.2.1      2023-03-20 [1] CRAN (R 4.4.1)
      tidymodels      1.2.0      2024-03-25 [1] CRAN (R 4.4.2)

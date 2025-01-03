@@ -23,15 +23,21 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 ### Functions
 
 * `combine_model_data.R` Combine benthic cover model results.
+* `combine_plot_trends.R` Combine temporal trend plots produced by the function _plot_trends.R_.
 * `create_chapter_doc.qmd` Countries and territories chapter template.
 * `data_descriptors.R` Get number of sites, surveys, datasets, first and last year of monitoring.
 * `extract_coeff.R` Extract linear models _a_ and _b_ coefficients.
+* `extract_mankendall.R` Calculate temporal trends using Man Kendall test.
 * `graphical_par.R` Graphical parameters, including colors and fonts.
+* `plot_pred_obs.R` Plot predicted _vs_ observed values (model evaluation).
 * `plot_region.R` Regional background map.
+* `plot_residuals.R` Plot residuals (model evaluation).
+* `plot_trends.R` Plot temporal trends.
+* `plot_vimp.R` Plot Variable Importance Plot (VIMP).
 * `render_qmd.R` Render script _create_chapter_doc.qmd_
 * `theme_graph.R` Main ggplot theme for plots.
-* `theme_map_area.R` ggplot theme for countries and territories maps.
 * `theme_map.R` Main ggplot theme for maps.
+* `theme_map_area.R` ggplot theme for countries and territories maps.
 
 ### Cleaning and selection (`a_`)
 
