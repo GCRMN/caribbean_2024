@@ -249,7 +249,7 @@ data_benthic <- data_benthic %>%
                               subcategory == "Turf algae" ~ "Turf algae",
                               subcategory == "Coralline algae" ~ "Coralline algae",
                               TRUE ~ category)) %>% 
-  filter(category %in% c("Hard coral", "Macroalgae", "Turf algae", "Coralline algae")) %>% 
+  filter(category %in% c("Hard coral", "Macroalgae", "Turf algae", "Coralline algae", "Other fauna")) %>% 
   group_by(datasetID, region, subregion, ecoregion, country, territory, area, locality, habitat, parentEventID,
            decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, eventID, category) %>% 
   summarise(measurementValue = sum(measurementValue)) %>% 

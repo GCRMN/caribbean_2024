@@ -63,7 +63,7 @@ hyperparam_tuning <- function(category_i){
                                          trees(),
                                          tree_depth(),
                                          min_n(),
-                                         size = 30,
+                                         size = 20,
                                          type = "max_entropy")
   
   ## 2.4 Run the hyper parameters tuning
@@ -95,7 +95,7 @@ hyperparam_tuning <- function(category_i){
   
   ## 3.2 Redefine the workflow
   
- tune_workflow <- workflow() %>%
+  tune_workflow <- workflow() %>%
     add_recipe(tune_recipe) %>% 
     add_model(tune_model)
   
@@ -131,7 +131,7 @@ hyperparam_tuning <- function(category_i){
 
 # 4. Map over the function ----
 
-tuning_results <- future_map(c("Hard coral", "Macroalgae"),
+tuning_results <- future_map(c("Hard coral", "Macroalgae", "Turf algae", "Coralline algae", "Other fauna"),
                              ~hyperparam_tuning(category_i = .)) %>% 
   map_df(., ~ as.data.frame(map(.x, ~ unname(nest(.))))) %>% 
   map(., bind_rows)
