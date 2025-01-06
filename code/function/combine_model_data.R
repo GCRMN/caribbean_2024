@@ -51,6 +51,8 @@ combine_model_data <- function(model = "xgb"){
   model_results <- model_results %>% 
     map(., ~ .x %>% add_colors)
   
+  ## 6. Return results ----
+  
   return(model_results)
   
 }

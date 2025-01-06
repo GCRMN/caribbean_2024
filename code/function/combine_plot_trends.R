@@ -4,10 +4,10 @@ combine_plot_trends <- function(area_i, categ_type){
     
     data_trends_i <- data_trends$smoothed_trends %>% 
       filter(area == area_i) %>% 
-      filter(category %in% c("Hard coral", "Macroalgae")) %>% 
+      filter(category %in% c("Hard coral", "Macroalgae", "Turf algae")) %>% 
       mutate(category = as.factor(category),
-             category = fct_expand(category, "Hard coral", "Macroalgae"),
-             category = fct_relevel(category, "Hard coral", "Macroalgae"))
+             category = fct_expand(category, "Hard coral", "Macroalgae", "Turf algae"),
+             category = fct_relevel(category, "Hard coral", "Macroalgae", "Turf algae"))
     
     plot_list <- map(levels(data_trends_i$category),
                      ~plot_trends(category_i = ., data_trends_i = data_trends_i, show_obs_data = "ribbon"))

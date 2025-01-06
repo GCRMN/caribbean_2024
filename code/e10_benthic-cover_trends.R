@@ -106,9 +106,7 @@ rm(smoothed_trends, raw_trends, long_term_average,
 ## 4.1 Hyper-parameters ----
 
 model_results$model_description %>% 
-  select(-model, -color, -text_title, -grid_size) %>% 
-  group_by(category) %>% 
-  distinct()
+  select(-model, -color, -text_title, -grid_size)
 
 ## 4.2 Performance ----
 
