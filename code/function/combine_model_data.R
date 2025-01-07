@@ -3,7 +3,7 @@ combine_model_data <- function(model = "xgb"){
   # 1. List of RData files to combine
   
   data_files <- tibble(path = list.files("data/10_model-output/", full.names = TRUE)) %>% 
-    filter(str_detect(path, model) == TRUE & str_detect(path, "result") == TRUE & str_detect(path, "all") == FALSE)
+    filter(str_detect(path, model) == TRUE & str_detect(path, "result") == TRUE & str_detect(path, "_all") == FALSE)
   
   # 2. Create a function to load RData files
   
@@ -34,13 +34,19 @@ combine_model_data <- function(model = "xgb"){
     data <- data %>% 
       mutate(color = case_when(category == "Hard coral" ~ palette_second[2],
                                category == "Macroalgae" ~ palette_second[4],
-                               category == "Turf algae" ~ palette_second[5]),
+                               category == "Turf algae" ~ palette_second[5],
+                               category == "Coralline algae" ~ palette_second[1],
+                               category == "Other fauna" ~ palette_second[3]),
              text_title = case_when(category == "Hard coral" ~ 
                                       glue("**A.**<span style='color:{color}'> {category}</span>"),
+                                    category == "Coralline algae" ~ 
+                                      glue("**B.**<span style='color:{color}'> {category}</span>"),
                                     category == "Macroalgae" ~ 
                                       glue("**C.**<span style='color:{color}'> {category}</span>"),
                                     category == "Turf algae" ~ 
-                                      glue("**D.**<span style='color:{color}'> {category}</span>")))
+                                      glue("**D.**<span style='color:{color}'> {category}</span>"),
+                                    category == "Other fauna" ~ 
+                                      glue("**E.**<span style='color:{color}'> {category}</span>")))
     
     return(data)
     

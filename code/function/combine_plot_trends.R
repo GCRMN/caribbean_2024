@@ -4,19 +4,22 @@ combine_plot_trends <- function(area_i, categ_type){
     
     data_trends_i <- data_trends$smoothed_trends %>% 
       filter(area == area_i) %>% 
-      filter(category %in% c("Hard coral", "Macroalgae", "Turf algae")) %>% 
+      filter(category %in% c("Hard coral", "Coralline algae", "Macroalgae",
+                             "Turf algae", "Other fauna")) %>% 
       mutate(category = as.factor(category),
-             category = fct_expand(category, "Hard coral", "Macroalgae", "Turf algae"),
-             category = fct_relevel(category, "Hard coral", "Macroalgae", "Turf algae"))
+             category = fct_expand(category, "Hard coral", "Coralline algae", "Macroalgae",
+                                   "Turf algae", "Other fauna"),
+             category = fct_relevel(category, "Hard coral", "Coralline algae", "Macroalgae",
+                                    "Turf algae", "Other fauna"))
     
     plot_list <- map(levels(data_trends_i$category),
                      ~plot_trends(category_i = ., data_trends_i = data_trends_i, show_obs_data = "ribbon"))
     
-    plot_i <- wrap_plots(plot_list, ncol = 1)
+    plot_i <- wrap_plots(plot_list, ncol = 2)
     
     if(area_i == "All"){
       
-      ggsave(filename = "figs/01_part-1/fig-13.png", plot = plot_i, height = 12, width = 5, dpi = fig_resolution)  
+      ggsave(filename = "figs/01_part-1/fig-13.png", plot = plot_i, height = 11, width = 9, dpi = fig_resolution)  
       
     }else{
       
