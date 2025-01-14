@@ -213,7 +213,7 @@ data_site_coords_obs <- st_read("data/03_site-coords/site-coords_obs.shp") %>%
 
 data_benthic_hc <- data_benthic %>% 
   # 1. Sum of benthic cover per sampling unit (site, transect, quadrat) and category
-  filter(family %in% c("Acroporidae", "Pocilloporidae", "Poritidae")) %>% 
+  filter(family %in% c("Acroporidae", "Merulinidae")) %>% 
   mutate(category = family) %>% 
   group_by(datasetID, region, subregion, ecoregion, country, territory, area, locality, habitat, parentEventID,
            decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, eventID, category) %>% 
@@ -225,15 +225,23 @@ data_benthic_hc <- data_benthic %>%
            decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, category) %>% 
   summarise(measurementValue = mean(measurementValue)) %>% 
   ungroup() %>% 
-  # 3. Remove values greater than 100 (unlikely but included to avoid any issues later)
+  # 3. Regenerate 0 values
+  group_by(datasetID) %>% 
+  complete(category,
+           nesting(region, subregion, ecoregion, country, territory, area, locality,
+                   habitat, parentEventID, decimalLatitude, decimalLongitude, verbatimDepth,
+                   year, month, day, eventDate),
+           fill = list(measurementValue = 0)) %>%
+  ungroup() %>%
+  # 4. Remove values greater than 100 (unlikely but included to avoid any issues later)
   filter(measurementValue <= 100) %>% 
-  # 4. Remove useless variables
+  # 5. Remove useless variables
   select(-region, -subregion, -ecoregion, -country, -locality, -habitat, -eventDate) %>% 
-  # 5. Convert to factors
+  # 6. Convert to factors
   mutate_if(is.character, factor) %>% 
-  # 6. Add site_id and type (to join on step 7)
+  # 7. Add site_id and type (to join on step 7)
   left_join(., data_site_coords_obs) %>% 
-  # 7. Add predictors
+  # 8. Add predictors
   left_join(., data_predictors %>%
               filter(type == "obs") %>% 
               # Remove lat and long because GEE slightly modify these, which break the join

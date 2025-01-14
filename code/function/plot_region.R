@@ -19,7 +19,7 @@ plot_region <- function(scale = TRUE){
   
   ## 3.1 Country boundaries ----
   
-  data_land <- st_read("data/01_maps/01_raw//04_natural-earth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
+  data_land <- st_read("data/01_maps/01_raw/04_natural-earth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
   
   ## 3.2 Reefs ----
   

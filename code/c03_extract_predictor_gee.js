@@ -244,7 +244,7 @@ Export.table.toDrive({
 // 7.1 Import data ----
 
 var data_sst = ee.ImageCollection('NOAA/CDR/OISST/V2_1')
-                  .filter(ee.Filter.date('1981-01-01', '2023-12-31'))
+                  .filter(ee.Filter.date('1981-01-01', '2024-12-31'))
                   .select('sst');
 
 // 7.2 List of years to aggregate ----
@@ -289,7 +289,7 @@ Export.table.toDrive({
 // 8.1 Import data ----
 
 var data_sst = ee.ImageCollection('NOAA/CDR/OISST/V2_1')
-                  .filter(ee.Filter.date('1981-01-01', '2023-12-31'))
+                  .filter(ee.Filter.date('1981-01-01', '2024-12-31'))
                   .select('sst');
 
 // 8.2 List of years to aggregate ----
@@ -334,7 +334,7 @@ Export.table.toDrive({
 // 9.1 Import data ----
 
 var data_sst = ee.ImageCollection('NOAA/CDR/OISST/V2_1')
-                  .filter(ee.Filter.date('1981-01-01', '2023-12-31'))
+                  .filter(ee.Filter.date('1981-01-01', '2024-12-31'))
                   .select('sst');
 
 // 9.2 List of years to aggregate ----
@@ -379,7 +379,7 @@ Export.table.toDrive({
 // 10.1 Import data ----
 
 var data_sst = ee.ImageCollection('NOAA/CDR/OISST/V2_1')
-                  .filter(ee.Filter.date('1981-01-01', '2023-12-31'))
+                  .filter(ee.Filter.date('1981-01-01', '2024-12-31'))
                   .select('sst');
                   
 // 10.2 SD between the dates ----
@@ -410,7 +410,7 @@ Export.table.toDrive({
 // 11.1 Import data ----
 
 var data_sst = ee.ImageCollection('NOAA/CDR/OISST/V2_1')
-                  .filter(ee.Filter.date('1981-01-01', '2023-12-31'))
+                  .filter(ee.Filter.date('1981-01-01', '2024-12-31'))
                   .select('sst');
 
 // 11.2 Skewness between the dates ----

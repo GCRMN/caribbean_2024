@@ -206,31 +206,56 @@ ggplot(data = data_benthic_cover, aes(x = fct_reorder(genus, measurementValue), 
 ggsave("figs/06_additional/benthic-cover_hcc-genera_barplot.png",
        width = 6, height = 10, dpi = fig_resolution)
 
-## 5.2 Trends of main hard coral genera ----
+## 5.2 Caribbean region (density and trend) ----
 
 data_benthic_cover <- data_benthic %>% 
-  filter(category == "Hard coral" & !is.na(genus)) %>% 
-  group_by(datasetID, region, subregion, ecoregion, country, territory, locality, habitat, parentEventID, eventID,
-           decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, genus) %>% 
+  # 1. Sum of benthic cover per sampling unit (site, transect, quadrat) and category
+  filter(family %in% c("Acroporidae", "Merulinidae")) %>% 
+  mutate(category = family) %>% 
+  group_by(datasetID, region, subregion, ecoregion, country, territory, area, locality, habitat, parentEventID,
+           decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, eventID, category) %>% 
   summarise(measurementValue = sum(measurementValue)) %>% 
   ungroup() %>% 
   # 2. Summarise data at the transect level (i.e. mean of photo-quadrats)
   # This avoid getting semi-quantitative data (e.g. when there is only 10 points per photo-quadrat)
-  group_by(datasetID, region, subregion, ecoregion, country, territory, locality, habitat, parentEventID,
-           decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, genus) %>% 
+  group_by(datasetID, region, subregion, ecoregion, country, territory, area, locality, habitat, parentEventID,
+           decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, category) %>% 
   summarise(measurementValue = mean(measurementValue)) %>% 
-  ungroup()
+  ungroup() %>% 
+  # 3. Regenerate 0 values
+  group_by(datasetID) %>% 
+  complete(category,
+           nesting(region, subregion, ecoregion, country, territory, area, locality,
+                   habitat, parentEventID, decimalLatitude, decimalLongitude, verbatimDepth,
+                   year, month, day, eventDate),
+           fill = list(measurementValue = 0)) %>%
+  ungroup() %>% 
+  # 4. Add colors 
+  mutate(color = case_when(category == "Acroporidae" ~ palette_second[1],
+                           category == "Merulinidae" ~ palette_second[2]))
 
-ggplot(data = data_benthic_cover, aes(x = year, y = measurementValue)) +
-  geom_point(alpha = 0.1, color = "lightgrey") +
-  scale_color_identity() +
-  geom_smooth(color = palette_first[3]) +
-  facet_wrap(~genus, scales = "free_y", ncol = 7) +
+plot_a <- ggplot(data = data_benthic_cover, aes(x = measurementValue, fill = color)) +
+  geom_density() +
+  scale_fill_identity() +
+  facet_grid(~category) +
   theme_graph() + 
-  scale_x_continuous(limits = c(1980, 2025), breaks = c(1980, 2000, 2020)) + 
-  labs(y = "Percentage cover", x = "Year") +
-  theme(strip.text = element_text(face = "bold.italic"),
+  lims(x = c(0, 100)) +
+  labs(x = "Percentage cover", y = "Density") +
+  theme(strip.text = element_text(hjust = 0.5, face = "bold"),
         strip.background = element_rect(color = NA, fill = "white"))
 
-ggsave("figs/06_additional/benthic-cover_hcc-genera_trend.png",
-       width = 18, height = 8, dpi = fig_resolution)
+plot_b <- ggplot(data = data_benthic_cover, aes(x = year, y = measurementValue, color = color)) +
+  geom_point(alpha = 0.1, color = "lightgrey") +
+  scale_color_identity() +
+  geom_smooth() +
+  facet_grid(~category) +
+  theme_graph() + 
+  lims(y = c(-2, 100), x = c(1980, 2025)) +
+  labs(y = "Percentage cover", x = "Year") +
+  theme(strip.text = element_text(hjust = 0.5, face = "bold"),
+        strip.background = element_rect(color = NA, fill = "white"))
+
+plot_a + plot_b + plot_layout(ncol = 1)
+
+ggsave("figs/06_additional/benthic-cover_region_density-trend_fam.png",
+       width = 8, height = 8, dpi = fig_resolution)

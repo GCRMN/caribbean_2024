@@ -129,13 +129,44 @@ The long-term average in SST from 1985 to 2024 over coral reefs of `r area_i` wa
 
 ```{r echo=FALSE, message=FALSE}
 
+data_cyclones_i <- data_cyclones %>% 
+  filter(area == area_i)
+
+nb_storm <- length(unique(data_cyclones_i$ts_id))
+
+data_cyclones_i <- data_cyclones_i %>% 
+  filter(area == area_i) %>% 
+  filter(windspeed >= 100)
+
+nb_cyclone <- length(unique(data_cyclones_i$ts_id))
+
+data_cyclones_i <- data_cyclones_i %>% 
+  filter(area == area_i) %>% 
+  filter(windspeed == max(windspeed))
+
+name_cyclone <- str_to_title(data_cyclones_i$ts_name)
+
+year_cyclone <- year(data_cyclones_i$time)
+
+dist_cyclone <- round(data_cyclones_i$dist)
+
+speed_cyclone <- round(data_cyclones_i$windspeed)
+
+```
+
+Between 1980 and 2024, a total of `r nb_storm` tropical storms passed within 100 km distance from a coral reef of `r area_i`, and of these `r nb_cyclone` were characterized by sustained wind speed greater than 100 km.h^-1^ (**Figure 2.`r nb_chapter`.3**). The cyclone with the highest sustained wind speed over the studied period was the cyclone `r name_cyclone`, in `r year_cyclone`, which passed `r dist_cyclone` km from a coral reef with sustained wind speed of `r speed_cyclone` km.h^-1^.
+
+\
+
+```{r echo=FALSE, message=FALSE}
+
 figure_path <- paste0("../../figs/02_part-2/fig-3/", territory_name, ".png")
 
 ```
 
 ![](`r figure_path`)
 
-**Figure 2.`r nb_chapter`.3.** Maximum sustained wind speed of tropical storms passing within 100 km of a coral reef between 1980 and 2023 in `r area_i`. Colors correspond to the cyclone’s Saffir-Simpson category along its entire track. However, the values of sustained wind speed are extracted from the nearest tropical storm position from a coral reef. For this reason, some sustained wind speed values are below the lower threshold of category 1 Saffir-Simpson scale (*i.e.* 119 km.h^-1^). Note that cyclones passing more than 100 km away from coral reefs of `r area_i` are not represented, although they can have had an impact.
+**Figure 2.`r nb_chapter`.3.** Maximum sustained wind speed of tropical storms passing within 100 km of a coral reef between 1980 and 2024 in `r area_i`. Colors correspond to the cyclone’s Saffir-Simpson category along its entire track. However, the values of sustained wind speed are extracted from the nearest tropical storm position from a coral reef. For this reason, some sustained wind speed values are below the lower threshold of category 1 Saffir-Simpson scale (*i.e.* 119 km.h^-1^). Note that cyclones passing more than 100 km away from coral reefs of `r area_i` are not represented, although they can have had an impact.
 
 \newpage
 
@@ -178,6 +209,18 @@ figure_path <- paste0("../../figs/02_part-2/fig-4/", territory_name, ".png")
 ![](`r figure_path`)
 
 **Figure 2.`r nb_chapter`.4.** Temporal distribution of surveys from datasets included in the analyses to model temporal trends of major benthic categories.
+
+\newpage
+
+```{r echo=FALSE, message=FALSE}
+
+figure_path <- paste0("../../figs/02_part-2/fig-5/", territory_name, ".png")
+
+```
+
+![](`r figure_path`){width=85%}
+
+**Figure 2.`r nb_chapter`.5.** Modeled temporal trends for hard coral (A), coralline algae (B), macroalgae (C), turf algae (D), and Other fauna (E) cover in coral reefs of `r area_i` from 1980 to 2024. The bold line represents the estimated average cover, lighter and darker ribbons represent 95% and 80% confidence intervals, respectively. Note the scale on the y-axes are different between the four subplots. Gray areas represent periods where no observed data were available.
 
 \newpage
 

@@ -36,7 +36,9 @@ combine_model_data <- function(model = "xgb"){
                                category == "Macroalgae" ~ palette_second[4],
                                category == "Turf algae" ~ palette_second[5],
                                category == "Coralline algae" ~ palette_second[1],
-                               category == "Other fauna" ~ palette_second[3]),
+                               category == "Other fauna" ~ palette_second[3],
+                               category == "Acroporidae" ~ palette_second[4],
+                               category == "Merulinidae" ~ palette_second[5]),
              text_title = case_when(category == "Hard coral" ~ 
                                       glue("**A.**<span style='color:{color}'> {category}</span>"),
                                     category == "Coralline algae" ~ 
@@ -46,7 +48,11 @@ combine_model_data <- function(model = "xgb"){
                                     category == "Turf algae" ~ 
                                       glue("**D.**<span style='color:{color}'> {category}</span>"),
                                     category == "Other fauna" ~ 
-                                      glue("**E.**<span style='color:{color}'> {category}</span>")))
+                                      glue("**E.**<span style='color:{color}'> {category}</span>"),
+                                    category == "Acroporidae" ~ 
+                                      glue("**A.**<span style='color:{color}'> {category}</span>"),
+                                    category == "Merulinidae" ~ 
+                                      glue("**B.**<span style='color:{color}'> {category}</span>")))
     
     return(data)
     
