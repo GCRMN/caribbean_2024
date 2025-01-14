@@ -16,24 +16,16 @@ load("data/07_cyclones/01_cyclones_points.RData")
 
 ## 2.3 Coral reef distribution ----
 
-data_reef <- st_read("data/01_maps/02_clean/02_reefs/reefs.shp") %>% 
-  filter(!(territory %in% c("Overlapping claim: Belize / Honduras", "Quitasueño Bank",
-                            "Serrana Bank",
-                            "Overlapping claim Navassa Island: United States / Haiti / Jamaica")))
+data_reef <- st_read("data/01_maps/02_clean/02_reefs/reefs.shp")
 
 ## 2.4 Coral reef distribution 100 km buffer --
 
 data_reefs_buffer <- st_read("data/01_maps/02_clean/02_reefs/reefs_buffer_100.shp") %>% 
-  # Correct the issue of encoding GEE export
-  mutate(territory = str_replace_all(territory, c("Cura\\?ao" = "Curaçao",
-                                                  "Quitasue\\?o Bank" = "Quitasueño Bank",
-                                                  "Saint-Barth\\?lemy" = "Saint-Barthélemy"))) %>% 
-  filter(!(territory %in% c("Overlapping claim: Belize / Honduras", "Quitasueño Bank",
-                            "Serrana Bank",
-                            "Overlapping claim Navassa Island: United States / Haiti / Jamaica"))) %>% 
-  st_transform(crs = 4326) %>% 
+  mutate(area = case_when(area == "Cura?ao" ~ "Curaçao",
+                          area == "Saint-Barth?lemy" ~ "Saint-Barthélemy",
+                          TRUE ~ area)) %>% 
   st_make_valid() %>% 
-  group_by(territory) %>% 
+  group_by(area) %>% 
   summarise(geometry = st_union(geometry)) %>% 
   ungroup() 
 
@@ -41,15 +33,15 @@ data_reefs_buffer <- st_read("data/01_maps/02_clean/02_reefs/reefs_buffer_100.sh
 
 ## 3.1 Create the function ----
 
-extract_cyclone <- function(territory_i){
+extract_cyclone <- function(area_i){
   
-  # Filter data for territory
+  # Filter data for area
   
   data_reefs_buffer_i <- data_reefs_buffer %>% 
-    filter(territory == territory_i)
+    filter(area == area_i)
   
   data_reef_i <- data_reef %>% 
-    filter(territory == territory_i) %>% 
+    filter(area == area_i) %>% 
     summarise(geometry = st_union(geometry))
   
   # Extract tropical storms passing within 100 km from a reef
@@ -59,7 +51,7 @@ extract_cyclone <- function(territory_i){
     mutate(dist = as.numeric(st_distance(data_reef_i, .))/1000) %>% 
     st_drop_geometry()
   
-  print(territory_i)
+  print(area_i)
   print(data_ts_lines_i)
   
   # Extract characteristics of the tropical storm
@@ -81,7 +73,7 @@ extract_cyclone <- function(territory_i){
   # Return the results
   
   results <- left_join(data_res, data_ts_lines_i) %>% 
-    mutate(territory = territory_i, .before = "ts_id")
+    mutate(area = area_i, .before = "ts_id")
   
   return(results)
   
@@ -89,7 +81,7 @@ extract_cyclone <- function(territory_i){
 
 ## 3.2 Map over the function ----
 
-data_cyclones <- map_dfr(unique(data_reef$territory), ~extract_cyclone(territory_i = .))
+data_cyclones <- map_dfr(unique(data_reef$area), ~extract_cyclone(area_i = .))
 
 ## 3.3 Export the results ----
 

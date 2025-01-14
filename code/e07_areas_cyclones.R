@@ -5,13 +5,13 @@ library(ggrepel)
 library(glue)
 library(sf)
 sf_use_s2(FALSE)
-library(ggsflabel)
+#library(ggsflabel)
 
 # 2. Source functions ----
 
 source("code/function/graphical_par.R")
 source("code/function/theme_graph.R")
-source("code/function/theme_map_territory.R")
+source("code/function/theme_map_area.R")
 
 # 3. Plots of cyclone maximum wind speed over time ----
 
@@ -20,7 +20,7 @@ source("code/function/theme_map_territory.R")
 load("data/07_cyclones/02_cyclones_extracted.RData")
 
 data_cyclones <- data_cyclones %>% 
-  filter(!(territory %in% c("Quitasueño Bank", "Serrana Bank", "Navassa Island"))) %>% 
+  filter(!(area %in% c("Navassa Island", "Guatemala"))) %>% 
   group_by(saffir) %>% 
   mutate(max_saffir = max(saffir)) %>% 
   ungroup() %>% 
@@ -28,18 +28,18 @@ data_cyclones <- data_cyclones %>%
   mutate(ts_name = str_to_sentence(ts_name),
          max_saffir = as.factor(max_saffir)) %>% 
   # Add cyclone position by wind_speed
-  arrange(territory, desc(windspeed)) %>% 
-  group_by(territory) %>% 
+  arrange(area, desc(windspeed)) %>% 
+  group_by(area) %>% 
   mutate(position = row_number())
 
 ## 3.2 Create the function ----
 
-map_cyclone_plot <- function(territory_i){
+map_cyclone_plot <- function(area_i){
   
   # 1. Filter
   
   data_cyclones_i <- data_cyclones %>% 
-    filter(territory == territory_i)
+    filter(area == area_i)
   
   # 2. Make the plot 
   
@@ -75,19 +75,11 @@ map_cyclone_plot <- function(territory_i){
   # 3. Save the plot
   
   ggsave(filename = paste0("figs/02_part-2/fig-3/",
-                           str_replace_all(str_replace_all(str_to_lower(territory_i), " ", "-"), "---", "-"), ".png"),
+                           str_replace_all(str_replace_all(str_to_lower(area_i), " ", "-"), "---", "-"), ".png"),
          plot = plot_i, height = 3.5, width = 9, dpi = fig_resolution)
   
 }
 
 ## 3.3 Map over the function ----
 
-map(setdiff(unique(data_cyclones$territory),
-            c("Overlapping claim Navassa Island: United States / Haiti / Jamaica",
-              "Overlapping claim: Venezuela / Netherlands (Aruba) / Dominican Republic",
-              "Overlapping claim: Colombia / Dominican Republic / Venezuela",
-              "Overlapping claim: United States (Puerto Rico) / Dominican Republic",
-              "Overlapping claim: Belize / Honduras",
-              "Serrana Bank",
-              "Quitasueño Bank")), # territories for which no chapter will be included
-    ~map_cyclone_plot(territory_i = .))
+map(unique(data_cyclones$area), ~map_cyclone_plot(area_i = .))
