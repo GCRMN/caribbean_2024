@@ -40,27 +40,21 @@ ggsave(filename = "figs/01_part-1/fig-3.png", plot = plot,
 
 ## 5.1 Transform data ----
 
-data_eez <- read_sf("data/01_maps/02_clean/03_eez/caribbean_eez_sub.shp") %>%
-  filter(!(territory %in% c("Overlapping claim Navassa Island: United States / Haiti / Jamaica",
-                            "Overlapping claim: Venezuela / Netherlands (Aruba) / Dominican Republic",
-                            "Overlapping claim: Colombia / Dominican Republic / Venezuela",
-                            "Overlapping claim: United States (Puerto Rico) / Dominican Republic",
-                            "Overlapping claim: Belize / Honduras",
-                            "Serrana Bank",
-                            "Quitasueño Bank")))
+data_area <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp") %>% 
+  filter(!(area %in% c("Navassa Island", "Guatemala")))
 
 data_cyclones <- data_cyclones %>% 
   st_drop_geometry() %>% 
-  group_by(territory, saffir) %>% 
+  group_by(area, saffir) %>% 
   summarise(n = n()) %>% 
   ungroup() %>% 
-  group_by(territory) %>% 
+  group_by(area) %>% 
   mutate(n_tot = sum(n)) %>% 
   ungroup() %>% 
-  bind_rows(., tibble(territory = setdiff(data_eez$territory, data_cyclones$territory),
-                      n = rep(0, length(setdiff(data_eez$territory, data_cyclones$territory))),
+  bind_rows(., tibble(area = setdiff(data_area$area, data_cyclones$area),
+                      n = rep(0, length(setdiff(data_area$area, data_cyclones$area))),
                       n_tot = n)) %>% 
-  mutate(territory = str_replace_all(territory, c("Islands" = "Isl.",
+  mutate(area = str_replace_all(area, c("Islands" = "Isl.",
                                                   " and the " = " & ",
                                                   " and " = " & ",
                                                   "United States" = "U.S.",
@@ -68,7 +62,7 @@ data_cyclones <- data_cyclones %>%
 
 ## 5.2 Make the plot ----
 
-ggplot(data = data_cyclones, aes(x = n, y = fct_reorder(territory, n_tot), fill = saffir)) +
+ggplot(data = data_cyclones, aes(x = n, y = fct_reorder(area, n_tot), fill = saffir)) +
   geom_bar(stat = "identity", width = 0.7) +
   scale_fill_manual(breaks = c("1", "2", "3", "4", "5"),
                     labels = c("Cat. 1", "Cat. 2", "Cat. 3", "Cat. 4", "Cat. 5"),
@@ -105,9 +99,9 @@ nrow(data_cyclones)
 ## 6.2 Max number of cyclones ----
 
 data_cyclones <- data_cyclones %>% 
-  select(ts_id, territory) %>% 
+  select(ts_id, area) %>% 
   distinct() %>% 
-  group_by(territory) %>% 
+  group_by(area) %>% 
   count() %>% 
   ungroup() %>% 
   filter(n == max(n))
