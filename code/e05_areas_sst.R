@@ -85,7 +85,7 @@ ggplot(data = data_sst %>%
 ggsave(filename = "figs/05_supp-mat/sst_long-term_b.png", width = 10, height = 12, dpi = fig_resolution)
 
 ggplot(data = data_sst %>% 
-         filter(area %in% sort(unique(data_sst$area))[31:40]),
+         filter(area %in% sort(unique(data_sst$area))[31:43]),
        aes(x = date, y = sst)) +
   geom_line(color = "#2c3e50", linewidth = 0.25) +
   geom_line(aes(x = date, y = sst_linear), color = palette_second[2], linewidth = 0.8) +
@@ -97,7 +97,7 @@ ggplot(data = data_sst %>%
   theme(strip.text = element_text(hjust = 0.5),
         strip.background = element_blank())
 
-ggsave(filename = "figs/05_supp-mat/sst_long-term_c.png", width = 10, height = 7.2, dpi = fig_resolution)
+ggsave(filename = "figs/05_supp-mat/sst_long-term_c.png", width = 10, height = 9, dpi = fig_resolution)
 
 # 6. SST (month) for each area ----
 
@@ -169,10 +169,10 @@ ggplot() +
 ggsave(filename = "figs/05_supp-mat/sst_month_b.png", width = 10, height = 13, dpi = fig_resolution)
 
 ggplot() +
-  geom_line(data = data_sst_month %>% filter(area %in% sort(unique(data_sst_month$area))[31:40]),
+  geom_line(data = data_sst_month %>% filter(area %in% sort(unique(data_sst_month$area))[31:43]),
             aes(x = daymonth, y = sst, group = year, color = decade),
             alpha = 0.75, linewidth = 0.5) +
-  geom_line(data = data_sst_month_mean %>% filter(area %in% sort(unique(data_sst_month$area))[31:40]),
+  geom_line(data = data_sst_month_mean %>% filter(area %in% sort(unique(data_sst_month$area))[31:43]),
             aes(x = daymonth, y = sst, group = year),
             color = "black", linewidth = 1) +
   scale_x_discrete(breaks = c("01-01", "02-01", "03-01", "04-01", "05-01", "06-01", 
@@ -189,7 +189,7 @@ ggplot() +
   scale_y_continuous(labels = scales::number_format(accuracy = 0.1, decimal.mark = ".")) +
   facet_wrap(~area, ncol = 3, scales = "free_y")
 
-ggsave(filename = "figs/05_supp-mat/sst_month_c.png", width = 10.25, height = 7.8, dpi = fig_resolution)
+ggsave(filename = "figs/05_supp-mat/sst_month_c.png", width = 10.25, height = 9.5, dpi = fig_resolution)
 
 # 7. SST anomaly (trend) for each area ----
 
@@ -314,7 +314,7 @@ ggsave(filename = "figs/05_supp-mat/sst_anom_b.png", width = 10, height = 12, dp
 
 data_sst_anom <- data_sst %>% 
   drop_na(sst_anom_mean) %>%
-  filter(area %in% sort(unique(data_sst$area))[31:40])
+  filter(area %in% sort(unique(data_sst$area))[31:43])
 
 ggplot(data = data_sst_anom) +
   geom_ribbon(data = data_sst_anom %>% mutate(sst_anom_mean = if_else(sst_anom_mean < 0,
@@ -333,4 +333,4 @@ ggplot(data = data_sst_anom) +
   labs(x = "Year", y = "SST anomaly (°C)") +
   scale_y_continuous(labels = scales::number_format(accuracy = 0.1, decimal.mark = "."))
 
-ggsave(filename = "figs/05_supp-mat/sst_anom_c.png", width = 10, height = 7.2, dpi = fig_resolution)
+ggsave(filename = "figs/05_supp-mat/sst_anom_c.png", width = 10, height = 9, dpi = fig_resolution)
