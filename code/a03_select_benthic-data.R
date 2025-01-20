@@ -23,7 +23,11 @@ data_benthic <- synthetic_data %>%
   # Filter data on the period of interest
   filter(year >= 1980 & year <= 2024) %>% 
   # Filter depth of shallow coral reefs
-  filter(is.na(verbatimDepth) | verbatimDepth <= 30)
+  filter(is.na(verbatimDepth) | verbatimDepth <= 30) %>% 
+  # Remove incorrect position sites
+  filter(decimalLatitude != 12.01667 & decimalLongitude != -68.74994) %>% 
+  filter(decimalLatitude != 12.31858 & decimalLongitude != -69.16500) %>% 
+  filter(decimalLatitude != 12.36033 & decimalLongitude != -69.16169)
 
 # 4. Add area variable ----
 

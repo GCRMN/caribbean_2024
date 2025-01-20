@@ -85,7 +85,7 @@ if(file.exists("figs/00_misc/authors_contribution.xlsx") == FALSE){
   data_contribution_before <- read_xlsx("figs/00_misc/authors_contribution.xlsx")
   
   data_contribution <- data_contribution %>% 
-    select(first_name, last_name, `Data acquisition`) %>% 
+    select(first_name, last_name, email, `Data acquisition`) %>% 
     left_join(., data_contribution_before) %>% 
     relocate(`Data acquisition`, .before = `Data integration`)
   
