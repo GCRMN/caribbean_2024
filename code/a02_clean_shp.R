@@ -205,16 +205,10 @@ data_eez <- data_eez %>%
 
 rm(data_eez_intersects, data_fgb, data_fk, data_regions)
 
-### 3.5.3 Collectivity of Saint Martin and Sint Maarten ----
+### 3.5.3 Collectivity of Saint Martin ----
 
 data_eez <- data_eez %>% 
-  filter(territory %in% c("Collectivity of Saint Martin", "Sint-Maarten")) %>% 
-  mutate(territory = "Sint Maarten - Saint-Martin") %>% 
-  group_by(territory) %>% 
-  summarise(geometry = st_union(geometry)) %>% 
-  ungroup() %>% 
-  nngeo::st_remove_holes(.) %>% 
-  bind_rows(data_eez %>% filter(!(territory %in% c("Collectivity of Saint Martin", "Sint-Maarten"))), .)
+  mutate(territory = str_replace_all(territory, c("Collectivity of Saint Martin" = "Saint-Martin")))
 
 ### 3.5.4 Mexico (Caribbean Sea) ----
 
@@ -364,10 +358,16 @@ data_land <- data_land %>%
   bind_rows(data_land, .) %>% 
   filter(area != "Bonaire, Saint Eustatius and Saba") %>% 
   mutate(area = str_replace_all(area, c("Virgin Islands, U.S." = "United States Virgin Islands",
-                                        "Saint Eustatius" = "Sint-Eustatius",
-                                        "Saint-Martin" = "Sint Maarten - Saint-Martin")))
+                                        "Saint Eustatius" = "Sint-Eustatius")))
 
-## 5.4 Export the data ----
+## 5.4 Add Sint-Maarten ----
+
+data_land <- data_land %>% 
+  filter(area == "Saint-Martin") %>% 
+  mutate(area = "Sint-Maarten") %>% 
+  bind_rows(data_land, .)
+
+## 5.5 Export the data ----
 
 st_write(data_land, "data/01_maps/02_clean/05_princeton/land.shp", append = FALSE, delete_dsn = TRUE)
 
