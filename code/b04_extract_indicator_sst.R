@@ -49,13 +49,13 @@ extract_sst <- function(row_nb, data_reef = data_reef){
   
   # Use mode "wb" for windows otherwise issue to read the file with terra
   download.file(url = list_url_i[1, "url"],
-                destfile = paste0("data/04_sst/", list_url_i[1, "filename"]),
+                destfile = paste0("data/04_temp/", list_url_i[1, "filename"]),
                 mode = "wb",
                 timeout = max(600, getOption("timeout"))) # 600 seconds to download the file, else error message
   
   # 2. Load the raster
   
-  ncdf <- terra::rast(paste0("data/04_sst/", list_url_i[1, "filename"]))$analysed_sst
+  ncdf <- terra::rast(paste0("data/04_temp/", list_url_i[1, "filename"]))$analysed_sst
   
   crs(ncdf) <- "epsg:4326"
   
@@ -68,7 +68,7 @@ extract_sst <- function(row_nb, data_reef = data_reef){
   
   # 4. Delete raw file
   
-  file.remove(paste0("data/04_sst/", list_url_i[1, "filename"]))
+  file.remove(paste0("data/04_temp/", list_url_i[1, "filename"]))
   
   # 5. Return the results
   
