@@ -109,7 +109,8 @@ monitoring_descriptors <- data_benthic %>%
   data_descriptors() %>% 
   ungroup() %>% 
   mutate(area = "Entire Caribbean region") %>% 
-  bind_rows(monitoring_descriptors, .)
+  bind_rows(monitoring_descriptors, .) %>% 
+  distinct()
 
 ## 7.3 Export the table ----
 
