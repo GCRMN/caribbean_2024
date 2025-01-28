@@ -137,11 +137,21 @@ data_predictors <- read.csv("data/08_predictors/pred_sst_skewness.csv") %>%
 data_predictors <- read.csv("data/08_predictors/pred_sst_sd.csv") %>% 
   left_join(data_predictors, .)
 
-#data_predictors <- read.csv("data/08_predictors/pred_dhw_max.csv") %>% 
-#  arrange(site_id, type, year) %>% 
-#  group_by(site_id, type) %>% 
-#  mutate(pred_dhw_max_y1 = lag(pred_dhw_max, n = 1)) %>% 
-#  left_join(data_predictors, .)
+data_predictors <- read.csv("data/08_predictors/pred_dhw_max.csv") %>% 
+  arrange(site_id, type, year) %>% 
+  group_by(site_id, type) %>% 
+  mutate(pred_dhw_max_y1 = lag(pred_dhw_max, n = 1)) %>% 
+  left_join(data_predictors, .)
+
+data_predictors <- read.csv("data/08_predictors/pred_ssta_max.csv") %>% 
+  arrange(site_id, type, year) %>% 
+  group_by(site_id, type) %>% 
+  left_join(data_predictors, .)
+
+data_predictors <- read.csv("data/08_predictors/pred_ssta_mean.csv") %>% 
+  arrange(site_id, type, year) %>% 
+  group_by(site_id, type) %>% 
+  left_join(data_predictors, .)
 
 data_predictors <- read.csv("data/08_predictors/pred_cyclones.csv") %>% 
   left_join(data_predictors, .) %>% 
@@ -153,7 +163,8 @@ data_predictors <- data_predictors %>%
   # Change unit for SST (°C)
   mutate(across(c(pred_sst_sd, pred_sst_max, 
                   pred_sst_mean, pred_sst_min,
-                  pred_sst_max_y1, pred_sst_mean_y1), ~.x/100)) %>%
+                  pred_sst_max_y1, pred_sst_mean_y1,
+                  pred_ssta_mean, pred_ssta_max), ~.x/100)) %>%
   # Round to 3 digits
   mutate(across(c(pred_elevation, pred_reefextent, pred_land,
                   pred_enso, pred_chla_mean, pred_chla_sd),
