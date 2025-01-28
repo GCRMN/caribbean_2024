@@ -239,154 +239,19 @@ Export.table.toDrive({
   selectors:["site_id", "type", "pred_chla_sd"]
 });
 
-// 7. Extract predictor "mean sst per year" //////////////////////////////////////////////////////
+// 7. Extract predictor "sst sd" ////////////////////////////////////////////////////////////
 
 // 7.1 Import data ----
 
 var data_sst = ee.ImageCollection('NOAA/CDR/OISST/V2_1')
                   .filter(ee.Filter.date('1981-01-01', '2024-12-31'))
                   .select('sst');
-
-// 7.2 List of years to aggregate ----
-
-var years = ee.List.sequence(1981, 2023);
-
-// 7.3 Map a function to select data within the year and apply mean reducer ----
-
-var data_sst_year = ee.ImageCollection.fromImages(
-    years.map(function(y) {
-      return data_sst
-        .filter(ee.Filter.calendarRange(y, y, 'year'))
-        .reduce(ee.Reducer.mean())
-        .set('year', y);
-    })
-  );
-
-// 7.4 Mean of SST per year for each site ----
-
-var pred_sst_mean = data_sst_year.map(function(image) {
-  return image.reduceRegions({
-    collection: site_coords,
-    reducer:ee.Reducer.first().setOutputs(["pred_sst_mean"])
-  }).map(function (featureWithReduction) {
-    return featureWithReduction.copyProperties(image);
-  });
-}).flatten();
-
-// 7.5 Export the data ----
-
-Export.table.toDrive({
-  collection:pred_sst_mean,
-  folder:"GEE",
-  fileNamePrefix:"pred_sst_mean",
-  fileFormat:"CSV",
-  description:"pred_sst_mean",
-  selectors:["year", "site_id", "type", "pred_sst_mean"]
-});
-
-// 8. Extract predictor "max sst per year" //////////////////////////////////////////////////////
-
-// 8.1 Import data ----
-
-var data_sst = ee.ImageCollection('NOAA/CDR/OISST/V2_1')
-                  .filter(ee.Filter.date('1981-01-01', '2024-12-31'))
-                  .select('sst');
-
-// 8.2 List of years to aggregate ----
-
-var years = ee.List.sequence(1981, 2023);
-
-// 8.3 Map a function to select data within the year and apply max reducer ----
-
-var data_sst_year = ee.ImageCollection.fromImages(
-    years.map(function(y) {
-      return data_sst
-        .filter(ee.Filter.calendarRange(y, y, 'year'))
-        .reduce(ee.Reducer.max())
-        .set('year', y);
-    })
-  );
-
-// 8.4 Max of SST per year for each site ----
-
-var pred_sst_max = data_sst_year.map(function(image) {
-  return image.reduceRegions({
-    collection: site_coords,
-    reducer:ee.Reducer.first().setOutputs(["pred_sst_max"])
-  }).map(function (featureWithReduction) {
-    return featureWithReduction.copyProperties(image);
-  });
-}).flatten();
-
-// 8.5 Export the data ----
-
-Export.table.toDrive({
-  collection:pred_sst_max,
-  folder:"GEE",
-  fileNamePrefix:"pred_sst_max",
-  fileFormat:"CSV",
-  description:"pred_sst_max",
-  selectors:["year", "site_id", "type", "pred_sst_max"]
-});
-
-// 9. Extract predictor "min sst per year" //////////////////////////////////////////////////////
-
-// 9.1 Import data ----
-
-var data_sst = ee.ImageCollection('NOAA/CDR/OISST/V2_1')
-                  .filter(ee.Filter.date('1981-01-01', '2024-12-31'))
-                  .select('sst');
-
-// 9.2 List of years to aggregate ----
-
-var years = ee.List.sequence(1981, 2023);
-
-// 9.3 Map a function to select data within the year and apply min reducer ----
-
-var data_sst_year = ee.ImageCollection.fromImages(
-    years.map(function(y) {
-      return data_sst
-        .filter(ee.Filter.calendarRange(y, y, 'year'))
-        .reduce(ee.Reducer.min())
-        .set('year', y);
-    })
-  );
-
-// 9.4 Min of SST per year for each site ----
-
-var pred_sst_min = data_sst_year.map(function(image) {
-  return image.reduceRegions({
-    collection: site_coords,
-    reducer:ee.Reducer.first().setOutputs(["pred_sst_min"])
-  }).map(function (featureWithReduction) {
-    return featureWithReduction.copyProperties(image);
-  });
-}).flatten();
-
-// 9.5 Export the data ----
-
-Export.table.toDrive({
-  collection:pred_sst_min,
-  folder:"GEE",
-  fileNamePrefix:"pred_sst_min",
-  fileFormat:"CSV",
-  description:"pred_sst_min",
-  selectors:["year", "site_id", "type", "pred_sst_min"]
-});
-
-// 10. Extract predictor "sst sd" ////////////////////////////////////////////////////////////
-
-// 10.1 Import data ----
-
-var data_sst = ee.ImageCollection('NOAA/CDR/OISST/V2_1')
-                  .filter(ee.Filter.date('1981-01-01', '2024-12-31'))
-                  .select('sst');
                   
-// 10.2 SD between the dates ----
+// 7.2 SD between the dates ----
 
 var data_sst_sd = data_sst.reduce(ee.Reducer.stdDev());
 
-// 10.3 Extract SST SD for each site ----
+// 7.3 Extract SST SD for each site ----
 
 var result_sst_sd = data_sst_sd.reduceRegions({
   reducer: ee.Reducer.first().setOutputs(["pred_sst_sd"]),
@@ -394,7 +259,7 @@ var result_sst_sd = data_sst_sd.reduceRegions({
   scale: 10000
 });
 
-// 10.4 Export the data ----
+// 7.4 Export the data ----
 
 Export.table.toDrive({
   collection:result_sst_sd,
@@ -405,19 +270,19 @@ Export.table.toDrive({
   selectors:["site_id", "type", "pred_sst_sd"]
 });
 
-// 11. Extract predictor "sst skewness" /////////////////////////////////////////////////////////
+// 8. Extract predictor "sst skewness" /////////////////////////////////////////////////////////
 
-// 11.1 Import data ----
+// 8.1 Import data ----
 
 var data_sst = ee.ImageCollection('NOAA/CDR/OISST/V2_1')
                   .filter(ee.Filter.date('1981-01-01', '2024-12-31'))
                   .select('sst');
 
-// 11.2 Skewness between the dates ----
+// 8.2 Skewness between the dates ----
 
 var data_sst_skew = data_sst.reduce(ee.Reducer.skew());
 
-// 11.3 Extract SST skewness for each site ----
+// 8.3 Extract SST skewness for each site ----
 
 var result_sst_skew = data_sst_skew.reduceRegions({
   reducer: ee.Reducer.first().setOutputs(["pred_sst_skewness"]),
@@ -425,7 +290,7 @@ var result_sst_skew = data_sst_skew.reduceRegions({
   scale: 10000
 });
 
-// 11.4 Export the data ----
+// 8.4 Export the data ----
 
 Export.table.toDrive({
   collection:result_sst_skew,
@@ -436,9 +301,9 @@ Export.table.toDrive({
   selectors:["site_id", "type", "pred_sst_skewness"]
 });
 
-// 12. Extract predictor "reef extent" ///////////////////////////////////////////////////////////
+// 9. Extract predictor "reef extent" ///////////////////////////////////////////////////////////
 
-// 12.1 Create a function to create a buffer around a point ----
+// 9.1 Create a function to create a buffer around a point ----
 
 function bufferPoints(radius, bounds) {
   return function(pt) {
@@ -447,23 +312,23 @@ function bufferPoints(radius, bounds) {
   };
 }
 
-// 12.2 Apply the function (here 10 km radius) ----
+// 9.2 Apply the function (here 10 km radius) ----
 
 var site_buffer = site_coords.map(bufferPoints(10000, false));
 
-// 12.3 Load and Allen Coral Atlas (ACA) data ----
+// 9.3 Load and Allen Coral Atlas (ACA) data ----
 
 var aca_benthic = ee.Image("ACA/reef_habitat/v2_0").select('benthic').selfMask();
 
-// 12.4 Create a layer of surface by pixel (in km2) ----
+// 9.4 Create a layer of surface by pixel (in km2) ----
 
 var data_area = ee.Image.pixelArea().divide(1000000);
 
-// 12.5 Use this layer to mask ACA data ----
+// 9.5 Use this layer to mask ACA data ----
 
 var aca_area = data_area.mask(aca_benthic);
 
-// 12.6 Calculate reef area within each buffer ----
+// 9.6 Calculate reef area within each buffer ----
 
 var reef_extent = aca_area.reduceRegions({
   collection: site_buffer,
@@ -471,7 +336,7 @@ var reef_extent = aca_area.reduceRegions({
   scale:5
 });
 
-// 12.7 Export the data ----
+// 9.7 Export the data ----
 
 Export.table.toDrive({
   collection:reef_extent,
