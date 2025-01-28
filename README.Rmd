@@ -48,7 +48,7 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 * `a05_reef-buffer.js` Create coral reef buffer polygons at 20, 50, and 100 km using [GEE](https://earthengine.google.com/).
 * `a06_reef-buffer-area.R` Join reef buffer with areas' boundaries.
 * `a07_clean_cyclones.R` Clean cyclones data.
-* `a08_extract_sst-anom-year.R`
+* `a08_download_crw-year.R` Extract netCDF file aggregated per year from Coral Reef Watch (CRW).
 
 ### Indicators' extraction (`b_`)
 
@@ -59,6 +59,7 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 ### Models (benthic cover) (`c_`)
 
 * `c01_explo_benthic-data.R` Exploratory analyses of benthic cover data.
+* `c07_extract_predictor_crw.R` Extract DHW max, SSTa max, and SSTa mean.
 * `c09_model_tuning_rf.R` Perform hyper parameters tuning for Random Forest models.
 * `c09_model_tuning_xgb.R` Perform hyper parameters tuning for XGBoost models.
 * `c10_model_bootstrap_rf.R` Run bootstrap predictions using Random Forest models.
