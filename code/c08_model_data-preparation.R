@@ -161,10 +161,7 @@ data_predictors <- read.csv("data/08_predictors/pred_cyclones.csv") %>%
 
 data_predictors <- data_predictors %>% 
   # Change unit for SST (°C)
-  mutate(across(c(pred_sst_sd, pred_sst_max, 
-                  pred_sst_mean, pred_sst_min,
-                  pred_sst_max_y1, pred_sst_mean_y1,
-                  pred_ssta_mean, pred_ssta_max), ~.x/100)) %>%
+  mutate(across(c(pred_sst_sd), ~.x/100)) %>%
   # Round to 3 digits
   mutate(across(c(pred_elevation, pred_reefextent, pred_land,
                   pred_enso, pred_chla_mean, pred_chla_sd),
@@ -173,8 +170,9 @@ data_predictors <- data_predictors %>%
   mutate(across(c(pred_sst_sd, pred_sst_skewness,
                   pred_sst_max, pred_sst_mean,
                   pred_sst_min,
-                  #pred_dhw_max, pred_dhw_max_y1,
-                  pred_sst_max_y1, pred_sst_mean_y1),
+                  pred_dhw_max, pred_dhw_max_y1,
+                  pred_sst_max_y1, pred_sst_mean_y1,
+                  pred_ssta_max, pred_ssta_mean),
                 ~ round(.x, digits = 2)))
 
 # 4. Feature selection (remove correlated predictors) ----

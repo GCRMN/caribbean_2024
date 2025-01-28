@@ -11,8 +11,7 @@ site_coords <- st_read("data/03_site-coords/site-coords_all.shp")
 
 # 3. List of ncdf files ----
 
-ncdf_files <- list.files(c("data/05_ssta_year/", "data/06_dhw_year/"),
-                         full.names = TRUE) %>% 
+ncdf_files <- list.files("data/05_crw_year/", full.names = TRUE) %>% 
   as_tibble() %>% 
   mutate(year = as.numeric(str_sub(value, start = -7, end = -4)),
          pred = paste("pred",
@@ -38,6 +37,10 @@ extract_ncdf <- function(path_i){
   }else if(ncdf_files_i$pred == "pred_dhw_max"){
     
     ncdf_i <- terra::rast(ncdf_files_i$value)$degree_heating_week
+    
+  }else if(ncdf_files_i$pred %in% c("pred_sst_min", "pred_sst_mean", "pred_sst_max")){
+    
+    ncdf_i <- terra::rast(ncdf_files_i$value)$sea_surface_temperature
     
   }
   
@@ -87,3 +90,33 @@ pred_ssta_mean <- map_dfr(ncdf_files %>%
                         ~extract_ncdf(path_i = .))
 
 write.csv(pred_ssta_mean, file = "data/08_predictors/pred_ssta_mean.csv", row.names = FALSE)
+
+## 5.4 pred_sst_min ---- 
+
+pred_sst_min <- map_dfr(ncdf_files %>% 
+                            filter(ncdf_files$pred == "pred_sst_min") %>%
+                            select(value) %>%
+                            pull(),
+                          ~extract_ncdf(path_i = .))
+
+write.csv(pred_sst_min, file = "data/08_predictors/pred_sst_min.csv", row.names = FALSE)
+
+## 5.5 pred_sst_mean ---- 
+
+pred_sst_mean <- map_dfr(ncdf_files %>% 
+                          filter(ncdf_files$pred == "pred_sst_mean") %>%
+                          select(value) %>%
+                          pull(),
+                        ~extract_ncdf(path_i = .))
+
+write.csv(pred_sst_mean, file = "data/08_predictors/pred_sst_mean.csv", row.names = FALSE)
+
+## 5.6 pred_sst_max ---- 
+
+pred_sst_max <- map_dfr(ncdf_files %>% 
+                           filter(ncdf_files$pred == "pred_sst_max") %>%
+                           select(value) %>%
+                           pull(),
+                         ~extract_ncdf(path_i = .))
+
+write.csv(pred_sst_max, file = "data/08_predictors/pred_sst_max.csv", row.names = FALSE)
