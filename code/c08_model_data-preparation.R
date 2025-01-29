@@ -162,18 +162,16 @@ data_predictors <- read.csv("data/08_predictors/pred_cyclones.csv") %>%
 data_predictors <- data_predictors %>% 
   # Change unit for SST (°C)
   mutate(across(c(pred_sst_sd), ~.x/100)) %>%
-  # Round to 3 digits
-  mutate(across(c(pred_elevation, pred_reefextent, pred_land,
-                  pred_enso, pred_chla_mean, pred_chla_sd),
-                ~ round(.x, digits = 3))) %>% 
-  # Round to 2 digits
+  # Round to 4 digits
   mutate(across(c(pred_sst_sd, pred_sst_skewness,
                   pred_sst_max, pred_sst_mean,
                   pred_sst_min,
                   pred_dhw_max, pred_dhw_max_y1,
                   pred_sst_max_y1, pred_sst_mean_y1,
-                  pred_ssta_max, pred_ssta_mean),
-                ~ round(.x, digits = 2)))
+                  pred_ssta_max, pred_ssta_mean,
+                  pred_elevation, pred_reefextent, pred_land,
+                  pred_enso, pred_chla_mean, pred_chla_sd),
+                ~ round(.x, digits = 4)))
 
 # 4. Feature selection (remove correlated predictors) ----
 
@@ -203,7 +201,6 @@ data_predictors_pred <- data_predictors %>%
   select(-type, -site_id) %>% 
   mutate(datasetID = NA,
          month = NA,
-         day = NA,
          verbatimDepth = NA,
          parentEventID = NA,
          eventID = NA)
@@ -256,7 +253,7 @@ data_benthic_hc <- data_benthic %>%
               # Remove lat and long because GEE slightly modify these, which break the join
               select(-decimalLongitude, -decimalLatitude, -territory),
             by = c("site_id", "year", "area", "type")) %>% 
-  select(-site_id, -type)
+  select(-site_id, -type, -day)
 
 ## 6.2 Major benthic categories ----
 
@@ -299,17 +296,49 @@ data_benthic <- data_benthic %>%
               # Remove lat and long because GEE slightly modify these, which break the join
               select(-decimalLongitude, -decimalLatitude, -territory),
             by = c("site_id", "year", "area", "type")) %>% 
-  select(-site_id, -type) %>% 
+  select(-site_id, -type, -day) %>% 
   bind_rows(., data_benthic_hc)
 
-## 6.3 Check the number of NA per variable ----
+## 6.3 Export the data ----
 
-data_benthic_na <- data_benthic %>% 
+save(data_benthic, file = "data/09_model-data/data_benthic_prepared.RData")
+
+# 7. Check the number of NA per predictors ----
+
+## 7.1 Sites for predictions ----
+
+pred_na_pred <- data_predictors_pred %>% 
+  summarise(across(1:ncol(.), ~sum(is.na(.x)))) %>% 
+  pivot_longer(1:ncol(.), names_to = "predictor", values_to = "na") %>% 
+  mutate(n = nrow(data_predictors_pred),
+         percent = (na*100)/n,
+         type = "Sites prediction") %>% 
+  select(-n, -na) %>% 
+  filter(!(predictor %in% c("measurementValue", "category")))
+
+## 7.2 Sites for observed data ----
+
+pred_na_obs <- data_benthic %>% 
   summarise(across(1:ncol(.), ~sum(is.na(.x)))) %>% 
   pivot_longer(1:ncol(.), names_to = "predictor", values_to = "na") %>% 
   mutate(n = nrow(data_benthic),
-         percent = (na*100)/n)
+         percent = (na*100)/n,
+         type = "Sites observed") %>% 
+  select(-n, -na) %>% 
+  filter(!(predictor %in% c("measurementValue", "category")))
 
-## 6.4 Export the data ----
+## 7.3 Combine data ----
 
-save(data_benthic, file = "data/09_model-data/data_benthic_prepared.RData")
+pred_na <- bind_rows(pred_na_pred, pred_na_obs)
+
+## 7.4 Make the plot ----
+
+ggplot(data = pred_na, aes(x = fct_reorder(predictor, desc(predictor)), y = percent)) +
+  geom_bar(stat = "identity", fill = "#c44d56", width = 0.6) +
+  coord_flip() +
+  lims(y = c(0, 100)) +
+  facet_grid(~type) +
+  labs(x = NULL, y = "Percentage of NA") +
+  theme_graph()
+
+ggsave("figs/06_additional/na_predictors.png", width = 8, height = 12)

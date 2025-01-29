@@ -25,9 +25,12 @@ data_benthic <- synthetic_data %>%
   # Filter depth of shallow coral reefs
   filter(is.na(verbatimDepth) | verbatimDepth <= 30) %>% 
   # Remove incorrect position sites
+  ## Curaçao AGRRA
   filter(decimalLatitude != 12.01667 & decimalLongitude != -68.74994) %>% 
   filter(decimalLatitude != 12.31858 & decimalLongitude != -69.16500) %>% 
-  filter(decimalLatitude != 12.36033 & decimalLongitude != -69.16169)
+  filter(decimalLatitude != 12.36033 & decimalLongitude != -69.16169) %>% 
+  ## Martinique ReefCheck data from 2003
+  filter(!(datasetID == "0015" & territory == "Martinique" & year == 2003))
 
 # 4. Add area variable ----
 
