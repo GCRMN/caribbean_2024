@@ -157,6 +157,21 @@ data_predictors <- read.csv("data/08_predictors/pred_cyclones.csv") %>%
   left_join(data_predictors, .) %>% 
   mutate(across(c(windspeed_y5, nb_cyclones, nb_cyclones_y5), ~replace_na(.x, 0)))
 
+data_predictors <- read.csv("data/08_predictors/pred_reef-type.csv") %>%
+  # See https://developers.google.com/earth-engine/datasets/catalog/ACA_reef_habitat_v2_0
+  mutate(reef_type = str_replace_all(reef_type, c("11" = "Shallow Lagoon",
+                                                  "12"	= "Deep Lagoon",
+                                                  "13"	= "Inner Reef Flat",
+                                                  "14"	= "Outer Reef Flat",
+                                                  "15"	= "Reef Crest",
+                                                  "16"	= "Terrestrial Reef Flat",
+                                                  "21"	= "Sheltered Reef Slope",
+                                                  "22"	= "Reef Slope",
+                                                  "23"	= "Plateau",
+                                                  "24"	= "Back Reef Slope",
+                                                  "25"	= "Patch Reef"))) %>% 
+  left_join(data_predictors, .)
+
 # 3.5 Round values of predictors ----
 
 data_predictors <- data_predictors %>% 
@@ -178,7 +193,7 @@ data_predictors <- data_predictors %>%
 ## 4.1 Find correlation coefficients between predictors ----
 
 data_correlation <- data_predictors %>% 
-  select(-site_id, -year, -type, -area, -territory) %>% 
+  select(-site_id, -year, -type, -area, -territory, -reef_type) %>% 
   cor(., use = "complete.obs") %>% 
   round(., 2) %>% 
   as_tibble(.) %>% 

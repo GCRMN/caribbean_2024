@@ -346,3 +346,29 @@ Export.table.toDrive({
   description:"pred_reef-extent",
   selectors:["site_id", "type", "pred_reefextent"]
 });
+
+// 10. Extract predictor "reef type" ///////////////////////////////////////////////////////////
+
+// 10.1 Load and Allen Coral Atlas (ACA) data ----
+
+var aca_habitat = ee.Image('ACA/reef_habitat/v2_0')
+  .select('geomorphic');
+
+// 10.2 Extract the reef type for each site ----
+
+var data_reef_type = aca_habitat.reduceRegions({
+  reducer: ee.Reducer.first().setOutputs(["reef_type"]),
+  collection: site_coords,
+  scale: 10,
+});
+
+// 10.3 Export the data ----
+
+Export.table.toDrive({
+  collection:data_reef_type,
+  folder:"GEE",
+  fileNamePrefix:"pred_reef-type",
+  fileFormat:"CSV",
+  description:"pred_reef-type",
+  selectors:["site_id", "type", "reef_type"]
+});
