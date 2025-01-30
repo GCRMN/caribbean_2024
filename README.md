@@ -26,6 +26,8 @@
 - `plot_trends.R` Plot temporal trends.
 - `plot_vimp.R` Plot Variable Importance Plot (VIMP).
 - `plot_pdp.R` Plot Partial Dependence Plot (PDP).
+- `plot_prediction_map.R` Plot the map of the Caribbean with predicted
+  values.
 - `render_qmd.R` Render script *create_chapter_doc.qmd*.
 - `theme_graph.R` Main ggplot theme for plots.
 - `theme_map.R` Main ggplot theme for maps.

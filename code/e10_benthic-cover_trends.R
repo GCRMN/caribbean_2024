@@ -22,6 +22,7 @@ source("code/function/plot_trends.R")
 source("code/function/plot_residuals.R")
 source("code/function/plot_pred_obs.R")
 source("code/function/combine_plot_trends.R")
+source("code/function/plot_prediction_map.R")
 
 theme_set(theme_graph())
 
@@ -279,14 +280,6 @@ data_predicted <- st_join(data_predicted, data_grid) %>%
   left_join(., data_grid) %>% 
   st_as_sf()
 
-## 6.3 Make the map ----
+## 6.3 Make over the function ----
 
-plot_maps <- ggplot() +
-  geom_sf(data = data_predicted, aes(fill = cover_pred), color = NA) +
-  scale_fill_continuous(type = "viridis") +
-  facet_wrap(category~time_period, ncol = 5) +
-  geom_sf(data = data_land_ne, linewidth = 0.1) +
-  theme(strip.background = element_rect(fill = NA, linewidth = 0)) +
-  coord_sf(xlim = c(-105, -50), ylim = c(6, 38), expand = FALSE)
-
-ggsave("figs/06_additional/map_predictions.png", plot = plot_maps, width = 20, height = 15)
+map(unique(data_predicted$category), ~plot_prediction_map(category_i = .x))
