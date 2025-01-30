@@ -7,6 +7,8 @@ library(ggtext)
 library(scales)
 library(zoo)
 library(Kendall)
+library(sf)
+sf_use_s2(FALSE)
 
 # 2. Source functions ----
 
@@ -162,7 +164,7 @@ rm(data_imp_raw)
 
 ## 4.6 PDP ----
 
-### 4.6.1 Calculate confidence intervals ----
+### 4.6.1 Transform data ----
 
 data_pdp <- model_results$result_pdp %>% 
   group_by(category, predictor, x, color, text_title) %>% 
@@ -225,40 +227,29 @@ ggplot(data = data_ex_summ, aes(x = year, y = mean, fill = category)) +
 
 ggsave("figs/00_misc/benthic-trends.png", width = 6, height = 4, dpi = fig_resolution)
 
+# 6. Map of predicted values across the region ----
 
+## 6.1 Load data ----
 
+### 6.1.1 Predictions per site and year ----
 
-
-
-
-
-
-
-
-
-
-
-
-## Map of predicted values across the region ----
-
-
-library(sf)
-sf_use_s2(FALSE)
-
-# 1. Load data
-
-## 1.1 Predictions per site and year
-
-load("data/10_model-output/model_results_hard-coral_xgb_test.RData")
-
-U <- model_results$results_predicted %>% 
-  drop_na(year) %>% # Due to not exported results (to save memory)
-  group_by(year, decimalLatitude, decimalLongitude) %>% 
+data_predicted <- model_results$results_predicted %>% 
+  # Remove NA (due to not exported results, to save memory)
+  drop_na(year) %>% 
+  # Create time period
+  mutate(time_period = case_when(year %in% seq(1980, 1989) ~ "1980-1989",
+                                 year %in% seq(1990, 1999) ~ "1990-1999",
+                                 year %in% seq(1999, 2009) ~ "1999-2009",
+                                 year %in% seq(2010, 2019) ~ "2010-2019",
+                                 year %in% seq(2020, 2024) ~ "2020-2024")) %>% 
+  # Average per time period and category
+  group_by(time_period, decimalLatitude, decimalLongitude, category) %>% 
   summarise(measurementValuepred = mean(measurementValuepred)) %>% 
   ungroup() %>% 
+  # Convert to sf
   st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
 
-# 1.2 Crop of the region
+### 6.1.2 Crop of the region ----
 
 data_crop <- tibble(lon = c(-105, -50), lat = c(6, 38)) %>% 
   st_as_sf(coords = c("lon", "lat"), 
@@ -266,68 +257,36 @@ data_crop <- tibble(lon = c(-105, -50), lat = c(6, 38)) %>%
   st_bbox() %>% 
   st_as_sfc()
 
-## 1.3 Background map
+### 6.1.3 Background map ----
 
 data_land_ne <- read_sf("data/01_maps/01_raw/04_natural-earth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
 
 data_land_ne <- st_intersection(data_land_ne, data_crop)
 
-# 2. Create the grid
+### 6.1.4 Create the grid ----
 
-data_grid <- st_make_grid(data_crop, n = 200, crs = 4326) %>% 
+data_grid <- st_make_grid(data_crop, n = 150, crs = 4326) %>% 
   st_as_sf() %>% 
   mutate(cell_id = 1:nrow(.))
 
-# 3. Summarize sites values per grid cell
+## 6.2 Summarize sites values per grid cell ----
 
-test <- st_join(U, data_grid) %>% 
-  group_by(year, cell_id) %>% 
+data_predicted <- st_join(data_predicted, data_grid) %>% 
+  group_by(time_period, category, cell_id) %>% 
   summarise(cover_pred = mean(measurementValuepred)) %>% 
   ungroup() %>% 
   st_drop_geometry() %>% 
   left_join(., data_grid) %>% 
   st_as_sf()
 
-# 4. Dataviz
+## 6.3 Make the map ----
 
-## 4.1 Using the grid
-
-A <- ggplot() +
-  geom_sf(data = test, aes(fill = cover_pred), color = NA) +
+plot_maps <- ggplot() +
+  geom_sf(data = data_predicted, aes(fill = cover_pred), color = NA) +
   scale_fill_continuous(type = "viridis") +
-  facet_wrap(~year, ncol = 10) +
+  facet_wrap(category~time_period, ncol = 5) +
   geom_sf(data = data_land_ne, linewidth = 0.1) +
   theme(strip.background = element_rect(fill = NA, linewidth = 0)) +
   coord_sf(xlim = c(-105, -50), ylim = c(6, 38), expand = FALSE)
 
-ggsave("figs/06_additional/map_predictions.png", plot = A, width = 25, height = 15)
-
-## 4.2 Using the sites
-
-A <- ggplot() +
-  geom_sf(data = U, aes(color = measurementValuepred), alpha = 0.8) +
-  scale_color_continuous(type = "viridis") +
-  facet_wrap(~year) +
-  geom_sf(data = data_land_ne, linewidth = 0.1) +
-  coord_sf(xlim = c(-105, -50), ylim = c(6, 38), expand = FALSE)
-
-ggsave("test.png", plot = A)
-
-
-
-
-#### PDP - Colorer par catégorie plus tard
-
-model_results$result_pdp %>% 
-  group_by(predictor, x) %>% 
-  summarise(mean = mean(y_pred, na.rm = TRUE),
-            upper_ci = quantile(y_pred, probs = 0.975),
-            lower_ci = quantile(y_pred, probs = 0.025)) %>% 
-  ungroup() %>% 
-  ggplot(data = .) +
-    geom_ribbon(aes(x = x, ymin = lower_ci, ymax = upper_ci), alpha = 0.2) +
-    geom_line(aes(x = x, y = mean)) +
-    facet_grid(~predictor, scales = "free") +
-    theme(strip.background = element_rect(fill = NA, linewidth = 0))
-
-
+ggsave("figs/06_additional/map_predictions.png", plot = plot_maps, width = 20, height = 15)
