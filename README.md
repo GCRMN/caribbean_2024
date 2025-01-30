@@ -25,7 +25,8 @@
 - `plot_residuals.R` Plot residuals (model evaluation).
 - `plot_trends.R` Plot temporal trends.
 - `plot_vimp.R` Plot Variable Importance Plot (VIMP).
-- `render_qmd.R` Render script *create_chapter_doc.qmd*
+- `plot_pdp.R` Plot Partial Dependence Plot (PDP).
+- `render_qmd.R` Render script *create_chapter_doc.qmd*.
 - `theme_graph.R` Main ggplot theme for plots.
 - `theme_map.R` Main ggplot theme for maps.
 - `theme_map_area.R` ggplot theme for countries and territories maps.
@@ -105,7 +106,7 @@
      collate  French_France.utf8
      ctype    French_France.utf8
      tz       Europe/Paris
-     date     2025-01-28
+     date     2025-01-30
      pandoc   3.2 @ C:/Program Files/RStudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)
 
     ─ Packages ───────────────────────────────────────────────────────────────────

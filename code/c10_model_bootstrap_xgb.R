@@ -100,17 +100,17 @@ model_bootstrap <- function(category_i, bootstrap_i, pdp){
   
   if(pdp == TRUE){
     
-    model_explain <- explain_tidymodels(model = final_fitted, 
+    model_explain <- explain_tidymodels(model = tune_workflow %>% fit(data = data_train), 
                                         data = dplyr::select(data_train, -measurementValue), 
                                         y = data_train$measurementValue)
     
     result_pdp <- model_profile(explainer = model_explain,
-                                N = NULL, 
+                                N = 2000, # Number of observations to use
                                 center = FALSE,
                                 type = "partial",
+                                variable_splits_type = "uniform",
                                 variables = c("year", "decimalLongitude", "decimalLatitude",
-                                              "pred_population", "verbatimDepth"),
-                                variable_splits_type = "uniform") %>% 
+                                              "pred_gravity", "pred_population")) %>% 
       .$agr_profiles %>% 
       as_tibble(.) %>% 
       select(-"_label_", -"_ids_") %>% 
@@ -148,6 +148,22 @@ model_bootstrap <- function(category_i, bootstrap_i, pdp){
   
   result_trends <- bind_rows(results_region, results_area)
   
+  # 4.3 Raw predictions (per site)
+  
+  if(bootstrap_i <= 2){ # Return only the results for the first two iterations
+    
+    results_predicted <- results_predicted %>% 
+      select(year, decimalLatitude, decimalLongitude, measurementValuepred) %>% 
+      mutate(category = category_i, bootstrap = bootstrap_i)
+    
+  }else{
+    
+    results_predicted <- tibble(year = NA, decimalLatitude = NA,
+                                decimalLongitude = NA, measurementValuepred = NA,
+                                category = category_i, bootstrap = bootstrap_i)
+    
+  }
+  
   # 5. Return the results
   
   model_description <- model_hyperparams_i %>% 
@@ -161,6 +177,7 @@ model_bootstrap <- function(category_i, bootstrap_i, pdp){
     return(lst(model_description,
                model_performance,
                model_pred_obs,
+               results_predicted,
                result_vip,
                result_pdp,
                result_trends))
@@ -170,6 +187,7 @@ model_bootstrap <- function(category_i, bootstrap_i, pdp){
     return(lst(model_description,
                model_performance,
                model_pred_obs,
+               results_predicted,
                result_vip,
                result_trends))
     
@@ -183,55 +201,22 @@ model_bootstrap <- function(category_i, bootstrap_i, pdp){
 
 ### 4.1.1 Hard coral ----
 
-model_results <- future_map(1:100, ~model_bootstrap(category_i = "Hard coral",
-                                                    bootstrap_i = .,
-                                                    pdp = FALSE)) %>% 
+model_results <- future_map(1:4, ~model_bootstrap(category_i = "Hard coral",
+                                                  bootstrap_i = .,
+                                                  pdp = TRUE)) %>% 
   map_df(., ~ as.data.frame(map(.x, ~ unname(nest(.))))) %>% 
   map(., bind_rows) %>% 
   map(., ~distinct(.x))
 
-save(model_results, file = "data/10_model-output/model_results_hard-coral_xgb.RData")
+save(model_results, file = "data/10_model-output/model_results_hard-coral_xgb_2.RData")
 
 ### 4.1.2 Macroalgae ----
 
-model_results <- future_map(1:100, ~model_bootstrap(category_i = "Macroalgae",
-                                                    bootstrap_i = .,
-                                                    pdp = FALSE)) %>% 
+model_results <- future_map(1:4, ~model_bootstrap(category_i = "Macroalgae",
+                                                  bootstrap_i = .,
+                                                  pdp = TRUE)) %>% 
   map_df(., ~ as.data.frame(map(.x, ~ unname(nest(.))))) %>% 
   map(., bind_rows) %>% 
   map(., ~distinct(.x))
 
-save(model_results, file = "data/10_model-output/model_results_macroalgae_xgb.RData")
-
-### 4.1.3 Turf algae ----
-
-model_results <- future_map(1:100, ~model_bootstrap(category_i = "Turf algae",
-                                                    bootstrap_i = .,
-                                                    pdp = FALSE)) %>% 
-  map_df(., ~ as.data.frame(map(.x, ~ unname(nest(.))))) %>% 
-  map(., bind_rows) %>% 
-  map(., ~distinct(.x))
-
-save(model_results, file = "data/10_model-output/model_results_turf-algae_xgb.RData")
-
-### 4.1.4 Other fauna	----
-
-model_results <- future_map(1:100, ~model_bootstrap(category_i = "Other fauna",
-                                                    bootstrap_i = .,
-                                                    pdp = FALSE)) %>% 
-  map_df(., ~ as.data.frame(map(.x, ~ unname(nest(.))))) %>% 
-  map(., bind_rows) %>% 
-  map(., ~distinct(.x))
-
-save(model_results, file = "data/10_model-output/model_results_other-fauna_xgb.RData")
-
-### 4.1.5 Coralline algae	----
-
-model_results <- future_map(1:100, ~model_bootstrap(category_i = "Coralline algae",
-                                                    bootstrap_i = .,
-                                                    pdp = FALSE)) %>% 
-  map_df(., ~ as.data.frame(map(.x, ~ unname(nest(.))))) %>% 
-  map(., bind_rows) %>% 
-  map(., ~distinct(.x))
-
-save(model_results, file = "data/10_model-output/model_results_coralline-algae_xgb.RData")
+save(model_results, file = "data/10_model-output/model_results_macroalgae_xgb_2.RData")
