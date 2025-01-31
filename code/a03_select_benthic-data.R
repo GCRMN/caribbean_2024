@@ -24,7 +24,7 @@ data_benthic <- synthetic_data %>%
   filter(year >= 1980 & year <= 2024) %>% 
   # Filter depth of shallow coral reefs
   filter(is.na(verbatimDepth) | verbatimDepth <= 30) %>% 
-  # Remove incorrect position sites or apply corrections
+  # Specific corrections or filters
   ## Curaçao AGRRA
   filter(decimalLatitude != 12.01667 & decimalLongitude != -68.74994) %>% 
   filter(decimalLatitude != 12.31858 & decimalLongitude != -69.16500) %>% 
@@ -39,7 +39,9 @@ data_benthic <- synthetic_data %>%
          decimalLongitude = case_when(territory == "Guadeloupe" & 
                                         datasetID == "0015" & 
                                         locality == "Bouillante - Tahiti Beach" ~ -61.77567,
-                                      TRUE ~ decimalLongitude))
+                                      TRUE ~ decimalLongitude)) %>% 
+  ## Reef Life Survey (Pocillopora)
+  filter(!(datasetID == "0038" & genus == "Pocillopora"))
 
 # 4. Add area variable ----
 
