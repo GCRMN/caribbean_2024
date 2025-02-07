@@ -23,15 +23,58 @@ data_eez <- read_sf("data/01_maps/01_raw/02_eez/eez_v12.shp") %>%
   st_transform(crs = 4326) %>% 
   st_make_valid()
 
-## 2.2 Filter reefs falling within Caribbean GCRMN region ----
+## 2.2 Coral reefs from Guatemala (absent from WRI data) ----
+
+### 2.2.1 Load data ----
+
+data_reefs_mar <- read_sf("data/01_maps/01_raw/10_reefs-mar/Coral_Reef_Layer_2023.shp") %>% 
+  st_transform(crs = 4326) %>% 
+  st_make_valid()
+
+data_guatemala <- data_eez %>% 
+  filter(TERRITORY1 == "Guatemala")
+
+### 2.2.2 Filter reefs from Guatemala ----
+
+data_guatemala <- st_intersection(data_guatemala, data_reefs_mar)
+
+### 2.2.3 Create a grid with the same cellsize than WRI data ----
+
+data_grid <- data_guatemala %>% 
+  st_bbox() %>% 
+  st_make_grid(., cellsize = 0.005) %>%
+  st_as_sf()
+
+### 2.2.4 Extract only cell grid with coral reefs ----
+
+data_guatemala <- data_grid %>% 
+  st_filter(data_guatemala) %>% 
+  st_union() %>% 
+  st_as_sf() %>% 
+  st_transform(crs = 4326) %>% 
+  st_make_valid() %>% 
+  mutate(geometry = st_geometry(x))
+
+### 2.2.5 Data vizualisation ----
+
+ggplot() +
+  geom_sf(data = data_grid) + 
+  geom_sf(data = data_guatemala, fill = "red")
+
+## 2.3 Filter reefs falling within Caribbean GCRMN region ----
 
 data_reefs <- st_intersection(data_reefs, data_regions) %>%
-  filter(region == "Caribbean")
+  filter(region == "Caribbean") %>% 
+  bind_rows(., data_guatemala)
 
-## 2.3 Visual check ----
+## 2.4 Visual check ----
 
 ggplot() +
   geom_sf(data = data_reefs, fill = "red")
+
+## 2.5 Remove useless objects ----
+
+rm(data_grid, data_reefs_mar, data_guatemala)
 
 # 3. Define areas to be used for countries and territories chapters ----
 
@@ -40,8 +83,7 @@ ggplot() +
 data_eez_intersects <- st_intersection(data_eez, data_reefs)
 
 data_eez <- data_eez %>% 
-  filter(TERRITORY1 %in% c(unique(data_eez_intersects$TERRITORY1),
-                           "Guatemala")) # Add Guatemala, no coral reefs based on WRI data
+  filter(TERRITORY1 %in% c(unique(data_eez_intersects$TERRITORY1)))
 
 ggplot() +
   geom_sf(data = data_eez, fill = "lightblue") + 
