@@ -240,7 +240,7 @@ data_predicted <- model_results$results_predicted %>%
   # Create time period
   mutate(time_period = case_when(year %in% seq(1980, 1989) ~ "1980-1989",
                                  year %in% seq(1990, 1999) ~ "1990-1999",
-                                 year %in% seq(1999, 2009) ~ "1999-2009",
+                                 year %in% seq(1999, 2009) ~ "2000-2009",
                                  year %in% seq(2010, 2019) ~ "2010-2019",
                                  year %in% seq(2020, 2024) ~ "2020-2024")) %>% 
   # Average per time period and category

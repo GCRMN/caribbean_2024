@@ -30,7 +30,7 @@ data_sources <- read_xlsx("C:/Users/jwicquart/Desktop/Recherche/03_projects/2022
   distinct()
 
 data_year_dataset <- data_benthic %>% 
-  filter(!(area %in% c("Navassa Island", "Guatemala"))) %>% 
+  filter(!(area %in% c("Navassa Island"))) %>% 
   group_by(datasetID, area, year) %>% 
   data_descriptors() %>% 
   ungroup() %>% 
@@ -298,7 +298,7 @@ plot_map_area <- function(area_i){
 
 data_area <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp") %>% 
   st_drop_geometry() %>% 
-  filter(!(area %in% c("Navassa Island", "Guatemala"))) %>% 
+  filter(!(area %in% c("Navassa Island"))) %>% 
   distinct() %>% 
   arrange(area) %>% 
   pull()
@@ -306,8 +306,7 @@ data_area <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp") %>%
 map(data_area, ~plot_map_area(area_i = .))
 
 
-
-
+plot_map_area(area_i = "Guatemala")
 
 #### TEST LABELS ##################
 

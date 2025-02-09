@@ -23,7 +23,7 @@ data_land_ne <- st_intersection(data_land_ne, data_crop)
 data_reefs <- read_sf("data/01_maps/02_clean/02_reefs/reefs.shp")
 
 data_area <- read_sf("data/01_maps/02_clean/03_eez/caribbean_area.shp") %>% 
-  filter(!(area %in% c("Navassa Island", "Guatemala")))
+  filter(!(area %in% c("Navassa Island")))
 
 # 4. Create the function ----
 
