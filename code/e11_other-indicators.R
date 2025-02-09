@@ -14,14 +14,9 @@ source("code/function/theme_graph.R")
 
 # 3. Relative coral reef extent of the Caribbean ----
 
-## 3.1 Load and transform data ----
+## 3.1 Reef area by Caribbean area ----
 
-data_reefs <- st_read("data/01_maps/01_raw/01_reefs/reef_500_poly.shp") %>% 
-  st_transform(crs = 4326) %>% 
-  st_wrap_dateline(options = c("WRAPDATELINE=YES")) %>% 
-  st_make_valid()
-
-## 3.2 Reef area by Caribbean area ----
+data_reefs <- st_read("data/01_maps/02_clean/02_reefs/reefs.shp")
 
 data_area <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp")
 
@@ -41,7 +36,12 @@ plot_b <- ggplot(data = data_reef_area_caribbean, aes(area = reef_area_abs, fill
 
 ggsave(filename = "figs/01_part-1/fig-5b.png", plot = plot_b, height = 5, width = 5, dpi = fig_resolution)
 
-## 3.3 Reef area by GCRMN regions ----
+## 3.2 Reef area by GCRMN regions ----
+
+data_reefs <- st_read("data/01_maps/01_raw/01_reefs/reef_500_poly.shp") %>% 
+  st_transform(crs = 4326) %>% 
+  st_wrap_dateline(options = c("WRAPDATELINE=YES")) %>% 
+  st_make_valid()
 
 load("data/01_maps/02_clean/01_gcrmn-regions/gcrmn_regions.RData")
 
@@ -131,7 +131,7 @@ data_population_reef <- read.csv("data/02_misc/ind_human-pop_20km.csv") %>%
 ### 4.3.1 Join population EEZ and reef buffer ----
 
 data_population <- left_join(data_population_eez, data_population_reef) %>% 
-  filter(!(area %in% c("Navassa Island", "Guatemala"))) %>% 
+  filter(!(area %in% c("Navassa Island"))) %>% 
   arrange(area)
 
 ### 4.3.2 Add the total for the Caribbean region ----
