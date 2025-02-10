@@ -20,7 +20,7 @@ source("code/function/theme_map_area.R")
 load("data/07_cyclones/02_cyclones_extracted.RData")
 
 data_cyclones <- data_cyclones %>% 
-  filter(!(area %in% c("Navassa Island", "Guatemala"))) %>% 
+  filter(!(area %in% c("Navassa Island"))) %>% 
   group_by(saffir) %>% 
   mutate(max_saffir = max(saffir)) %>% 
   ungroup() %>% 
