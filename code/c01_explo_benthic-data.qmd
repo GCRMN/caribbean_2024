@@ -215,7 +215,7 @@ left_join(data_site, data_survey) %>%
 #| echo: false
 #| message: false
 #| warning: false
-#| tbl-cap: Benthic categories per area.
+#| tbl-cap: Minimum measurementValue per area and benthic category. Minimum values should be at zero. If not it is likely that zero values have not been included in the dataset and should be regenerated.
 
 data_benthic_cover %>% 
   group_by(area, category) %>% 
@@ -224,8 +224,11 @@ data_benthic_cover %>%
   complete(area, category, fill = list(min = NA)) %>% 
   pivot_wider(names_from = category, values_from = min) %>%
   rename(Area = area) %>% 
-  kable(., align = "c") %>% 
-  kable_styling(bootstrap_options = c("striped", "hover"))
+  mutate(across(is.numeric, ~cell_spec(.x, background = case_when(.x == 0 ~ "#89c4f4",
+                                                              .x > 0 ~ "#f1828d",
+                                                              is.na(.x) ~ "lightgrey")))) %>% 
+  kableExtra::kable(., align = "c", escape = FALSE, format = "html") %>% 
+  kable_styling(., bootstrap_options = c("striped", "hover"))
 
 ```
 
@@ -235,7 +238,7 @@ data_benthic_cover %>%
 #| echo: false
 #| message: false
 #| warning: false
-#| tbl-cap: Benthic categories per area.
+#| tbl-cap: Minimum measurementValue per datasetID and benthic category. Minimum values should be at zero. If not it is likely that zero values have not been included in the dataset and should be regenerated.
 
 data_benthic_cover %>% 
   group_by(datasetID, category) %>% 
@@ -243,8 +246,11 @@ data_benthic_cover %>%
   ungroup() %>% 
   complete(datasetID, category, fill = list(min = NA)) %>% 
   pivot_wider(names_from = category, values_from = min) %>% 
-  kable(., align = "c") %>% 
-  kable_styling(bootstrap_options = c("striped", "hover"))
+  mutate(across(is.numeric, ~cell_spec(.x, background = case_when(.x == 0 ~ "#89c4f4",
+                                                              .x > 0 ~ "#f1828d",
+                                                              is.na(.x) ~ "lightgrey")))) %>% 
+  kableExtra::kable(., align = "c", escape = FALSE, format = "html") %>% 
+  kable_styling(., bootstrap_options = c("striped", "hover"))
 
 ```
 
@@ -256,7 +262,49 @@ data_benthic_cover %>%
 #| echo: false
 #| message: false
 #| warning: false
-#| 
+#| fig-height: 3
+#| fig-width: 8
+
+ggplot() +
+  geom_density(data = data_benthic_cover, aes(x = measurementValue), fill = "lightgrey") +
+  facet_grid(~category) +
+  theme_graph() + 
+  lims(x = c(0, 100)) +
+  labs(x = "Percentage cover", y = "Density") +
+  theme(strip.text = element_text(hjust = 0.5, face = "bold"),
+        text = element_text(size = 9),
+        axis.text = element_text(size = 10),
+        strip.text.x = element_text(size = 10),
+        strip.background = element_rect(color = NA, fill = "white"))
+
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-height: 3
+#| fig-width: 8
+
+ggplot() +
+  geom_smooth(data = data_benthic_cover, aes(x = year, y = measurementValue), fill = "grey", color = "black") +
+  facet_grid(~category) +
+  theme_graph() + 
+  lims(y = c(-2, 100), x = c(1980, 2025)) +
+  labs(y = "Percentage cover", x = "Year") +
+  theme(strip.text = element_text(hjust = 0.5, face = "bold"),
+        text = element_text(size = 9),
+        axis.text = element_text(size = 10),
+        strip.text.x = element_text(size = 10),
+        strip.background = element_rect(color = NA, fill = "white"))
+
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
 plot_a <- ggplot(data = data_benthic_cover, aes(x = measurementValue)) +
   geom_density() +
   facet_wrap(~category, ncol = 4) +
@@ -271,18 +319,112 @@ plot_b <- ggplot(data = data_benthic_cover, aes(x = year, y = measurementValue))
   facet_wrap(~category, ncol = 4) +
   theme_graph() + 
   lims(y = c(-2, 100), x = c(1980, 2025)) +
-  labs(y = "Percentage cover", x = "Year") +
+  labs(y = "Cover", x = "Year") +
   theme(strip.text = element_text(hjust = 0.5, face = "bold"),
         strip.background = element_rect(color = NA, fill = "white"))
 
-plot_a + plot_b + plot_layout(ncol = 1)
+plot_full <- plot_a + plot_b + plot_layout(ncol = 1)
+
+ggsave("../figs/06_additional/benthic-cover_density-trend.png", plot = plot_full,
+       width = 12, height = 6, dpi = fig_resolution)
 
 ```
 
 ### Area
 
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-height: 3
+#| fig-width: 8
+
+plot_density <- function(area_i){
+  
+  data_benthic_cover_i <- data_benthic_cover %>% 
+  filter(area == area_i)
+
+  ggplot() +
+    geom_density(data = data_benthic_cover, aes(x = measurementValue), fill = "lightgrey", alpha = 0.7) +
+    geom_density(data = data_benthic_cover_i, aes(x = measurementValue), fill = "#89c4f4", alpha = 0.7) +
+    facet_grid(~category) +
+    theme_graph() + 
+    lims(x = c(0, 100)) +
+    labs(x = "Cover", y = "Density", title = area_i) +
+    theme(strip.text = element_text(hjust = 0.5, face = "bold"),
+          text = element_text(size = 9),
+          axis.text = element_text(size = 10),
+          strip.text.x = element_text(size = 10),
+          plot.title = element_text(color = "#89c4f4", size = 15, face = "bold"),
+          strip.background = element_rect(color = NA, fill = "white"))
+  
+}
+
+map(sort(unique(data_benthic_cover$area)), ~plot_density(area_i = .x))
+
+```
+
 ### DatasetID
 
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-height: 3
+#| fig-width: 8
 
+plot_density <- function(dataset_i){
+  
+  data_benthic_cover_i <- data_benthic_cover %>% 
+  filter(datasetID == dataset_i)
 
+  ggplot() +
+    geom_density(data = data_benthic_cover, aes(x = measurementValue), fill = "lightgrey", alpha = 0.7) +
+    geom_density(data = data_benthic_cover_i, aes(x = measurementValue), fill = "#89c4f4", alpha = 0.7) +
+    facet_grid(~category) +
+    theme_graph() + 
+    lims(x = c(0, 100)) +
+    labs(x = "Percentage cover", y = "Density", title = dataset_i) +
+    theme(strip.text = element_text(hjust = 0.5, face = "bold"),
+          text = element_text(size = 9),
+          axis.text = element_text(size = 10),
+          strip.text.x = element_text(size = 10),
+          plot.title = element_text(color = "#89c4f4", size = 15, face = "bold"),
+          strip.background = element_rect(color = NA, fill = "white"))
+  
+}
 
+map(sort(unique(data_benthic_cover$datasetID)), ~plot_density(dataset_i = .x))
+
+```
+
+## Hard coral genera
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-height: 8
+#| fig-width: 5
+#| fig-cap: Average percentage cover of hard coral genera. It must be checked if genera absent in the region are listed on the y-axis such as _Pocillopora_ or _Turbinaria_.
+
+data_benthic_cover <- data_benthic %>% 
+  filter(category == "Hard coral" & !is.na(genus)) %>% 
+  group_by(datasetID, region, subregion, ecoregion, country, territory, locality, habitat, parentEventID, eventID,
+           decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, genus) %>% 
+  summarise(measurementValue = sum(measurementValue)) %>% 
+  ungroup() %>% 
+  group_by(genus) %>% 
+  summarise(measurementValue = mean(measurementValue))
+
+ggplot(data = data_benthic_cover, aes(x = fct_reorder(genus, measurementValue), y = measurementValue)) +
+  geom_bar(stat = "identity", fill = palette_first[3], width = 0.7) +
+  coord_flip() +
+  labs(y = "Average percentage cover", x = NULL) +
+  theme_graph() +
+  theme(axis.text.y = element_text(face = "italic"))
+
+ggsave("../figs/06_additional/benthic-cover_hcc-genera_barplot.png",
+       width = 6, height = 10, dpi = fig_resolution)
+
+```
