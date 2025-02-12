@@ -39,7 +39,8 @@ data_warming <- read.csv("data/02_misc/data-warming.csv") %>%
                                                   " and the " = " & ",
                                                   " and " = " & ",
                                                   "United States" = "U.S.",
-                                                  "Saint " = "St. ")))
+                                                  "Saint " = "St. "))) %>% 
+  filter(area != "Navassa Island")
 
 ## 3.2 Make the plot ----
 
@@ -143,7 +144,7 @@ ggsave("figs/01_part-1/fig-6.png", height = 8, width = 5, dpi = fig_resolution)
 ## 7.1 Transform data ----
 
 data_sst <- data_sst %>% 
-  filter(!(area %in% c("Entire Caribbean region"))) %>% 
+  filter(!(area %in% c("Entire Caribbean region", "Navassa Island"))) %>% 
   group_by(area) %>% 
   summarise(mean = mean(sst)) %>% 
   ungroup() %>% 
@@ -164,7 +165,7 @@ ggplot(data = data_sst, aes(x = sst, y = fct_reorder(area, mean))) +
 
 ## 7.3 Save the plot ----
 
-ggsave("figs/05_supp-mat/sst_distribution.png", height = 12, width = 6, dpi = fig_resolution)
+ggsave("figs/06_additional/sst_distribution.png", height = 12, width = 6, dpi = fig_resolution)
 
 # 8. Map of mean SST anomaly per year ----
 
@@ -176,8 +177,9 @@ data_eez <- read_sf("data/01_maps/02_clean/03_eez/caribbean_area.shp")
 
 ## 8.2 List of files ----
 
-data_files <- tibble(path = list.files("data/06_sst-anom_year/", full.names = TRUE)) %>% 
-  mutate(year = as.numeric(str_sub(path, -8, -4)),
+data_files <- tibble(path = list.files("data/05_crw_year/", full.names = TRUE)) %>% 
+  filter(str_detect(path, "ssta_mean") == TRUE) %>% 
+  mutate(year = as.numeric(str_sub(path, -7, -4)),
          group = rep(1:50, each = 8, length.out = nrow(.))) # 8 is the number of subplots (i.e. years) per plot
 
 ## 8.3 Create the function to make the plot for each year ----
@@ -186,7 +188,7 @@ map_ssta_year <- function(year_i, data_files_i){
   
   # 1. Load data
   
-  raster <- rast(data_files_i %>% filter(year == year_i) %>% select(path) %>% pull)
+  raster <- rast(data_files_i %>% filter(year == year_i) %>% select(path) %>% pull)$sea_surface_temperature_anomaly
   
   # 2. Make the plot
   

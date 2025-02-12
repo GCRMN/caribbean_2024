@@ -41,7 +41,7 @@ ggsave(filename = "figs/01_part-1/fig-3.png", plot = plot,
 ## 5.1 Transform data ----
 
 data_area <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp") %>% 
-  filter(!(area %in% c("Navassa Island", "Guatemala")))
+  filter(!(area %in% c("Navassa Island")))
 
 data_cyclones <- data_cyclones %>% 
   st_drop_geometry() %>% 
