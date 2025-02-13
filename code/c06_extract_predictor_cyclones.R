@@ -70,18 +70,18 @@ pred_cyclones <- pred_cyclones %>%
   ungroup() %>% 
   select(-ts_id, -ts_name) %>%
   distinct() %>% 
-  tidyr::complete(year = seq(1980, 2023), nesting(site_id, type), 
+  tidyr::complete(year = seq(1980, 2024), nesting(site_id, type), 
                   fill = list(ts_id = NA, ts_name = NA, windspeed = NA)) %>% 
-  # Wind speed of cyclones over year n-5 (five past years)
+  # Wind speed of cyclones over year n-1 (last year)
   arrange(site_id, type, year) %>% 
-  mutate(windspeed_y5 = roll_max(windspeed, n = 5, align = "right", fill = NA, na.rm = TRUE),
-         windspeed_y5 = if_else(windspeed_y5 == -Inf, 0, windspeed_y5)) %>% 
-  # Number of cyclones over year n-5 (five past years)
-  mutate(nb_cyclones_y5 = roll_sum(nb_cyclones, n = 5, align = "right", fill = NA, na.rm = TRUE)) %>% 
+  mutate(windspeed_y1 = roll_max(windspeed, n = 1, align = "right", fill = NA, na.rm = TRUE),
+         windspeed_y1 = if_else(windspeed_y1 == -Inf, 0, windspeed_y1)) %>% 
+  # Number of cyclones over year n-5 (last year)
+  mutate(nb_cyclones_y1 = roll_sum(nb_cyclones, n = 1, align = "right", fill = NA, na.rm = TRUE)) %>% 
   group_by(site_id, type) %>% 
-  mutate(nb_cyclones = sum(nb_cyclones, na.rm = TRUE)) %>% 
+  mutate(cyclones_freq = sum(nb_cyclones, na.rm = TRUE)/(2024-1980)) %>% 
   ungroup() %>% 
-  select(-windspeed)
+  select(-windspeed, -nb_cyclones)
 
 # 7. Export the results ----
 

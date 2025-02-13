@@ -76,7 +76,7 @@ ggplot(data = data_cyclones, aes(x = n, y = fct_reorder(area, n_tot), fill = saf
         legend.background = element_blank()) +
   coord_cartesian(clip = "off") +
   scale_x_continuous(expand = c(0, 0), limits = c(0, 75)) +
-  labs(x = "Number of cyclones", y = NULL)
+  labs(x = "Number of hurricanes", y = NULL)
 
 ## 5.3 Save the plot ----
 
