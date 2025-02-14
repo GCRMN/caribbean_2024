@@ -22,6 +22,8 @@ library(tidyverse)
 library(kableExtra)
 library(patchwork)
 library(ggtext)
+library(sf)
+sf_use_s2(FALSE)
 
 # 2. Source functions ----
 
@@ -96,8 +98,40 @@ left_join(data_dataset, data_site) %>%
 #| message: false
 #| warning: false
 #| fig-cap: Distribution of surveys which assessed the percentage cover of the benthic categories over time.
+#| fig-height: 5
 
-data_benthic_cover %>% 
+# 1. Load map data ----
+
+data_land_ne <- read_sf("../data/01_maps/01_raw/04_natural-earth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
+
+data_crop <- tibble(lon = c(-105, -50), lat = c(6, 38)) %>% 
+  st_as_sf(coords = c("lon", "lat"), 
+           crs = 4326) %>% 
+  st_bbox() %>% 
+  st_as_sfc()
+
+data_land_ne <- st_intersection(data_land_ne, data_crop)
+
+# 2. Create a function to produce the plots ----
+
+plot_category <- function(category_i){
+  
+data_i <- data_benthic_cover %>% 
+  filter(category == category_i) %>% 
+  select(decimalLatitude, decimalLongitude) %>% 
+  distinct() %>% 
+  st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
+
+plot_a <- ggplot() +
+  geom_sf(data = data_land_ne) +
+  geom_sf(data = data_i, col = palette_first[4]) +
+  coord_sf(xlim = c(-105, -50), ylim = c(6, 38), expand = FALSE) +
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(fill = NA, color = "black", linewidth = 0.5))
+
+plot_b <- data_benthic_cover %>% 
   select(category, decimalLatitude, decimalLongitude, year, month, day, eventDate) %>% 
   distinct() %>% 
   group_by(category, year) %>% 
@@ -106,15 +140,21 @@ data_benthic_cover %>%
   complete(category, year, fill = list(dataset = 0)) %>% 
   select(category, year, survey) %>% 
   distinct() %>% 
+  filter(category == category_i) %>% 
   ggplot(data = ., aes(x = year, y = survey)) +
     geom_bar(stat = "identity", show.legend = FALSE, width = 1,
              color = palette_first[4], fill = palette_first[3]) +
     labs(x = "Year", y = "Number of surveys") +
-    facet_wrap(~category, ncol = 2) +
     coord_cartesian(clip = "off") +
     theme_graph() +
     theme(strip.background = element_blank()) +
     scale_x_continuous(expand = c(0, 0), limits = c(1980, NA))
+
+plot_a + plot_b + plot_annotation(title = category_i)
+  
+}
+
+map(sort(unique(data_benthic_cover$category)), ~plot_category(category_i = .))
 
 ```
 
@@ -344,8 +384,7 @@ ggsave("../figs/06_additional/benthic-cover_density-trend.png", plot = plot_full
 #| echo: false
 #| message: false
 #| warning: false
-#| fig-height: 3
-#| fig-width: 8
+#| fig-height: 8
 
 plot_density <- function(area_i){
   
@@ -355,7 +394,7 @@ plot_density <- function(area_i){
   ggplot() +
     geom_density(data = data_benthic_cover, aes(x = measurementValue), fill = "lightgrey", alpha = 0.7) +
     geom_density(data = data_benthic_cover_i, aes(x = measurementValue), fill = "#89c4f4", alpha = 0.7) +
-    facet_grid(~category) +
+    facet_wrap(~category, scales = "free") +
     theme_graph() + 
     lims(x = c(0, 100)) +
     labs(x = "Cover", y = "Density", title = area_i) +
@@ -378,8 +417,7 @@ map(sort(unique(data_benthic_cover$area)), ~plot_density(area_i = .x))
 #| echo: false
 #| message: false
 #| warning: false
-#| fig-height: 3
-#| fig-width: 8
+#| fig-height: 8
 
 plot_density <- function(dataset_i){
   
@@ -389,7 +427,7 @@ plot_density <- function(dataset_i){
   ggplot() +
     geom_density(data = data_benthic_cover, aes(x = measurementValue), fill = "lightgrey", alpha = 0.7) +
     geom_density(data = data_benthic_cover_i, aes(x = measurementValue), fill = "#89c4f4", alpha = 0.7) +
-    facet_grid(~category) +
+    facet_wrap(~category, scales = "free") +
     theme_graph() + 
     lims(x = c(0, 100)) +
     labs(x = "Percentage cover", y = "Density", title = dataset_i) +
