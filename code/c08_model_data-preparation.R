@@ -5,6 +5,7 @@ library(sf)
 sf_use_s2(FALSE)
 source("code/function/graphical_par.R")
 source("code/function/theme_graph.R")
+source("code/function/prepare_benthic_data.R")
 
 # 2. Load benthic cover data ----
 
@@ -154,8 +155,7 @@ data_predictors <- read.csv("data/08_predictors/pred_ssta_mean.csv") %>%
   left_join(data_predictors, .)
 
 data_predictors <- read.csv("data/08_predictors/pred_cyclones.csv") %>% 
-  left_join(data_predictors, .) %>% 
-  mutate(across(c(windspeed_y5, nb_cyclones, nb_cyclones_y5), ~replace_na(.x, 0)))
+  left_join(data_predictors, .)
 
 data_predictors <- read.csv("data/08_predictors/pred_reef-type.csv") %>%
   # See https://developers.google.com/earth-engine/datasets/catalog/ACA_reef_habitat_v2_0
@@ -217,8 +217,7 @@ data_predictors_pred <- data_predictors %>%
   mutate(datasetID = NA,
          month = NA,
          verbatimDepth = NA,
-         parentEventID = NA,
-         eventID = NA)
+         parentEventID = NA)
 
 save(data_predictors_pred, file = "data/09_model-data/data_predictors_pred.RData")
 
