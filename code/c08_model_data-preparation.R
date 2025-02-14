@@ -230,23 +230,10 @@ data_site_coords_obs <- st_read("data/03_site-coords/site-coords_obs.shp") %>%
          decimalLatitude = st_coordinates(.)[,"Y"]) %>% 
   st_drop_geometry()
 
-## 6.1 Major hard coral families ----
-
-data_benthic_hc <- data_benthic %>% 
-  # 1. Sum of benthic cover per sampling unit (site, transect, quadrat) and category
-  filter(family %in% c("Acroporidae", "Merulinidae")) %>% 
-  mutate(category = family) %>% 
-  group_by(datasetID, region, subregion, ecoregion, country, territory, area, locality, habitat, parentEventID,
-           decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, eventID, category) %>% 
-  summarise(measurementValue = sum(measurementValue)) %>% 
-  ungroup() %>% 
-  # 2. Summarise data at the transect level (i.e. mean of photo-quadrats)
-  # This avoid getting semi-quantitative data (e.g. when there is only 10 points per photo-quadrat)
-  group_by(datasetID, region, subregion, ecoregion, country, territory, area, locality, habitat, parentEventID,
-           decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, category) %>% 
-  summarise(measurementValue = mean(measurementValue)) %>% 
-  ungroup() %>% 
-  # 3. Regenerate 0 values
+data_benthic <- data_benthic %>% 
+  # 1. Prepare benthic data
+  prepare_benthic_data(data = .) %>% 
+  # 2. Regenerate 0 values
   group_by(datasetID) %>% 
   complete(category,
            nesting(region, subregion, ecoregion, country, territory, area, locality,
@@ -254,67 +241,19 @@ data_benthic_hc <- data_benthic %>%
                    year, month, day, eventDate),
            fill = list(measurementValue = 0)) %>%
   ungroup() %>%
-  # 4. Remove values greater than 100 (unlikely but included to avoid any issues later)
-  filter(measurementValue <= 100) %>% 
-  # 5. Remove useless variables
+  # 3. Remove useless variables
   select(-region, -subregion, -ecoregion, -country, -locality, -habitat, -eventDate) %>% 
-  # 6. Convert to factors
+  # 4. Convert to factors
   mutate_if(is.character, factor) %>% 
-  # 7. Add site_id and type (to join on step 7)
+  # 5. Add site_id and type (to join on step 7)
   left_join(., data_site_coords_obs) %>% 
-  # 8. Add predictors
+  # 6. Add predictors
   left_join(., data_predictors %>%
               filter(type == "obs") %>% 
               # Remove lat and long because GEE slightly modify these, which break the join
               select(-decimalLongitude, -decimalLatitude, -territory),
             by = c("site_id", "year", "area", "type")) %>% 
   select(-site_id, -type, -day)
-
-## 6.2 Major benthic categories ----
-
-data_benthic <- data_benthic %>% 
-  # 1. Sum of benthic cover per sampling unit (site, transect, quadrat) and category
-  mutate(category = case_when(subcategory == "Macroalgae" ~ "Macroalgae",
-                              subcategory == "Turf algae" ~ "Turf algae",
-                              subcategory == "Coralline algae" ~ "Coralline algae",
-                              TRUE ~ category)) %>% 
-  filter(category %in% c("Hard coral", "Macroalgae", "Turf algae", "Coralline algae", "Other fauna")) %>% 
-  group_by(datasetID, region, subregion, ecoregion, country, territory, area, locality, habitat, parentEventID,
-           decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, eventID, category) %>% 
-  summarise(measurementValue = sum(measurementValue)) %>% 
-  ungroup() %>% 
-  # 2. Summarise data at the transect level (i.e. mean of photo-quadrats)
-  # This avoid getting semi-quantitative data (e.g. when there is only 10 points per photo-quadrat)
-  group_by(datasetID, region, subregion, ecoregion, country, territory, area, locality, habitat, parentEventID,
-           decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, category) %>% 
-  summarise(measurementValue = mean(measurementValue)) %>% 
-  ungroup() %>% 
-  # 3. Regenerate 0 values
-  group_by(datasetID) %>% 
-  complete(category,
-           nesting(region, subregion, ecoregion, country, territory, area, locality,
-                   habitat, parentEventID, decimalLatitude, decimalLongitude, verbatimDepth,
-                   year, month, day, eventDate),
-           fill = list(measurementValue = 0)) %>%
-  ungroup() %>%
-  # 4. Remove values greater than 100 (unlikely but included to avoid any issues later)
-  filter(measurementValue <= 100) %>% 
-  # 5. Remove useless variables
-  select(-region, -subregion, -ecoregion, -country, -locality, -habitat, -eventDate) %>% 
-  # 6. Convert to factors
-  mutate_if(is.character, factor) %>% 
-  # 7. Add site_id and type (to join on step 7)
-  left_join(., data_site_coords_obs) %>% 
-  # 8. Add predictors
-  left_join(., data_predictors %>%
-              filter(type == "obs") %>% 
-              # Remove lat and long because GEE slightly modify these, which break the join
-              select(-decimalLongitude, -decimalLatitude, -territory),
-            by = c("site_id", "year", "area", "type")) %>% 
-  select(-site_id, -type, -day) %>% 
-  bind_rows(., data_benthic_hc)
-
-## 6.3 Export the data ----
 
 save(data_benthic, file = "data/09_model-data/data_benthic_prepared.RData")
 
