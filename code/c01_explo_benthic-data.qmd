@@ -61,6 +61,14 @@ data_dataset <- data_benthic_cover %>%
   select(category, Datasets) %>% 
   distinct()
 
+data_territories <- data_benthic_cover %>% 
+  select(territory, category) %>% 
+  distinct() %>% 
+  group_by(category) %>% 
+  count(name = "Territories") %>% 
+  ungroup() %>% 
+  mutate(Territories = paste0(Territories, " / ", length(unique(data_benthic_cover$territory))))
+
 data_site <- data_benthic_cover %>% 
   select(category, decimalLatitude, decimalLongitude) %>% 
   distinct() %>% 
@@ -85,7 +93,8 @@ data_survey <- data_benthic_cover %>%
   select(category, Surveys) %>% 
   distinct()
 
-left_join(data_dataset, data_site) %>% 
+left_join(data_dataset, data_territories) %>% 
+  left_join(., data_site) %>% 
   left_join(., data_survey) %>%
   rename(Category = category) %>% 
   kable(., align = "c") %>% 
