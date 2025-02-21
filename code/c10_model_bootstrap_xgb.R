@@ -50,7 +50,7 @@ model_bootstrap <- function(category_i, bootstrap_i, pdp){
   
   tune_recipe <- recipe(measurementValue ~ ., data = data_train) %>% 
     step_novel("area", "territory") %>% 
-    step_unknown(datasetID) %>% 
+    step_unknown(datasetID, reef_type) %>% 
     step_dummy(all_nominal_predictors())
   
   ## 2.2 Define the model
@@ -109,8 +109,7 @@ model_bootstrap <- function(category_i, bootstrap_i, pdp){
                                 center = FALSE,
                                 type = "partial",
                                 variable_splits_type = "uniform",
-                                variables = c("year", "decimalLongitude", "decimalLatitude",
-                                              "pred_gravity", "pred_population")) %>% 
+                                variables = colnames(data_predictors_pred)) %>% 
       .$agr_profiles %>% 
       as_tibble(.) %>% 
       select(-"_label_", -"_ids_") %>% 
@@ -201,22 +200,60 @@ model_bootstrap <- function(category_i, bootstrap_i, pdp){
 
 ### 4.1.1 Hard coral ----
 
-model_results <- future_map(1:4, ~model_bootstrap(category_i = "Hard coral",
-                                                  bootstrap_i = .,
-                                                  pdp = TRUE)) %>% 
+model_results <- future_map(1:50, ~model_bootstrap(category_i = "Hard coral",
+                                                   bootstrap_i = .,
+                                                   pdp = TRUE),
+                            .options = furrr_options(seed = TRUE)) %>% 
   map_df(., ~ as.data.frame(map(.x, ~ unname(nest(.))))) %>% 
   map(., bind_rows) %>% 
   map(., ~distinct(.x))
 
-save(model_results, file = "data/10_model-output/model_results_hard-coral_xgb_2.RData")
+save(model_results, file = "data/10_model-output/model_results_hard-coral_xgb.RData")
 
 ### 4.1.2 Macroalgae ----
 
-model_results <- future_map(1:4, ~model_bootstrap(category_i = "Macroalgae",
-                                                  bootstrap_i = .,
-                                                  pdp = TRUE)) %>% 
+model_results <- future_map(1:50, ~model_bootstrap(category_i = "Macroalgae",
+                                                   bootstrap_i = .,
+                                                   pdp = TRUE),
+                            .options = future_options(seed = TRUE)) %>% 
   map_df(., ~ as.data.frame(map(.x, ~ unname(nest(.))))) %>% 
   map(., bind_rows) %>% 
   map(., ~distinct(.x))
 
-save(model_results, file = "data/10_model-output/model_results_macroalgae_xgb_2.RData")
+save(model_results, file = "data/10_model-output/model_results_macroalgae_xgb.RData")
+
+### 4.1.3 Other fauna ----
+
+model_results <- future_map(1:50, ~model_bootstrap(category_i = "Other fauna",
+                                                   bootstrap_i = .,
+                                                   pdp = TRUE),
+                            .options = future_options(seed = TRUE)) %>% 
+  map_df(., ~ as.data.frame(map(.x, ~ unname(nest(.))))) %>% 
+  map(., bind_rows) %>% 
+  map(., ~distinct(.x))
+
+save(model_results, file = "data/10_model-output/model_results_other-fauna_xgb.RData")
+
+### 4.1.4 Coralline algae ----
+
+model_results <- future_map(1:50, ~model_bootstrap(category_i = "Coralline algae",
+                                                   bootstrap_i = .,
+                                                   pdp = TRUE),
+                            .options = future_options(seed = TRUE)) %>% 
+  map_df(., ~ as.data.frame(map(.x, ~ unname(nest(.))))) %>% 
+  map(., bind_rows) %>% 
+  map(., ~distinct(.x))
+
+save(model_results, file = "data/10_model-output/model_results_coralline-algae_xgb.RData")
+
+### 4.1.5 Turf algae ----
+
+model_results <- future_map(1:50, ~model_bootstrap(category_i = "Turf algae",
+                                                   bootstrap_i = .,
+                                                   pdp = TRUE),
+                            .options = future_options(seed = TRUE)) %>% 
+  map_df(., ~ as.data.frame(map(.x, ~ unname(nest(.))))) %>% 
+  map(., bind_rows) %>% 
+  map(., ~distinct(.x))
+
+save(model_results, file = "data/10_model-output/model_results_turf-algae_xgb.RData")
