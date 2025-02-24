@@ -40,8 +40,56 @@ read_xlsx("C:/Users/jwicquart/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_b
 
 # 6. List of contributors per area ----
 
+## 6.1 Data contributors for AGRRA (datasetID 0091) ----
+
+### 6.1.1 Load AGRRA raw data (to get batch and lat/long) ----
+
+data_agrra_raw <- read_xlsx("../../2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/01_raw-data/0091/BenthicPointCoverByTransect.xlsx",
+                            sheet = 2) %>% 
+  select(Batch, Latitude, Longitude) %>% 
+  distinct()
+
+data_agrra_raw <- read_xlsx("../../2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/01_raw-data/0091/BenthicCoralCoverSpeciesByTransect.xlsx",
+                            sheet = 2) %>% 
+  select(Batch, Latitude, Longitude) %>% 
+  bind_rows(data_agrra_raw, .) %>% 
+  distinct()
+
+### 6.1.2 Load AGRRA data contributors ----
+
+data_agrra <- read_xlsx("../../2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/01_raw-data/0091/AGRRA_Surveyors_Feb2025 updated for GCRMN.xlsx",
+                        sheet = 2) %>% 
+  left_join(data_agrra_raw, .)
+
+### 6.1.3 Spatial join with area ----
+
+data_agrra <- data_agrra %>% 
+  select(Latitude, Longitude, Name, `Org Name`) %>% 
+  st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326) %>% 
+  st_intersection(., data_area) %>% 
+  st_drop_geometry() %>% 
+  select(area, Name, Org.Name) %>% 
+  distinct() %>% 
+  drop_na(Name) %>% 
+  mutate(Name = str_remove_all(Name, '"Max"'),
+         Name = str_replace_all(Name, c("\\(Richards\\)" = "R.",
+                                        "\\(Fisher\\)" = "F."))) %>% 
+  separate_longer_delim(Name, "/") %>% 
+  mutate(AGRRA = TRUE,
+         Org.Name = case_when(Org.Name %in% c("[Not Applicable]", "Independent",
+                                              "INDEPENDENT", "AGRRA volunteer", "[INDEPENDENT") ~ NA_character_,
+                              TRUE ~ Org.Name),
+         first_name = str_split_fixed(Name, " ", 2)[,1],
+         last_name = str_split_fixed(Name, " ", 2)[,2],
+         datasetID = "0091") %>% 
+  select(datasetID, area, last_name, first_name) %>% 
+  distinct()
+
+## 6.2 Non AGRRA data contributors ----
+
 read_xlsx("C:/Users/jwicquart/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/05_data-sources.xlsx") %>% 
   filter(datasetID %in% unique(data_benthic$datasetID)) %>% 
+  filter(!(datasetID %in% c("0015", "0091"))) %>% # Remove aggregated datasets
   select(datasetID, last_name, first_name) %>% 
   full_join(data_benthic %>% 
               select(datasetID, area) %>% 
@@ -49,6 +97,7 @@ read_xlsx("C:/Users/jwicquart/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_b
             .) %>% 
   drop_na(last_name) %>% 
   arrange(area, last_name) %>% 
+  bind_rows(., data_agrra) %>% 
   mutate(last_name = str_to_title(last_name),
          name = paste0(first_name, " ", last_name)) %>% 
   select(-datasetID, -last_name, -first_name) %>% 
