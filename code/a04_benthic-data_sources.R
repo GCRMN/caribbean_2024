@@ -75,14 +75,14 @@ data_agrra <- data_agrra %>%
          Name = str_replace_all(Name, c("\\(Richards\\)" = "R.",
                                         "\\(Fisher\\)" = "F."))) %>% 
   separate_longer_delim(Name, "/") %>% 
-  mutate(AGRRA = TRUE,
+  mutate(agrra = TRUE,
          Org.Name = case_when(Org.Name %in% c("[Not Applicable]", "Independent",
                                               "INDEPENDENT", "AGRRA volunteer", "[INDEPENDENT") ~ NA_character_,
                               TRUE ~ Org.Name),
          first_name = str_split_fixed(Name, " ", 2)[,1],
          last_name = str_split_fixed(Name, " ", 2)[,2],
          datasetID = "0091") %>% 
-  select(datasetID, area, last_name, first_name) %>% 
+  select(datasetID, area, agrra, last_name, first_name) %>% 
   distinct()
 
 ## 6.2 Non AGRRA data contributors ----
@@ -96,11 +96,12 @@ read_xlsx("C:/Users/jwicquart/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_b
               distinct(),
             .) %>% 
   drop_na(last_name) %>% 
-  arrange(area, last_name) %>% 
   bind_rows(., data_agrra) %>% 
+  arrange(area, last_name) %>% 
   mutate(last_name = str_to_title(last_name),
-         name = paste0(first_name, " ", last_name)) %>% 
-  select(-datasetID, -last_name, -first_name) %>% 
+         name = case_when(agrra == TRUE ~ paste0(first_name, " ", last_name, "*"),
+                          TRUE ~ paste0(first_name, " ", last_name))) %>% 
+  select(-datasetID, -last_name, -first_name, -agrra) %>% 
   distinct() %>% 
   group_by(area) %>% 
   mutate(name = paste0(name, collapse = ", ")) %>% 

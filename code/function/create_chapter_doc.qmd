@@ -21,6 +21,7 @@ require(flextable)
 
 list_authors <- read_xlsx("../../figs/05_supp-mat/tbl-4.xlsx") %>% 
   filter(area == area_i) %>% 
+  mutate(name = str_replace_all(name, "\\*", "\\\\*")) %>% 
   select(name) %>% 
   pull()
 
