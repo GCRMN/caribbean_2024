@@ -26,6 +26,7 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 * `combine_plot_trends.R` Combine temporal trend plots produced by the function _plot_trends.R_.
 * `create_chapter_doc.qmd` Countries and territories chapter template.
 * `data_descriptors.R` Get number of sites, surveys, datasets, first and last year of monitoring.
+* `download_predictors.R` Download predictors extracted through GEE and stored on Google Drive.
 * `extract_coeff.R` Extract linear models _a_ and _b_ coefficients.
 * `extract_mankendall.R` Calculate temporal trends using Man Kendall test.
 * `graphical_par.R` Graphical parameters, including colors and fonts.

@@ -1,15 +1,23 @@
 # 1. Load packages ----
 
 library(tidyverse)
+library(googledrive)
 library(sf)
 sf_use_s2(FALSE)
 source("code/function/graphical_par.R")
 source("code/function/theme_graph.R")
 source("code/function/prepare_benthic_data.R")
+source("code/function/download_predictors.R")
 
-# 2. Load benthic cover data ----
+# 2. Load data ----
 
-load("data/02_misc/data-benthic.RData")
+## 2.1 Benthic cover data ----
+
+load("data/09_misc/data-benthic.RData")
+
+## 2.2 Download predictors extracted through GEE ----
+
+download_predictors()
 
 # 3. Load and combine predictors ----
 

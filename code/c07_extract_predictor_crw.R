@@ -46,7 +46,7 @@ extract_ncdf <- function(path_i){
   
   crs(ncdf_i) <- "epsg:4326"
   
-  # 3. Extract DHW values
+  # 3. Extract values
   
   results <- terra::extract(x = ncdf_i, y = site_coords, method = "bilinear") %>% 
     as_tibble() %>% 
