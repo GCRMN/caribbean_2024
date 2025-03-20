@@ -146,12 +146,14 @@ data_benthic <- data_benthic %>%
   select(decimalLatitude, decimalLongitude, year, area) %>% 
   distinct() %>% 
   group_by(decimalLatitude, decimalLongitude, area) %>% 
-  summarise(interval_years = max(year, na.rm = TRUE) - min(year, na.rm = TRUE)) %>%
+  count(name = "nb_years") %>% 
   ungroup() %>% 
-  mutate(interval_class = cut(interval_years, 
-                              breaks = c(-Inf, 1, 5, 10, 15, Inf),
-                              labels = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years")),
-         interval_class = as.factor(interval_class)) %>% 
+  mutate(int_class = cut(nb_years, 
+                         breaks = c(-Inf, 1, 5, 10, 15, Inf),
+                         labels = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years")),
+         int_class = as.factor(int_class)) %>% 
+  arrange(int_class) %>% 
+  select(-nb_years) %>% 
   st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
 
 ### 4.1.4 Topography ----
@@ -196,14 +198,14 @@ plot_map_area <- function(area_i){
       ggnewscale::new_scale_fill() +
       ggnewscale::new_scale_color() +
       geom_sf(data = data_land, fill = NA, color = "darkgrey", linewidth = 0.1) +
-      geom_sf(data = data_benthic %>% filter(area == area_i) %>% arrange(interval_class) %>% 
+      geom_sf(data = data_benthic %>% filter(area == area_i) %>% arrange(int_class) %>% 
                 # Add point outside map range to show the legend when no data
-                bind_rows(., tibble(interval_class = unique(data_benthic$interval_class),
+                bind_rows(., tibble(int_class = unique(data_benthic$int_class),
                                     lat = 0,
                                     long = 0) %>% 
                             st_as_sf(coords = c("long", "lat"), crs = 4326)),
               size = 1.5,
-              aes(color = interval_class), show.legend = TRUE) +
+              aes(color = int_class), show.legend = TRUE) +
       scale_color_manual(values = palette_second,
                          breaks = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"),
                          labels = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"), 
@@ -246,14 +248,14 @@ plot_map_area <- function(area_i){
                            na.value = "transparent", guide = "none") +
       ggnewscale::new_scale_fill() +
       geom_sf(data = data_land, fill = NA, color = "darkgrey", linewidth = 0.1) +
-      geom_sf(data = data_benthic %>% filter(area == area_i) %>% arrange(interval_class) %>% 
+      geom_sf(data = data_benthic %>% filter(area == area_i) %>% arrange(int_class) %>% 
                 # Add point outside map range to show the legend when no data
-                bind_rows(., tibble(interval_class = unique(data_benthic$interval_class),
+                bind_rows(., tibble(int_class = unique(data_benthic$int_class),
                                     lat = 0,
                                     long = 0) %>% 
                             st_as_sf(coords = c("long", "lat"), crs = 4326)),
               size = 1.5,
-              aes(color = interval_class), show.legend = TRUE) +
+              aes(color = int_class), show.legend = TRUE) +
       scale_color_manual(values = palette_second,
                          breaks = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"),
                          labels = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"), 

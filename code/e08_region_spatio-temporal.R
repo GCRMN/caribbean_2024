@@ -17,18 +17,20 @@ data_benthic <- data_benthic %>%
   select(decimalLatitude, decimalLongitude, year) %>% 
   distinct() %>% 
   group_by(decimalLatitude, decimalLongitude) %>% 
-  summarise(interval_years = max(year, na.rm = TRUE) - min(year, na.rm = TRUE)) %>%
+  count(name = "nb_years") %>% 
   ungroup() %>% 
-  mutate(interval_class = cut(interval_years, 
-                              breaks = c(-Inf, 1, 5, 10, 15, Inf),
-                              labels = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years")),
-         interval_class = as.factor(interval_class)) %>% 
+  mutate(int_class = cut(nb_years, 
+                         breaks = c(-Inf, 1, 5, 10, 15, Inf),
+                         labels = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years")),
+         int_class = as.factor(int_class)) %>% 
+  arrange(int_class) %>% 
+  select(-nb_years) %>% 
   st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
 
 # 4. Make the plot ----
 
 plot <- plot_region(scale = TRUE) +
-  geom_sf(data = data_benthic %>% arrange(interval_class), aes(color = interval_class), size = 0.75) +
+  geom_sf(data = data_benthic %>% arrange(int_class), aes(color = int_class), size = 0.75) +
   scale_color_manual(values = palette_second,
                      labels = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"), 
                      drop = FALSE, name = "Number of years with data") +
