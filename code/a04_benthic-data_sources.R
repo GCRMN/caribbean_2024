@@ -107,3 +107,11 @@ read_xlsx("C:/Users/jwicquart/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_b
   mutate(name = paste0(name, collapse = ", ")) %>% 
   distinct() %>% 
   openxlsx::write.xlsx(., file = "figs/05_supp-mat/tbl-4.xlsx")
+
+# 7. Acknowledgments and citations to include -----
+
+read_xlsx("C:/Users/jwicquart/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/05_data-sources.xlsx") %>% 
+  filter(datasetID %in% unique(data_benthic$datasetID)) %>% 
+  select(datasetID, citation, acknowledgments) %>% 
+  distinct() %>% 
+  filter(!(is.na(citation) & is.na(acknowledgments)))
