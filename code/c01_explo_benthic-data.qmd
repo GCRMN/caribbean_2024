@@ -35,7 +35,7 @@ source("../code/function/prepare_benthic_data.R")
 
 load("../data/02_misc/data-benthic.RData")
 
-data_benthic_cover <- prepare_benthic_data(data = data_benthic)
+data_benthic_cover <- prepare_benthic_data(data = data_benthic, remove_na_algae = FALSE)
 
 ```
 
