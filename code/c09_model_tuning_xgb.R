@@ -131,7 +131,9 @@ hyperparam_tuning <- function(category_i){
 
 # 4. Map over the function ----
 
-tuning_results <- future_map(c("Hard coral", "Macroalgae", "Turf algae", "Coralline algae", "Other fauna"),
+tuning_results <- future_map(c("Algae", "Hard coral", "Other fauna",
+                               "Coralline algae", "Macroalgae", "Turf algae",
+                               "Acropora", "Orbicella", "Porites"),
                              ~hyperparam_tuning(category_i = .)) %>% 
   map_df(., ~ as.data.frame(map(.x, ~ unname(nest(.))))) %>% 
   map(., bind_rows)

@@ -13,7 +13,7 @@ source("code/function/download_predictors.R")
 
 ## 2.1 Benthic cover data ----
 
-load("data/09_misc/data-benthic.RData")
+load("data/02_misc/data-benthic.RData")
 
 ## 2.2 Download predictors extracted through GEE ----
 
@@ -239,22 +239,15 @@ data_site_coords_obs <- st_read("data/03_site-coords/site-coords_obs.shp") %>%
 
 data_benthic <- data_benthic %>% 
   # 1. Prepare benthic data
-  prepare_benthic_data(data = .) %>% 
-  # 2. Regenerate 0 values
-  group_by(datasetID) %>% 
-  complete(category,
-           nesting(region, subregion, ecoregion, country, territory, area, locality,
-                   habitat, parentEventID, decimalLatitude, decimalLongitude, verbatimDepth,
-                   year, month, day, eventDate),
-           fill = list(measurementValue = 0)) %>%
-  ungroup() %>%
-  # 3. Remove useless variables
+  prepare_benthic_data(data = ., remove_na_algae = FALSE) %>% 
+  # 2. Remove useless variables
   select(-region, -subregion, -ecoregion, -country, -locality, -habitat, -eventDate) %>% 
-  # 4. Convert to factors
+  # 3. Convert to factors
+  mutate(month = as.factor(month)) %>% 
   mutate_if(is.character, factor) %>% 
-  # 5. Add site_id and type (to join on step 7)
+  # 4. Add site_id and type (to join on step 7)
   left_join(., data_site_coords_obs) %>% 
-  # 6. Add predictors
+  # 5. Add predictors
   left_join(., data_predictors %>%
               filter(type == "obs") %>% 
               # Remove lat and long because GEE slightly modify these, which break the join

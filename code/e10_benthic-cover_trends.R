@@ -32,6 +32,9 @@ theme_set(theme_graph())
 
 model_results <- combine_model_data(model = "xgb")
 
+model_results$result_trends <- model_results$result_trends %>% 
+  filter(year >= 1985)
+
 ## 3.2 Confidence intervals ----
 
 raw_trends <- model_results$result_trends %>% 
@@ -128,7 +131,7 @@ map(unique(model_results$model_pred_obs$category), ~plot_pred_obs(category_i = .
 
 plot_residuals(all = TRUE)
 
-map(unique(tuning_results$result_pred_obs$category), ~plot_residuals(category_i = .))
+map(unique(model_results$result_pred_obs$category), ~plot_residuals(category_i = .))
 
 ## 4.5 VIMP ----
 
@@ -183,14 +186,19 @@ map(unique(data_pdp$category), ~plot_pdp(category_i = .x))
 ## 5.1 For major benthic categories ----
 
 map(unique(data_trends$smoothed_trends$area),
-    ~combine_plot_trends(area_i = ., categ_type = "categories"))
+    ~combine_plot_trends(area_i = ., categ_type = "category"))
 
-## 5.2 For hard coral families ----
+## 5.2 For algae subcategories ----
 
 map(unique(data_trends$smoothed_trends$area),
-    ~combine_plot_trends(area_i = ., categ_type = "families"))
+    ~combine_plot_trends(area_i = ., categ_type = "subcategory"))
 
-## 5.3 Raw data (for writing) ----
+## 5.3 For hard coral genera ----
+
+map(unique(data_trends$smoothed_trends$area),
+    ~combine_plot_trends(area_i = ., categ_type = "genus"))
+
+## 5.4 Raw data (for writing) ----
 
 if(FALSE){
   
@@ -205,10 +213,13 @@ if(FALSE){
   
 }
 
-## 5.4 Figure for Executive Summary ----
+# 6. Figure for Executive Summary ----
 
 data_ex_summ <- data_trends$raw_trends %>% 
-  filter(area == "All")
+  filter(area == "All" & category %in% c("Hard coral", "Algae", "Other fauna"))
+
+data_ex_summ <- data_trends$raw_trends %>% 
+  filter(area == "All" & category %in% c("Hard coral", "Turf algae", "Macroalgae", "Other fauna"))
 
 data_ex_summ <- data_ex_summ %>% 
   group_by(year) %>% 
@@ -222,11 +233,43 @@ data_ex_summ <- data_ex_summ %>%
 
 ggplot(data = data_ex_summ, aes(x = year, y = mean, fill = category)) +
   geom_area() +
-  scale_fill_manual(values = unique(data_ex_summ$color)) +
+  #scale_fill_manual(values = unique(data_ex_summ$color)) +
   theme_graph() +
   labs(x = "Year", y = "Benthic cover (%)")
 
 ggsave("figs/00_misc/benthic-trends.png", width = 6, height = 4, dpi = fig_resolution)
+
+
+
+
+
+#################### Algae vs Hard coral ratio #####################################
+
+data_ex_summ <- data_trends$raw_trends %>% 
+  filter(area == "All" & category %in% c("Hard coral", "Algae")) %>% 
+  select(year, category, mean) %>% 
+  pivot_wider(names_from = "category", values_from = "mean") %>% 
+  mutate(ratio = `Hard coral`/`Algae`)
+
+# Option 1 - Time as x
+
+ggplot(data = data_ex_summ, aes(x = year, y = ratio)) +
+  geom_line() +
+  geom_hline(yintercept = 1)
+
+# Option 2 - Time as label (faire ça mais par groupe d'années comme la fig 13 de Jackson et al, 2012)
+
+ggplot(data = data_ex_summ, aes(x = Algae, y = `Hard coral`, label = year)) +
+  geom_point() +
+  geom_text() + 
+  geom_abline(slope = 1) +
+  lims(x = c(0, 60), y = c(0, 60))
+
+######################################################################################
+
+
+
+
 
 # 6. Map of predicted values across the region ----
 

@@ -30,7 +30,9 @@ prepare_benthic_data <- function(data, remove_na_algae){
     summarise(measurementValue = mean(measurementValue)) %>% 
     ungroup() %>% 
     # 6. Remove values greater than 100 (unlikely but included to avoid any issues later)
-    filter(measurementValue <= 100)
+    filter(measurementValue <= 100) %>% 
+    # 7. Remove datasetID among top predictors for a given category
+    filter(!(category == "Algae" & datasetID %in% c("0015", "0104", "0151")))
   
   # Algae subcategories
   
@@ -65,14 +67,17 @@ prepare_benthic_data <- function(data, remove_na_algae){
       summarise(measurementValue = mean(measurementValue)) %>% 
       ungroup() %>% 
       # 6. Remove values greater than 100 (unlikely but included to avoid any issues later)
-      filter(measurementValue <= 100)
+      filter(measurementValue <= 100) %>% 
+      # 7. Remove datasetID among top predictors for a given category
+      filter(!(category == "Macroalgae" & datasetID %in% c("0091", "0079"))) %>% 
+      filter(!(category == "Other fauna" & datasetID %in% c("0152")))
     
     # Option 2 - Don't remove datasets for which at least one row is NA for an algae subcategory
     }else{ 
     
     data %>% 
       # 1. Filter taxonomic level
-      filter(category == "Algae") %>% 
+      filter(category == "Algae" & subcategory != "Cyanobacteria") %>% 
       drop_na(subcategory) %>% 
       mutate(category = subcategory) %>% 
       # 2. Sum of benthic cover per sampling unit (site, transect, quadrat) and category
@@ -95,17 +100,20 @@ prepare_benthic_data <- function(data, remove_na_algae){
       summarise(measurementValue = mean(measurementValue)) %>% 
       ungroup() %>% 
       # 5. Remove values greater than 100 (unlikely but included to avoid any issues later)
-      filter(measurementValue <= 100)
+      filter(measurementValue <= 100) %>% 
+      # 6. Remove datasetID among top predictors for a given category
+      filter(!(category == "Macroalgae" & datasetID %in% c("0091", "0079"))) %>% 
+      filter(!(category == "Other fauna" & datasetID %in% c("0152")))
   
   }
   
-  # Hard coral families
+  # Hard coral genera
   
-  result_family <- data %>% 
+  result_genera <- data %>% 
     # 1. Filter taxonomic level
     filter(category == "Hard coral") %>%
-    filter(family %in% c("Poritidae", "Acroporidae", "Meandrinidae", "Milleporidae")) %>% 
-    mutate(category = family) %>% 
+    filter(genus %in% c("Orbicella", "Acropora", "Porites")) %>% 
+    mutate(category = genus) %>% 
     # 2. Sum of benthic cover per sampling unit (site, transect, quadrat) and category
     group_by(datasetID, region, subregion, ecoregion, country, territory, area, locality, habitat, parentEventID,
              decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, eventID, category) %>% 
@@ -130,7 +138,7 @@ prepare_benthic_data <- function(data, remove_na_algae){
 
   # Combine data
   
-  result <- bind_rows(result_category, result_subcategory, result_family)
+  result <- bind_rows(result_category, result_subcategory, result_genera)
   
   return(result)
   
