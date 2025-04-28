@@ -32,15 +32,15 @@ combine_model_data <- function(model = "xgb"){
   add_colors <- function(data){
     
     data <- data %>% 
-      mutate(color = case_when(category == "Hard coral" ~ palette_second[2],
-                               category == "Algae" ~ palette_second[4],
-                               category == "Other fauna" ~ palette_second[3],
-                               category == "Macroalgae" ~ palette_second[4],
-                               category == "Turf algae" ~ palette_second[5],
-                               category == "Coralline algae" ~ palette_second[1],
-                               category == "Acropora" ~ palette_second[4],
-                               category == "Orbicella" ~ palette_second[5],
-                               category == "Porites" ~ palette_second[3]),
+      mutate(color = case_when(category == "Hard coral" ~ "#c44d56",
+                               category == "Algae" ~ "#16a085",
+                               category == "Other fauna" ~ "#714d69",
+                               category == "Macroalgae" ~ "#03a678",
+                               category == "Turf algae" ~ "#26a65b",
+                               category == "Coralline algae" ~ "#C5987D",
+                               category == "Acropora" ~ "#e08283",
+                               category == "Orbicella" ~ "#c44d56",
+                               category == "Porites" ~ "#a37c82"),
              text_title = case_when(category == "Hard coral" ~ 
                                       glue("**A.**<span style='color:{color}'> {category}</span>"),
                                     category == "Algae" ~ 
@@ -56,11 +56,11 @@ combine_model_data <- function(model = "xgb"){
                                       glue("**C.**<span style='color:{color}'> {category}</span>"),
                                     
                                     category == "Acropora" ~ 
-                                      glue("**A.**<span style='color:{color}'> {category}</span>"),
+                                      glue("**A.***<span style='color:{color}'> {category}</span>*"),
                                     category == "Orbicella" ~ 
-                                      glue("**B.**<span style='color:{color}'> {category}</span>"),
+                                      glue("**B.***<span style='color:{color}'> {category}</span>*"),
                                     category == "Porites" ~ 
-                                      glue("**C.**<span style='color:{color}'> {category}</span>")))
+                                      glue("**C.***<span style='color:{color}'> {category}</span>*")))
     
     return(data)
     

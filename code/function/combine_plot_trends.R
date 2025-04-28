@@ -9,7 +9,7 @@ combine_plot_trends <- function(area_i, categ_type){
              category = fct_expand(category, "Hard coral", "Algae", "Other fauna"),
              category = fct_relevel(category, "Hard coral", "Algae", "Other fauna"))
     
-    plot_list <- map(unique(data_trends_i$category),
+    plot_list <- map(levels(data_trends_i$category),
                      ~plot_trends(category_i = ., data_trends_i = data_trends_i, show_obs_data = "ribbon"))
     
     plot_i <- wrap_plots(plot_list, nrow = 1)
@@ -35,7 +35,7 @@ combine_plot_trends <- function(area_i, categ_type){
              category = fct_expand(category, "Coralline algae", "Macroalgae", "Turf algae"),
              category = fct_relevel(category, "Coralline algae", "Macroalgae", "Turf algae"))
     
-    plot_list <- map(unique(data_trends_i$category),
+    plot_list <- map(levels(data_trends_i$category),
                      ~plot_trends(category_i = ., data_trends_i = data_trends_i, show_obs_data = "ribbon"))
     
     plot_i <- wrap_plots(plot_list, nrow = 1)
@@ -61,7 +61,7 @@ combine_plot_trends <- function(area_i, categ_type){
              category = fct_expand(category, "Acropora", "Orbicella", "Porites"),
              category = fct_relevel(category, "Acropora", "Orbicella", "Porites"))
     
-    plot_list <- map(unique(data_trends_i$category),
+    plot_list <- map(levels(data_trends_i$category),
                      ~plot_trends(category_i = ., data_trends_i = data_trends_i, show_obs_data = "ribbon"))
     
     plot_i <- wrap_plots(plot_list, nrow = 1)
