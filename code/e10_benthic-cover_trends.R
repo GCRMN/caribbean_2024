@@ -171,14 +171,7 @@ rm(data_imp_raw)
 
 ### 4.6.1 Transform data ----
 
-data_pdp <- model_results$result_pdp %>% 
-  group_by(category, predictor, x, color, text_title) %>% 
-  summarise(mean = mean(y_pred, na.rm = TRUE),
-            upper_ci = quantile(y_pred, probs = 0.975),
-            lower_ci = quantile(y_pred, probs = 0.025)) %>% 
-  ungroup()
-
-### 4.6.2 Map over the function ----
+data_pdp <- model_results$result_pdp
 
 map(unique(data_pdp$category), ~plot_pdp(category_i = .x))
 
@@ -257,7 +250,7 @@ data_labels <- tibble(type = c(1, 1, 2),
                       y = c(10, 30, 50),
                       text = c("**More <span style='color:#16a085'>algae</span>**<br>than <span style='color:#c44d56'>hard corals</span>",
                                "**More <span style='color:#c44d56'>hard corals</span>**<br>than <span style='color:#16a085'>algae</span>",
-                               "As much <span style='color:#c44d56'>hard coral</span> than <span style='color:#16a085'>algae</span>"))
+                               "As much <span style='color:#c44d56'>hard corals</span> than <span style='color:#16a085'>algae</span>"))
 
 ggplot(data = data_ex_summ, aes(x = Algae, y = `Hard coral`, label = year)) +
   geom_line() +
@@ -302,6 +295,7 @@ data_predicted <- model_results$results_predicted %>%
   mutate(time_period = case_when(year %in% seq(1985, 1999) ~ "1985-1999",
                                  year %in% seq(2000, 2014) ~ "2000-2014",
                                  year %in% seq(2015, 2023) ~ "2015-2023")) %>% 
+  drop_na(time_period) %>% 
   # Average per time period and category
   group_by(time_period, decimalLatitude, decimalLongitude, category) %>% 
   summarise(measurementValuepred = mean(measurementValuepred)) %>% 
