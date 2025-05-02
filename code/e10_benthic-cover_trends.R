@@ -4,6 +4,7 @@ library(tidyverse) # Core tidyverse packages
 library(patchwork)
 library(glue)
 library(ggtext)
+library(ggrepel)
 library(scales)
 library(zoo)
 library(Kendall)
@@ -33,7 +34,7 @@ theme_set(theme_graph())
 model_results <- combine_model_data(model = "xgb")
 
 model_results$result_trends <- model_results$result_trends %>% 
-  filter(year >= 1985)
+  filter(year >= 1985 & year <= 2023)
 
 ## 3.2 Confidence intervals ----
 
@@ -251,19 +252,36 @@ data_ex_summ <- data_trends$raw_trends %>%
   pivot_wider(names_from = "category", values_from = "mean") %>% 
   mutate(ratio = `Hard coral`/`Algae`)
 
-# Option 1 - Time as x
-
-ggplot(data = data_ex_summ, aes(x = year, y = ratio)) +
-  geom_line() +
-  geom_hline(yintercept = 1)
-
-# Option 2 - Time as label (faire ça mais par groupe d'années comme la fig 13 de Jackson et al, 2012)
+data_labels <- tibble(type = c(1, 1, 2),
+                      x = c(30, 10, 50),
+                      y = c(10, 30, 50),
+                      text = c("**More <span style='color:#16a085'>algae</span>**<br>than <span style='color:#c44d56'>hard corals</span>",
+                               "**More <span style='color:#c44d56'>hard corals</span>**<br>than <span style='color:#16a085'>algae</span>",
+                               "As much <span style='color:#c44d56'>hard coral</span> than <span style='color:#16a085'>algae</span>"))
 
 ggplot(data = data_ex_summ, aes(x = Algae, y = `Hard coral`, label = year)) +
-  geom_point() +
-  geom_text() + 
-  geom_abline(slope = 1) +
-  lims(x = c(0, 60), y = c(0, 60))
+  geom_line() +
+  geom_text_repel(data = data_ex_summ %>% filter(year %in% c(1985, 2000, 2010, 2023)),
+                  aes(x = Algae, y = `Hard coral`, label = year), force = 40,
+                  family = font_choose_graph, seed = 27, min.segment.length = unit(10, "cm")) + 
+  geom_point(data = data_ex_summ, aes(x = Algae, y = `Hard coral`, fill = ratio),
+             size = 2, shape = 21, show.legend = FALSE, color = "black") +
+  geom_point(data = data_ex_summ %>% filter(year %in% c(1985, 2000, 2010, 2023)),
+             aes(x = Algae, y = `Hard coral`, fill = ratio), size = 4.5, shape = 21,
+             color = "black", show.legend = FALSE) +
+  geom_abline(slope = 1, linetype = "dashed") +
+  scale_fill_gradient2(high = "#c44d56", low = "#16a085", midpoint = 1) +
+  labs(x = "Algae cover (%)", y = "Hard coral cover (%)") +
+  lims(x = c(0, 60), y = c(0, 60)) +
+  theme(axis.line.y = element_line(linewidth = 0.4),
+        axis.ticks.y = element_line(linewidth = 0.4, color = "black")) +
+  geom_richtext(data = data_labels %>% filter(type == 1), aes(x = x, y = y, label = text),
+                label.color = "transparent", fill = "transparent", size = 3) +
+  geom_richtext(data = data_labels %>% filter(type == 2), aes(x = x, y = y, label = text),
+                label.color = "transparent", fill = "#efeff0", size = 3, angle = 45)
+
+ggsave("figs/01_part-1/fig-16.png", width = 6, height = 6, dpi = fig_resolution)
+
 
 ######################################################################################
 
@@ -281,11 +299,9 @@ data_predicted <- model_results$results_predicted %>%
   # Remove NA (due to not exported results, to save memory)
   drop_na(year) %>% 
   # Create time period
-  mutate(time_period = case_when(year %in% seq(1980, 1989) ~ "1980-1989",
-                                 year %in% seq(1990, 1999) ~ "1990-1999",
-                                 year %in% seq(1999, 2009) ~ "2000-2009",
-                                 year %in% seq(2010, 2019) ~ "2010-2019",
-                                 year %in% seq(2020, 2024) ~ "2020-2024")) %>% 
+  mutate(time_period = case_when(year %in% seq(1985, 1999) ~ "1985-1999",
+                                 year %in% seq(2000, 2014) ~ "2000-2014",
+                                 year %in% seq(2015, 2023) ~ "2015-2023")) %>% 
   # Average per time period and category
   group_by(time_period, decimalLatitude, decimalLongitude, category) %>% 
   summarise(measurementValuepred = mean(measurementValuepred)) %>% 
