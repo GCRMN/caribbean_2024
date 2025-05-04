@@ -6,6 +6,7 @@ library(scico)
 # 2. Set the default font family ----
 
 windowsFonts("Open Sans" = windowsFont("Open Sans"))
+windowsFonts("Open Sans Semibold" = windowsFont("Open Sans Semibold"))
 
 font_choose_graph <- "Open Sans"
 font_choose_map <- "Open Sans"

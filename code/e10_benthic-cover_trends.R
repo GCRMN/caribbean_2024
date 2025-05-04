@@ -207,81 +207,6 @@ if(FALSE){
   
 }
 
-# 6. Figure for Executive Summary ----
-
-data_ex_summ <- data_trends$raw_trends %>% 
-  filter(area == "All" & category %in% c("Hard coral", "Algae", "Other fauna"))
-
-data_ex_summ <- data_trends$raw_trends %>% 
-  filter(area == "All" & category %in% c("Hard coral", "Turf algae", "Macroalgae", "Other fauna"))
-
-data_ex_summ <- data_ex_summ %>% 
-  group_by(year) %>% 
-  summarise(mean = sum(mean)) %>% 
-  ungroup() %>% 
-  # Generate the others category (difference between 100 and sum of all categories)
-  mutate(mean = 100 - mean, 
-         category = "Others",
-         color = "lightgrey") %>% 
-  bind_rows(data_ex_summ, .)
-
-ggplot(data = data_ex_summ, aes(x = year, y = mean, fill = category)) +
-  geom_area() +
-  #scale_fill_manual(values = unique(data_ex_summ$color)) +
-  theme_graph() +
-  labs(x = "Year", y = "Benthic cover (%)")
-
-ggsave("figs/00_misc/benthic-trends.png", width = 6, height = 4, dpi = fig_resolution)
-
-
-
-
-
-#################### Algae vs Hard coral ratio #####################################
-
-data_ex_summ <- data_trends$raw_trends %>% 
-  filter(area == "All" & category %in% c("Hard coral", "Algae")) %>% 
-  select(year, category, mean) %>% 
-  pivot_wider(names_from = "category", values_from = "mean") %>% 
-  mutate(ratio = `Hard coral`/`Algae`)
-
-data_labels <- tibble(type = c(1, 1, 2),
-                      x = c(30, 10, 50),
-                      y = c(10, 30, 50),
-                      text = c("**More <span style='color:#16a085'>algae</span>**<br>than <span style='color:#c44d56'>hard corals</span>",
-                               "**More <span style='color:#c44d56'>hard corals</span>**<br>than <span style='color:#16a085'>algae</span>",
-                               "As much <span style='color:#c44d56'>hard corals</span> than <span style='color:#16a085'>algae</span>"))
-
-ggplot(data = data_ex_summ, aes(x = Algae, y = `Hard coral`, label = year)) +
-  geom_line() +
-  geom_text_repel(data = data_ex_summ %>% filter(year %in% c(1985, 2000, 2010, 2023)),
-                  aes(x = Algae, y = `Hard coral`, label = year), force = 40,
-                  family = font_choose_graph, seed = 27, min.segment.length = unit(10, "cm")) + 
-  geom_point(data = data_ex_summ, aes(x = Algae, y = `Hard coral`, fill = ratio),
-             size = 2, shape = 21, show.legend = FALSE, color = "black") +
-  geom_point(data = data_ex_summ %>% filter(year %in% c(1985, 2000, 2010, 2023)),
-             aes(x = Algae, y = `Hard coral`, fill = ratio), size = 4.5, shape = 21,
-             color = "black", show.legend = FALSE) +
-  geom_abline(slope = 1, linetype = "dashed") +
-  scale_fill_gradient2(high = "#c44d56", low = "#16a085", midpoint = 1) +
-  labs(x = "Algae cover (%)", y = "Hard coral cover (%)") +
-  lims(x = c(0, 60), y = c(0, 60)) +
-  theme(axis.line.y = element_line(linewidth = 0.4),
-        axis.ticks.y = element_line(linewidth = 0.4, color = "black")) +
-  geom_richtext(data = data_labels %>% filter(type == 1), aes(x = x, y = y, label = text),
-                label.color = "transparent", fill = "transparent", size = 3) +
-  geom_richtext(data = data_labels %>% filter(type == 2), aes(x = x, y = y, label = text),
-                label.color = "transparent", fill = "#efeff0", size = 3, angle = 45)
-
-ggsave("figs/01_part-1/fig-16.png", width = 6, height = 6, dpi = fig_resolution)
-
-
-######################################################################################
-
-
-
-
-
 # 6. Map of predicted values across the region ----
 
 ## 6.1 Load data ----
@@ -336,3 +261,136 @@ data_predicted <- st_join(data_predicted, data_grid) %>%
 ## 6.3 Make over the function ----
 
 map(unique(data_predicted$category), ~plot_prediction_map(category_i = .x))
+
+# 7. Hard coral vs algae cover ----
+
+## 7.1 Transform data ----
+
+data_ex_summ <- data_trends$raw_trends %>% 
+  filter(area == "All" & category %in% c("Hard coral", "Algae")) %>% 
+  select(year, category, mean) %>% 
+  pivot_wider(names_from = "category", values_from = "mean") %>% 
+  mutate(ratio = `Hard coral`/`Algae`)
+
+## 7.2 Create labels ----
+
+data_labels <- tibble(type = c(1, 1, 2),
+                      x = c(30, 10, 50),
+                      y = c(10, 30, 50),
+                      text = c("**More <span style='color:#16a085'>algae</span>**<br>than <span style='color:#c44d56'>hard corals</span>",
+                               "**More <span style='color:#c44d56'>hard corals</span>**<br>than <span style='color:#16a085'>algae</span>",
+                               "As much <span style='color:#c44d56'>hard corals</span> than <span style='color:#16a085'>algae</span>"))
+
+## 7.3 Make the plot ----
+
+ggplot(data = data_ex_summ, aes(x = Algae, y = `Hard coral`, label = year)) +
+  geom_line() +
+  geom_text_repel(data = data_ex_summ %>% filter(year %in% c(1985, 2000, 2010, 2023)),
+                  aes(x = Algae, y = `Hard coral`, label = year), force = 40,
+                  family = font_choose_graph, seed = 27, min.segment.length = unit(10, "cm")) + 
+  geom_point(data = data_ex_summ, aes(x = Algae, y = `Hard coral`, fill = ratio),
+             size = 2, shape = 21, show.legend = FALSE, color = "black") +
+  geom_point(data = data_ex_summ %>% filter(year %in% c(1985, 2000, 2010, 2023)),
+             aes(x = Algae, y = `Hard coral`, fill = ratio), size = 4.5, shape = 21,
+             color = "black", show.legend = FALSE) +
+  geom_abline(slope = 1, linetype = "dashed") +
+  scale_fill_gradient2(high = "#c44d56", low = "#16a085", midpoint = 1) +
+  labs(x = "Algae cover (%)", y = "Hard coral cover (%)") +
+  lims(x = c(0, 60), y = c(0, 60)) +
+  theme(axis.line.y = element_line(linewidth = 0.4),
+        axis.ticks.y = element_line(linewidth = 0.4, color = "black")) +
+  geom_richtext(data = data_labels %>% filter(type == 1), aes(x = x, y = y, label = text),
+                label.color = "transparent", fill = "transparent", size = 3) +
+  geom_richtext(data = data_labels %>% filter(type == 2), aes(x = x, y = y, label = text),
+                label.color = "transparent", fill = "#efeff0", size = 3, angle = 45)
+
+ggsave("figs/01_part-1/fig-16.png", width = 6, height = 6, dpi = fig_resolution)
+
+# 8. Figures for Executive Summary ----
+
+## 8.1 Hard coral cover ----
+
+data_trends$smoothed_trends %>% 
+  filter(category == "Hard coral" & area == "All") %>% 
+  ggplot(data = .) +
+  geom_ribbon(aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95, fill = palette_first[2]), alpha = 0.35) +
+  geom_line(aes(x = year, y = mean, color = palette_first[2]), linewidth = 1) +
+  scale_fill_identity() +
+  scale_color_identity() +
+  scale_x_continuous(expand = c(0, 0), limits = c(1985, NA)) +
+  scale_y_continuous(limits = c(0, 40)) +
+  # 1980's white band disease
+  annotate("rect", xmin = 1985, xmax = 1990, ymin = 10, ymax = 10.75, fill = 'gray') +
+  annotate("text", x = 1985.25, y = 12.25, fill = 'gray', label = "1980's", family = "Open Sans Semibold",
+           family = font_choose_graph, color = palette_first[2], face = "bold", hjust = 0, size = 3) +
+  annotate("text", x = 1985.25, y = 8.5, fill = 'gray', label = "WBD",
+           family = font_choose_graph, color = "black", face = "bold", hjust = 0, size = 3) +
+  # 1990's white plague
+  annotate("rect", xmin = 1990, xmax = 2000, ymin = 9.25, ymax = 10, fill = 'gray') +
+  annotate("text", x = 1990.25, y = 11.5, fill = 'gray', label = "1990's", family = "Open Sans Semibold",
+           family = font_choose_graph, color = palette_first[2], face = "bold", hjust = 0, size = 3) +
+  annotate("text", x = 1990.25, y = 7.5, fill = 'gray', label = "WP",
+           family = font_choose_graph, color = "black", face = "bold", hjust = 0, size = 3) +
+  # 1998 bleaching event
+  annotate("rect", xmin = 1998, xmax = 1998.35, ymin = 30, ymax = 35, fill = 'gray') +
+  annotate("text", x = 1998.75, y = 34, fill = 'gray', label = "1998", family = "Open Sans Semibold",
+           family = font_choose_graph, color = palette_first[2], face = "bold", hjust = 0, size = 3) +
+  annotate("text", x = 1998.75, y = 31.5, fill = 'gray', label = "Bleaching event",
+           family = font_choose_graph, color = "black", face = "bold", hjust = 0, size = 3) +
+  # 2005 bleaching event
+  annotate("rect", xmin = 2005, xmax = 2005.35, ymin = 25, ymax = 30, fill = 'gray') +
+  annotate("text", x = 2005.75, y = 29, fill = 'gray', label = "2005", family = "Open Sans Semibold",
+           family = font_choose_graph, color = palette_first[2], face = "bold", hjust = 0, size = 3) +
+  annotate("text", x = 2005.75, y = 26.5, fill = 'gray', label = "Bleaching event",
+           family = font_choose_graph, color = "black", face = "bold", hjust = 0, size = 3) +
+  # 2014 - 2022 SCTLD
+  annotate("rect", xmin = 2014, xmax = 2022, ymin = 9.25, ymax = 10, fill = 'gray') +
+  annotate("text", x = 2014, y = 11.5, fill = 'gray', label = "2014-2022", family = "Open Sans Semibold",
+           family = font_choose_graph, color = palette_first[2], face = "bold", hjust = 0, size = 3) +
+  annotate("text", x = 2014, y = 7.5, fill = 'gray', label = "SCTLD",
+           family = font_choose_graph, color = "black", face = "bold", hjust = 0, size = 3) +
+  labs(title = paste0("Changes in <span style = 'color: ",
+                      palette_first[2],
+                      "'>hard coral cover</span> in the Caribbean<br>between 1985 and 2022"),
+       x = "Year", y = "Hard coral cover (%)",
+       subtitle = "<br><span style = 'color: #24252a'>The bold line represent the average,
+       the ribbon<br>represent the confidence interval of 95%</span>") + 
+  theme(plot.title = element_markdown(size = 17, face = "bold", family = "Open Sans Semibold"),
+        plot.subtitle = element_markdown(size = 12))
+
+ggsave("figs/00_misc/exe-summ_1.png", height = 5.3, width = 7.2, dpi = fig_resolution)
+
+## 8.2 Overall benthic cover ----
+
+### 8.2.1 Transform data ----
+
+data_ex_summ <- data_trends$smoothed_trends %>% 
+  filter(area == "All" & category %in% c("Hard coral", "Algae", "Other fauna"))
+
+data_ex_summ <- data_ex_summ %>% 
+  group_by(year) %>% 
+  summarise(mean = sum(mean)) %>% 
+  ungroup() %>% 
+  # Generate the others category (difference between 100 and sum of all categories)
+  mutate(mean = 100 - mean, 
+         category = "Others",
+         color = "lightgrey") %>% 
+  bind_rows(data_ex_summ, .)
+
+data_labels <- tibble(x = c(1995, 1995, 1995, 1995),
+                      y = c(82, 52.5, 36, 14),
+                      category = c("Algae", "Hard coral", "Other fauna", "Others"),
+                      color = c("white", "white", "white", "black"))
+
+### 8.2.2 Make the plot ----
+
+ggplot(data = data_ex_summ, aes(x = year, y = mean, fill = category)) +
+  geom_area(show.legend = FALSE, color = "white", outline.type = "full", linewidth = 0.25) +
+  scale_fill_manual(values = unique(data_ex_summ$color)) +
+  theme_graph() +
+  geom_text(data = data_labels, aes(x = x, y = y, label = category, color = color),
+            size = 4.5, family = font_choose_graph) +
+  scale_color_identity() +
+  labs(x = "Year", y = "Benthic cover (%)")
+
+ggsave("figs/00_misc/exe-summ_2.png", width = 7, height = 5, dpi = fig_resolution)

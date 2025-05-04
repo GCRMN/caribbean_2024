@@ -24,6 +24,6 @@ plot_prediction_map <- function(category_i){
     coord_sf(xlim = c(-105, -50), ylim = c(6, 38), expand = FALSE)
   
   ggsave(paste0("figs/06_additional/prediction-map_", str_replace_all(str_to_lower(category_i), " ", "-"), ".png"),
-         plot = plot_maps, width = 11, height = 5)
+         plot = plot_maps, width = 11, height = 3.5)
   
 }
