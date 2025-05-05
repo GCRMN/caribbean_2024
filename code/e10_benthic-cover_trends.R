@@ -24,6 +24,8 @@ source("code/function/plot_residuals.R")
 source("code/function/plot_pred_obs.R")
 source("code/function/combine_plot_trends.R")
 source("code/function/plot_prediction_map.R")
+source("code/function/plot_raw_trends.R")
+source("code/function/export_raw_trends.R")
 
 theme_set(theme_graph())
 
@@ -207,11 +209,78 @@ if(FALSE){
   
 }
 
-# 6. Map of predicted values across the region ----
+# 6. Raw data (mean +/- standard deviation) ----
 
-## 6.1 Load data ----
+## 6.1 Transform data ----
 
-### 6.1.1 Predictions per site and year ----
+load("data/09_model-data/data_benthic_prepared.RData")
+
+data_benthic <- data_benthic %>% 
+  mutate(color = case_when(category == "Hard coral" ~ "#c44d56",
+                           category == "Algae" ~ "#16a085",
+                           category == "Other fauna" ~ "#714d69",
+                           category == "Macroalgae" ~ "#03a678",
+                           category == "Turf algae" ~ "#26a65b",
+                           category == "Coralline algae" ~ "#C5987D",
+                           category == "Acropora" ~ "#e08283",
+                           category == "Orbicella" ~ "#c44d56",
+                           category == "Porites" ~ "#a37c82"),
+         text_title = case_when(category == "Hard coral" ~ 
+                                  glue("**A.**<span style='color:{color}'> {category}</span>"),
+                                category == "Algae" ~ 
+                                  glue("**B.**<span style='color:{color}'> {category}</span>"),
+                                category == "Other fauna" ~ 
+                                  glue("**C.**<span style='color:{color}'> {category}</span>"),
+                                
+                                category == "Coralline algae" ~ 
+                                  glue("**A.**<span style='color:{color}'> {category}</span>"),
+                                category == "Macroalgae" ~ 
+                                  glue("**B.**<span style='color:{color}'> {category}</span>"),
+                                category == "Turf algae" ~ 
+                                  glue("**C.**<span style='color:{color}'> {category}</span>"),
+                                
+                                category == "Acropora" ~ 
+                                  glue("**A.***<span style='color:{color}'> {category}</span>*"),
+                                category == "Orbicella" ~ 
+                                  glue("**B.***<span style='color:{color}'> {category}</span>*"),
+                                category == "Porites" ~ 
+                                  glue("**C.***<span style='color:{color}'> {category}</span>*")))
+
+data_benthic <- data_benthic %>% 
+  group_by(year, area, category, color, text_title) %>% 
+  summarise(mean = mean(measurementValue),
+            sd = sd(measurementValue)) %>% 
+  ungroup() %>% 
+  mutate(ymin = mean - sd,
+         ymin = ifelse(ymin < 0, 0, ymin),
+         ymax = mean + sd) %>% 
+  bind_rows(., data_benthic %>% 
+              group_by(year, category, color, text_title) %>% 
+              summarise(mean = mean(measurementValue),
+                        sd = sd(measurementValue)) %>% 
+              ungroup() %>% 
+              mutate(ymin = mean - sd,
+                     ymin = ifelse(ymin < 0, 0, ymin),
+                     ymax = mean + sd,
+                     area = "Caribbean")) %>% 
+  complete(year, category, nesting(area), fill = list(mean = NA, sd = NA)) %>% 
+  select(-color, -text_title) %>% 
+  left_join(., data_benthic %>% 
+              select(category, text_title, color) %>% 
+              distinct()) %>% 
+  drop_na(area)
+
+## 6.2 Export the plots ----
+
+map(unique(data_benthic$area), ~export_raw_trends(area_i = .))
+
+rm(plot_raw_trends, export_raw_trends, data_benthic)
+
+# 7. Map of predicted values across the region ----
+
+## 7.1 Load data ----
+
+### 7.1.1 Predictions per site and year ----
 
 data_predicted <- model_results$results_predicted %>% 
   # Remove NA (due to not exported results, to save memory)
@@ -228,7 +297,7 @@ data_predicted <- model_results$results_predicted %>%
   # Convert to sf
   st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
 
-### 6.1.2 Crop of the region ----
+### 7.1.2 Crop of the region ----
 
 data_crop <- tibble(lon = c(-105, -50), lat = c(6, 38)) %>% 
   st_as_sf(coords = c("lon", "lat"), 
@@ -236,19 +305,19 @@ data_crop <- tibble(lon = c(-105, -50), lat = c(6, 38)) %>%
   st_bbox() %>% 
   st_as_sfc()
 
-### 6.1.3 Background map ----
+### 7.1.3 Background map ----
 
 data_land_ne <- read_sf("data/01_maps/01_raw/04_natural-earth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
 
 data_land_ne <- st_intersection(data_land_ne, data_crop)
 
-### 6.1.4 Create the grid ----
+### 7.1.4 Create the grid ----
 
 data_grid <- st_make_grid(data_crop, n = 150, crs = 4326) %>% 
   st_as_sf() %>% 
   mutate(cell_id = 1:nrow(.))
 
-## 6.2 Summarize sites values per grid cell ----
+## 7.2 Summarize sites values per grid cell ----
 
 data_predicted <- st_join(data_predicted, data_grid) %>% 
   group_by(time_period, category, cell_id) %>% 
@@ -258,13 +327,13 @@ data_predicted <- st_join(data_predicted, data_grid) %>%
   left_join(., data_grid) %>% 
   st_as_sf()
 
-## 6.3 Make over the function ----
+## 7.3 Make over the function ----
 
 map(unique(data_predicted$category), ~plot_prediction_map(category_i = .x))
 
-# 7. Hard coral vs algae cover ----
+# 8. Hard coral vs algae cover ----
 
-## 7.1 Transform data ----
+## 8.1 Transform data ----
 
 data_ex_summ <- data_trends$raw_trends %>% 
   filter(area == "All" & category %in% c("Hard coral", "Algae")) %>% 
@@ -272,7 +341,7 @@ data_ex_summ <- data_trends$raw_trends %>%
   pivot_wider(names_from = "category", values_from = "mean") %>% 
   mutate(ratio = `Hard coral`/`Algae`)
 
-## 7.2 Create labels ----
+## 8.2 Create labels ----
 
 data_labels <- tibble(type = c(1, 1, 2),
                       x = c(30, 10, 50),
@@ -281,7 +350,7 @@ data_labels <- tibble(type = c(1, 1, 2),
                                "**More <span style='color:#c44d56'>hard corals</span>**<br>than <span style='color:#16a085'>algae</span>",
                                "As much <span style='color:#c44d56'>hard corals</span> than <span style='color:#16a085'>algae</span>"))
 
-## 7.3 Make the plot ----
+## 8.3 Make the plot ----
 
 ggplot(data = data_ex_summ, aes(x = Algae, y = `Hard coral`, label = year)) +
   geom_line() +
@@ -306,9 +375,9 @@ ggplot(data = data_ex_summ, aes(x = Algae, y = `Hard coral`, label = year)) +
 
 ggsave("figs/01_part-1/fig-16.png", width = 6, height = 6, dpi = fig_resolution)
 
-# 8. Figures for Executive Summary ----
+# 9. Figures for Executive Summary ----
 
-## 8.1 Hard coral cover ----
+## 9.1 Hard coral cover ----
 
 data_trends$smoothed_trends %>% 
   filter(category == "Hard coral" & area == "All") %>% 
@@ -360,9 +429,9 @@ data_trends$smoothed_trends %>%
 
 ggsave("figs/00_misc/exe-summ_1.png", height = 5.3, width = 7.2, dpi = fig_resolution)
 
-## 8.2 Overall benthic cover ----
+## 9.2 Overall benthic cover ----
 
-### 8.2.1 Transform data ----
+### 9.2.1 Transform data ----
 
 data_ex_summ <- data_trends$smoothed_trends %>% 
   filter(area == "All" & category %in% c("Hard coral", "Algae", "Other fauna"))
@@ -382,7 +451,7 @@ data_labels <- tibble(x = c(1995, 1995, 1995, 1995),
                       category = c("Algae", "Hard coral", "Other fauna", "Others"),
                       color = c("white", "white", "white", "black"))
 
-### 8.2.2 Make the plot ----
+### 9.2.2 Make the plot ----
 
 ggplot(data = data_ex_summ, aes(x = year, y = mean, fill = category)) +
   geom_area(show.legend = FALSE, color = "white", outline.type = "full", linewidth = 0.25) +
