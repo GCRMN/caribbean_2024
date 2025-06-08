@@ -22,7 +22,6 @@ source("code/function/plot_pdp.R")
 source("code/function/plot_trends.R")
 source("code/function/plot_residuals.R")
 source("code/function/plot_pred_obs.R")
-source("code/function/combine_plot_trends.R")
 source("code/function/plot_prediction_map.R")
 source("code/function/plot_raw_trends.R")
 source("code/function/export_raw_trends.R")
@@ -105,7 +104,7 @@ smoothed_trends <- raw_trends %>%
 data_trends <- lst(smoothed_trends, raw_trends, long_term_average, long_term_trend)
 
 rm(smoothed_trends, raw_trends, long_term_average,
-   long_term_trend, data_benthic, data_benthic_obs)
+   long_term_trend, data_benthic_obs)
 
 ## 3.8 Export the data ----
 
@@ -179,22 +178,9 @@ map(unique(data_pdp$category), ~plot_pdp(category_i = .x))
 
 # 5. Temporal trends ----
 
-## 5.1 For major benthic categories ----
+map(unique(data_trends$smoothed_trends$area), ~plot_trends(area_i = .))
 
-map(unique(data_trends$smoothed_trends$area),
-    ~combine_plot_trends(area_i = ., categ_type = "category"))
-
-## 5.2 For algae subcategories ----
-
-map(unique(data_trends$smoothed_trends$area),
-    ~combine_plot_trends(area_i = ., categ_type = "subcategory"))
-
-## 5.3 For hard coral genera ----
-
-map(unique(data_trends$smoothed_trends$area),
-    ~combine_plot_trends(area_i = ., categ_type = "genus"))
-
-## 5.4 Raw data (for writing) ----
+# Raw data (for writing)
 
 if(FALSE){
   
