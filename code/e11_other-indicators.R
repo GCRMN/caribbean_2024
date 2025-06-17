@@ -74,17 +74,20 @@ ggsave(filename = "figs/01_part-1/fig-5a.png", plot = plot_a, height = 5, width 
   (plot_b + labs(title = "B") + theme(plot.margin = unit(c(0.25, 0, 0.25, 0.75), "cm"),
                                       plot.title = element_text(size = 18)))
 
-ggsave(filename = "figs/01_part-1/fig-5.png", height = 5, width = 10, dpi = fig_resolution)
+ggsave(filename = "figs/01_part-1/fig-5_raw.png", height = 5, width = 10, dpi = fig_resolution)
 
 ## 3.5 Export the table ----
 
 data_reef_area_caribbean %>% 
-  mutate(reef_area_rel = (reef_area_abs*100)/sum(reef_area_abs),
-         across(c(reef_area_abs, reef_area_rel), ~round(.x, 2))) %>% 
+  mutate(reef_area_rel_caribbean = (reef_area_abs*100)/sum(reef_area_abs),
+         reef_area_rel_world = (100*reef_area_abs)/(as.numeric(st_area(data_reefs))*1e-6)) %>% 
   arrange(area) %>% 
   bind_rows(., tibble(area = "Entire Caribbean region",
                       reef_area_abs = sum(data_reef_area_caribbean$reef_area_abs),
-                      reef_area_rel = 100)) %>% 
+                      reef_area_rel_caribbean = 100,
+                      reef_area_rel_world = sum(.$reef_area_rel_world))) %>% 
+  mutate(reef_area_abs = format(round(reef_area_abs, 0), big.mark = ",", scientific = FALSE),
+         across(c(reef_area_rel_caribbean, reef_area_rel_world), ~format(round(.x, 3), nsmall = 3))) %>% 
   openxlsx::write.xlsx(., file = "figs/01_part-1/tbl-1.xlsx")
 
 # 4. Human population ----
