@@ -1,4 +1,4 @@
-theme_map <- function(base_size = 14, base_family = font_choose_map, base_line_size = base_size/22, base_rect_size = base_size/22){
+theme_map <- function(base_size = 10, base_family = font_choose_map, base_line_size = base_size/22, base_rect_size = base_size/22){
   
   half_line <- base_size/2
   
@@ -56,7 +56,7 @@ theme_map <- function(base_size = 14, base_family = font_choose_map, base_line_s
         legend.box.background = element_blank(), 
         legend.box.spacing = unit(2 * half_line, "pt"), 
         panel.background = element_rect(fill = "#ebf5fd"), 
-        panel.border = element_rect(fill = NA, color = "black", linewidth = 1), 
+        panel.border = element_rect(fill = NA, color = "black", linewidth = 0.8), 
         panel.grid = element_blank(), 
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(), 

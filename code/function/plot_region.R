@@ -53,13 +53,14 @@ plot_region <- function(scale = TRUE){
     geom_spatraster_rgb(data = data_tif, maxcell = 5e+07) +
     geom_sf(data = data_eez, color = "#363737", fill = NA, linewidth = 0.15) +
     geom_sf(data = data_land, color = "#363737", fill = NA, linewidth = 0.15) +
-    coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35))
+    coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35),
+           label_axes = list(top = "E", left = "N", right = "N"))
   
   if(scale == TRUE){
     
     caribbean_map <- caribbean_map +
       annotation_scale(location = "bl", width_hint = 0.25, text_family = font_choose_map, text_col = "black",
-                       text_cex = 0.8, style = "bar", line_width = 1,  height = unit(0.045, "cm"), line_col = "black",
+                       text_cex = 0.7, style = "bar", line_width = 1,  height = unit(0.045, "cm"), line_col = "black",
                        pad_x = unit(0.5, "cm"), pad_y = unit(0.35, "cm"), bar_cols = c("black", "black"))
     
   }
