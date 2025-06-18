@@ -25,6 +25,8 @@ plot_region <- function(scale = TRUE){
   
   data_reefs <- read_sf("data/01_maps/02_clean/02_reefs/reefs.shp")
   
+  data_reefs_buffer <- read_sf("data/01_maps/02_clean/02_reefs/reefs_buffer_5.shp")
+  
   ## 3.3 Background RGB tif ----
   
   data_tif <- rast("data/01_maps/01_raw/04_natural-earth/HYP_HR_SR_OB_DR/HYP_HR_SR_OB_DR.tif")
@@ -47,11 +49,16 @@ plot_region <- function(scale = TRUE){
 
   data_land <- st_read("data/01_maps/01_raw/04_natural-earth/ne_10m_admin_0_boundary_lines_land/ne_10m_admin_0_boundary_lines_land.shp")
 
+  data_land_polygons <- st_read("data/01_maps/01_raw/04_natural-earth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
+  
+  data_reefs_buffer <- st_difference(data_reefs_buffer, st_union(data_land_polygons))
+  
   # 4. Make the basic regional map ----
   
   caribbean_map <- ggplot() +
     geom_spatraster_rgb(data = data_tif, maxcell = 5e+07) +
     geom_sf(data = data_eez, color = "#363737", fill = NA, linewidth = 0.15) +
+    geom_sf(data = data_reefs_buffer, color = NA, fill = "#ad5fad", linewidth = 0.15) +
     geom_sf(data = data_land, color = "#363737", fill = NA, linewidth = 0.15) +
     coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35),
            label_axes = list(top = "E", left = "N", right = "N"))
@@ -60,7 +67,7 @@ plot_region <- function(scale = TRUE){
     
     caribbean_map <- caribbean_map +
       annotation_scale(location = "bl", width_hint = 0.25, text_family = font_choose_map, text_col = "black",
-                       text_cex = 0.7, style = "bar", line_width = 1,  height = unit(0.045, "cm"), line_col = "black",
+                       text_cex = 0.6, style = "bar", line_width = 1,  height = unit(0.04, "cm"), line_col = "black",
                        pad_x = unit(0.5, "cm"), pad_y = unit(0.35, "cm"), bar_cols = c("black", "black"))
     
   }
