@@ -12,10 +12,12 @@ data_eez_land <- st_read("data/01_maps/01_raw/02_eez/EEZ_land_union_v4_202410.sh
   rename("area" = "TERRITORY1") %>% 
   filter(area %in% c("Belize", "Colombia", "Costa Rica", "Dominican Republic",
                      "Florida", "Guatemala", "Haiti", "Honduras", "Mexico",
-                     "Nicaragua", "Panama", "Venezuela", "United States")) %>% 
+                     "Nicaragua", "Panama", "Venezuela", "United States",
+                     "Sint-Maarten", "Collectivity of Saint Martin")) %>% 
   filter(POL_TYPE == "Union EEZ and country") %>% 
   select(area) %>% 
-  mutate(area = str_replace_all(area, "United States", "Florida"))
+  mutate(area = str_replace_all(area, c("United States" = "Florida",
+                                        "Collectivity of Saint Martin" = "Saint-Martin")))
 
 data_buffer <- st_read("data/01_maps/02_clean/02_reefs/reefs_buffer_20.shp") %>% 
   mutate(area = case_when(area == "Cura?ao" ~ "Curaçao",
@@ -28,7 +30,7 @@ difference_buffer <- function(area_i, plot = FALSE){
   
   if(!(area_i %in% c("Belize", "Colombia", "Costa Rica", "Dominican Republic",
                      "Florida", "Guatemala", "Haiti", "Honduras", "Mexico (Caribbean Sea)",
-                     "Mexico (Gulf of Mexico)", "Nicaragua", "Panama", "Venezuela"))){
+                     "Mexico (Gulf of Mexico)", "Nicaragua", "Panama", "Venezuela", "Saint-Martin", "Sint-Maarten"))){
     
     data_buffer_i <- data_buffer %>% filter(area == area_i)
     
@@ -37,7 +39,8 @@ difference_buffer <- function(area_i, plot = FALSE){
     data_result <- st_intersection(data_buffer_i, data_area_i)
     
   }else if(area_i %in% c("Belize", "Colombia", "Costa Rica", "Dominican Republic",
-                         "Guatemala", "Haiti", "Honduras", "Nicaragua", "Panama", "Venezuela", "Florida")){
+                         "Guatemala", "Haiti", "Honduras", "Nicaragua", "Panama", "Venezuela",
+                         "Florida", "Saint-Martin", "Sint-Maarten")){
     
     data_buffer_i <- data_buffer %>% filter(area == area_i)
     
@@ -91,14 +94,17 @@ st_write(data_buffer_area, "data/01_maps/02_clean/02_reefs/reefs_buffer_area.shp
 data_area <- data_area %>% 
   filter(!(area %in% c("Belize", "Colombia", "Costa Rica", "Dominican Republic",
                        "Florida", "Guatemala", "Haiti", "Honduras", "Mexico (Caribbean Sea)",
-                       "Mexico (Gulf of Mexico)", "Nicaragua", "Panama", "Venezuela", "Flower Garden Banks")))
+                       "Mexico (Gulf of Mexico)", "Nicaragua", "Panama", "Venezuela", "Flower Garden Banks",
+                       "Sint-Maarten", "Saint-Martin")))
 
 data_eez_land <- st_read("data/01_maps/01_raw/02_eez/EEZ_land_union_v4_202410.shp") %>% 
   filter(POL_TYPE == "Union EEZ and country" & TERRITORY1 %in% c("Belize", "Colombia", "Costa Rica", "Dominican Republic",
                                                                  "United States", "Guatemala", "Haiti", "Honduras", "Mexico",
-                                                                 "Nicaragua", "Panama", "Venezuela")) %>% 
+                                                                 "Nicaragua", "Panama", "Venezuela",                                                                #
+                                                                 "Sint-Maarten", "Collectivity of Saint Martin")) %>% 
   select(TERRITORY1) %>% 
-  rename(area = TERRITORY1) %>% 
+  rename(area = TERRITORY1) %>%
+  mutate(area = str_replace_all(area, c("Collectivity of Saint Martin" = "Saint-Martin"))) %>% 
   bind_rows(., data_area) %>% 
   st_make_valid() %>% 
   group_by(area) %>% 
