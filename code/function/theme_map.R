@@ -55,7 +55,7 @@ theme_map <- function(base_size = 10, base_family = font_choose_map, base_line_s
         legend.box.margin = margin(0, 0, 0, 0, "cm"), 
         legend.box.background = element_blank(), 
         legend.box.spacing = unit(2 * half_line, "pt"), 
-        panel.background = element_rect(fill = "#ebf5fd"), 
+        panel.background = element_rect(fill = "#ecf6fe"), 
         panel.border = element_rect(fill = NA, color = "black", linewidth = 0.8), 
         panel.grid = element_blank(), 
         panel.grid.major = element_blank(), 
