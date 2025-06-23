@@ -2,13 +2,16 @@
 
 library(tidyverse) # Core tidyverse packages
 library(sf)
+sf_use_s2(FALSE)
+library(ggspatial) # For annotation_scale function
 
 # 2. Source functions ----
 
-source("code/function/plot_region.R")
-source("code/function/data_descriptors.R")
-source("code/function/plot_region.R")
+source("code/function/graphical_par.R")
 source("code/function/theme_graph.R")
+source("code/function/theme_map.R")
+source("code/function/limits_region.R")
+source("code/function/data_descriptors.R")
 
 # 3. Load cyclones ----
 
@@ -20,21 +23,102 @@ data_cyclones <- data_cyclones %>%
   mutate(saffir = as.factor(saffir)) %>% 
   right_join(data_ts_lines, .)
 
-# 4. Make the plot ----
+# 4. Map of cyclones in the region ----
 
-plot <- plot_region(scale = TRUE) +
+## 4.1 Load data ----
+
+data_land <- st_read("data/01_maps/01_raw/04_natural-earth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
+
+data_crop <- tibble(lon = c(-105, -50), lat = c(6, 38)) %>% 
+  st_as_sf(coords = c("lon", "lat"), 
+           crs = 4326) %>% 
+  st_bbox() %>% 
+  st_as_sfc()
+
+data_eez <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp")
+
+data_land_cropped <- st_intersection(data_land, data_crop)
+
+data_eez <- st_difference(data_eez, st_union(data_land_cropped))
+
+data_land_boundaries <- st_read("data/01_maps/01_raw/04_natural-earth/ne_10m_admin_0_boundary_lines_land/ne_10m_admin_0_boundary_lines_land.shp")
+
+## 4.2 Map of cyclone trajectories ----
+
+plot <- ggplot() +
   geom_sf(data = data_cyclones %>% arrange(saffir), aes(color = saffir),
-          alpha = 0.75, linewidth = 0.5, show.legend = "line") +
+          alpha = 0.75, linewidth = 0.3, show.legend = "line") +
   scale_color_manual(breaks = c("1", "2", "3", "4", "5"),
                      labels = c("Cat. 1", "Cat. 2", "Cat. 3", "Cat. 4", "Cat. 5"),
                      values = c(palette_second[2:5], "black"),
-                     name = "Saffir-Simpson category",
+                     name = "Saffir-Simpson\ncategory",
                      drop = FALSE) +
   guides(color = guide_legend(title.position = "top", title.hjust = 0.5, override.aes = list(linewidth = 1))) +
-  coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35))
+  scale_fill_gradient(low = "white", high = "red") +
+  geom_sf(data = data_eez, color = "#57add2", fill = NA, linewidth = 0.15) +
+  geom_sf(data = data_land, color = "#57add2", fill = "#d9d9d9", linewidth = 0.05) +
+  geom_sf(data = data_land_boundaries, color = "#979796", fill = NA, linewidth = 0.15) +
+  limits_region() +
+  annotation_scale(location = "bl", width_hint = 0.25, text_family = font_choose_map, text_col = "black",
+                   text_cex = 0.6, style = "bar", line_width = 1,  height = unit(0.04, "cm"), line_col = "black",
+                   pad_x = unit(0.5, "cm"), pad_y = unit(0.35, "cm"), bar_cols = c("black", "black")) +
+  theme_map() +
+  theme(legend.position = "inside",
+        legend.direction = "vertical",
+        legend.background = element_rect(color = "black", linewidth = 0.1, fill = "#fbfbfb"),
+        legend.title = element_text(size = 7, hjust = 0),
+        legend.text = element_text(size = 6, margin = margin(t = 0)),
+        legend.key.size = unit(0.4, "cm"),
+        legend.position.inside = c(0.1,0.21))
+
+ggsave(filename = "figs/01_part-1/fig-3b.png", plot = plot,
+       width = 7.25, height = 4.75, dpi = fig_resolution)
+
+## 4.3 Map of cyclone occurrence (hex grid) ----
+
+data_grid_cyclones <- st_make_grid(data_crop, cellsize = 1, square = FALSE) %>% 
+  st_as_sf(crs = 4326)
+
+data_grid <- st_make_grid(data_crop, cellsize = 1, square = FALSE) %>% 
+  st_as_sf(crs = 4326) %>% 
+  mutate(cell_id = row_number())
+
+data_grid_cyclones <- st_join(data_grid, data_cyclones, .predicates = st_intersects) %>% 
+  select(cell_id, ts_id) %>% 
+  distinct() %>% 
+  group_by(cell_id) %>% 
+  summarise(n = n()) %>% 
+  ungroup()
+
+plot <- ggplot() +
+  geom_sf(data = data_grid_cyclones, aes(fill = n), alpha = 1, color = "white") +
+  scale_fill_gradientn(colours = c("white", "#faedd6ff", "#fac484", "#ce6693", "#a059a0", "#5c53a5"),
+                       breaks = c(0, 5, 10, 15, 20), limits = c(0, 20), labels = c("0", "5", "10", "15", "20"),
+                       name = "Number of\nhurricanes") +
+  geom_sf(data = data_eez, color = "#57add2", fill = NA, linewidth = 0.15) +
+  geom_sf(data = data_land, color = "#57add2", fill = "#d9d9d9", linewidth = 0.05) +
+  geom_sf(data = data_land_boundaries, color = "#979796", fill = NA, linewidth = 0.15) +
+  limits_region() +
+  annotation_scale(location = "bl", width_hint = 0.25, text_family = font_choose_map, text_col = "black",
+                   text_cex = 0.6, style = "bar", line_width = 1,  height = unit(0.04, "cm"), line_col = "black",
+                   pad_x = unit(0.5, "cm"), pad_y = unit(0.35, "cm"), bar_cols = c("black", "black")) +
+  theme_map() +
+  theme(legend.position = "inside",
+        legend.direction = "vertical",
+        legend.background = element_rect(color = "black", linewidth = 0.1, fill = "#fbfbfb"),
+        legend.title = element_text(size = 7, hjust = 0),
+        legend.text = element_text(size = 6),
+        legend.frame = element_rect(color = "black", linewidth = 0.2),
+        legend.ticks = element_line(color = "black", linewidth = 0.2),
+        legend.key.width = unit(0.3, "cm"),
+        legend.key.size = unit(0.35, "cm"),
+        legend.margin = margin(8,14,8,12),
+        legend.position.inside = c(0.1,0.21))
 
 ggsave(filename = "figs/01_part-1/fig-3.png", plot = plot,
-       width = 7.5, height = 5.75, dpi = fig_resolution)
+       width = 7.25, height = 4.75, dpi = fig_resolution)
+
+rm(data_crop, data_eez, data_land, data_land_cropped, plot, data_grid, data_grid_cyclones)
 
 # 5. Comparison of cyclones occurrence ----
 
