@@ -2,6 +2,7 @@
 
 library(extrafont)
 library(scico)
+library(showtext)
 
 # 2. Set the default font family ----
 
@@ -10,6 +11,9 @@ windowsFonts("Open Sans Semibold" = windowsFont("Open Sans Semibold"))
 
 font_choose_graph <- "Open Sans"
 font_choose_map <- "Open Sans"
+
+showtext::showtext_auto()
+showtext::showtext_opts(dpi = 300)
 
 fig_resolution <- 300
 
