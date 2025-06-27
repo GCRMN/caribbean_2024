@@ -76,12 +76,16 @@ ggsave(filename = "figs/01_part-1/fig-3b.png", plot = plot,
 
 ## 4.3 Map of cyclone occurrence (hex grid) ----
 
+### 4.3.1 Create the hex grid ----
+
 data_grid_cyclones <- st_make_grid(data_crop, cellsize = 1, square = FALSE) %>% 
   st_as_sf(crs = 4326)
 
 data_grid <- st_make_grid(data_crop, cellsize = 1, square = FALSE) %>% 
   st_as_sf(crs = 4326) %>% 
   mutate(cell_id = row_number())
+
+### 4.3.2 Count number of unique cyclones crossing each hex cell ----
 
 data_grid_cyclones <- st_join(data_grid, data_cyclones, .predicates = st_intersects) %>% 
   select(cell_id, ts_id) %>% 
@@ -90,9 +94,18 @@ data_grid_cyclones <- st_join(data_grid, data_cyclones, .predicates = st_interse
   summarise(n = n()) %>% 
   ungroup()
 
+### 4.3.3 Extract only hex cells located on coral reefs ----
+
+data_reefs <- st_read("data/01_maps/02_clean/02_reefs/reefs.shp")
+
+data_grid_cyclones <- st_join(data_grid_cyclones, data_reefs, .predicates = st_intersects) %>% 
+  drop_na(area)
+
+### 4.3.4 Make the plot ----
+
 plot <- ggplot() +
   geom_sf(data = data_grid_cyclones, aes(fill = n), alpha = 1, color = "white") +
-  scale_fill_gradientn(colours = c("white", "#faedd6ff", "#fac484", "#ce6693", "#a059a0", "#5c53a5"),
+  scale_fill_gradientn(colours = c("#faedd6ff", "#fac484", "#ce6693", "#a059a0", "#5c53a5"),
                        breaks = c(0, 5, 10, 15, 20), limits = c(0, 20), labels = c("0", "5", "10", "15", "20"),
                        name = "Number of\nhurricanes") +
   geom_sf(data = data_eez, color = "#57add2", fill = NA, linewidth = 0.15) +
@@ -103,7 +116,8 @@ plot <- ggplot() +
                    text_cex = 0.6, style = "bar", line_width = 1,  height = unit(0.04, "cm"), line_col = "black",
                    pad_x = unit(0.5, "cm"), pad_y = unit(0.35, "cm"), bar_cols = c("black", "black")) +
   theme_map() +
-  theme(legend.position = "inside",
+  theme(panel.background = element_rect(fill = "white"),
+        legend.position = "inside",
         legend.direction = "vertical",
         legend.background = element_rect(color = "black", linewidth = 0.1, fill = "#fbfbfb"),
         legend.title = element_text(size = 7, hjust = 0),
