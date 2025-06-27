@@ -57,9 +57,9 @@ plot <- ggplot() +
   geom_sf(data = data_eez, color = "#57add2", fill = NA, linewidth = 0.15) +
   geom_sf(data = data_land, color = "#57add2", fill = "#d9d9d9", linewidth = 0.05) +
   geom_sf(data = data_land_boundaries, color = "#979796", fill = NA, linewidth = 0.15) +
-  geom_sf(data = data_benthic %>% arrange(int_class), aes(fill = int_class),
-          shape = 21, size = 1.4, color = "black", stroke = 0.075) +
-  scale_fill_manual(values = palette_second,
+  geom_sf(data = data_benthic %>% arrange(int_class), aes(color = int_class),
+          size = 1.6) +
+  scale_color_manual(values = palette_second,
                      labels = c("1 year", "2-5 years", "6-10 years", "11-15 years", ">15 years"), 
                      drop = FALSE, name = "Number of years\nwith data") +
   guides(fill = guide_legend(title.position = "top", title.hjust = 0.5, override.aes = list(size = 2.5))) +
@@ -68,7 +68,8 @@ plot <- ggplot() +
                    text_cex = 0.6, style = "bar", line_width = 1,  height = unit(0.04, "cm"), line_col = "black",
                    pad_x = unit(0.5, "cm"), pad_y = unit(0.35, "cm"), bar_cols = c("black", "black")) +
   theme_map() +
-  theme(legend.position = "inside",
+  theme(panel.background = element_rect(fill = "white"),
+        legend.position = "inside",
         legend.direction = "vertical",
         legend.background = element_rect(color = "black", linewidth = 0.1, fill = "#fbfbfb"),
         legend.title = element_text(size = 7, hjust = 0),
