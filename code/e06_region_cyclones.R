@@ -153,10 +153,10 @@ data_cyclones <- data_cyclones %>%
                       n = rep(0, length(setdiff(data_area$area, data_cyclones$area))),
                       n_tot = n)) %>% 
   mutate(area = str_replace_all(area, c("Islands" = "Isl.",
-                                                  " and the " = " & ",
-                                                  " and " = " & ",
-                                                  "United States" = "U.S.",
-                                                  "Saint " = "St. ")))
+                                        " and the " = " & ",
+                                        " and " = " & ",
+                                        "United States" = "U.S.",
+                                        "Saint " = "St. ")))
 
 ## 5.2 Make the plot ----
 
@@ -192,7 +192,7 @@ data_cyclones <- data_cyclones %>%
 
 ## 6.1 Total number of cyclones ----
 
-nrow(data_cyclones)
+length(unique(data_cyclones$ts_id))
 
 ## 6.2 Max number of cyclones ----
 
