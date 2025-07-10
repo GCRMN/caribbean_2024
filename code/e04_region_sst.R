@@ -29,8 +29,8 @@ data_warming <- read.csv("data/02_misc/data-warming.csv") %>%
   add_row(area = "Global Ocean", warming_rate = NA, sst_increase = 0.97) %>% 
   mutate(warming_rate = round(warming_rate, 3),
          color = case_when(area == "Global Ocean" ~ "black",
-                           area == "Entire Caribbean region" ~ palette_second[4],
-                           sst_increase > 0 & area != "Global Ocean" ~ palette_second[3],
+                           area == "Entire Caribbean region" ~ "black",
+                           sst_increase > 0 & area != "Global Ocean" ~ "#d35f5fff",
                            sst_increase <= 0 & area != "Global Ocean" ~ palette_first[2]),
          area = if_else(area == "Global Ocean", "**Global Ocean**", area),
          area = if_else(area == "Entire Caribbean region", "**Entire Caribbean region**", area)) %>% 
@@ -48,16 +48,15 @@ ggplot(data = data_warming, aes(x = sst_increase, y = fct_reorder(area, sst_incr
   geom_bar(stat = "identity", aes(fill = color), width = 0.6, color = "white") +
   scale_fill_identity() +
   scale_color_identity() +
-  geom_vline(xintercept = 0) +
   labs(x = "Change in SST (°C)\nbetween 1985 and 2024", y = NULL) +
   theme_graph() +
   theme(axis.text.y = element_markdown()) +
   coord_cartesian(clip = "off") +
-  scale_x_continuous(expand = c(0, 0), limits = c(-0.5, 1.5))
+  scale_x_continuous(expand = c(0, 0), limits = c(0, 1.5))
 
 ## 3.3 Save the plot ----
 
-ggsave("figs/01_part-1/fig-4.png", height = 12, width = 6, dpi = fig_resolution)
+ggsave("figs/01_part-1/fig-4.png", height = 13, width = 6, dpi = fig_resolution)
 
 # 4. SST anomaly ----
 
@@ -76,7 +75,7 @@ plot_anom <- ggplot(data = data_sst_caribbean) +
   geom_ribbon(data = data_sst_caribbean %>% mutate(sst_anom_mean = if_else(sst_anom_mean < 0,
                                                                0,
                                                                sst_anom_mean)),
-              aes(x = date, ymin = 0, ymax = sst_anom_mean), fill = palette_second[3], alpha = 0.9) +
+              aes(x = date, ymin = 0, ymax = sst_anom_mean), fill = "#d35f5fff", alpha = 0.9) +
   geom_ribbon(data = data_sst_caribbean %>% mutate(sst_anom_mean = if_else(sst_anom_mean > 0,
                                                                0,
                                                                sst_anom_mean)),
@@ -117,7 +116,7 @@ plot_anom_trend <- ggplot(data = data_sst_caribbean) +
   geom_ribbon(data = data_sst_caribbean %>% mutate(sst_anom_mean = if_else(sst_anom_mean < sst_anom_mean_linear,
                                                                          sst_anom_mean_linear,
                                                                          sst_anom_mean)),
-              aes(x = date, ymin = sst_anom_mean_linear, ymax = sst_anom_mean), fill = palette_second[3], alpha = 0.9) +
+              aes(x = date, ymin = sst_anom_mean_linear, ymax = sst_anom_mean), fill = "#d35f5fff", alpha = 0.9) +
   geom_ribbon(data = data_sst_caribbean %>% mutate(sst_anom_mean = if_else(sst_anom_mean > sst_anom_mean_linear,
                                                                          sst_anom_mean_linear,
                                                                          sst_anom_mean)),
