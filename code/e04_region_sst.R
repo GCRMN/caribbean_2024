@@ -52,11 +52,13 @@ ggplot(data = data_warming, aes(x = sst_increase, y = fct_reorder(area, sst_incr
   theme_graph() +
   theme(axis.text.y = element_markdown()) +
   coord_cartesian(clip = "off") +
-  scale_x_continuous(expand = c(0, 0), limits = c(0, 1.5))
+  scale_x_continuous(expand = c(0, 0), limits = c(0, 1.5),
+                     breaks = c(0.0, 0.5, 1.0, 1.5),
+                     labels = c("0.0", "+0.5", "+1.0", "+1.5"))
 
 ## 3.3 Save the plot ----
 
-ggsave("figs/01_part-1/fig-4.png", height = 13, width = 6, dpi = fig_resolution)
+ggsave("figs/01_part-1/fig-4.png", height = 14, width = 6.1, dpi = fig_resolution)
 
 # 4. SST anomaly ----
 
