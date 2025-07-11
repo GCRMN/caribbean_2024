@@ -4,6 +4,7 @@ library(tidyverse) # Core tidyverse packages
 library(sf)
 sf_use_s2(FALSE)
 library(ggspatial) # For annotation_scale function
+library(ggtext)
 
 # 2. Source functions ----
 
@@ -180,7 +181,33 @@ ggplot(data = data_cyclones, aes(x = n, y = fct_reorder(area, n_tot), fill = saf
 
 ggsave(filename = "figs/01_part-1/fig-7.png", width = 6, height = 12, dpi = fig_resolution)
 
-# 6. Key numbers ----
+# 6. Top ten most severe cyclones ----
+
+load("data/07_cyclones/02_cyclones_extracted.RData")
+
+data_cyclones_top <- data_cyclones %>% 
+  mutate(year = year(time)) %>% 
+  select(ts_id, ts_name, windspeed, year, saffir) %>% 
+  distinct() %>% 
+  group_by(ts_id) %>% 
+  filter(windspeed == max(windspeed)) %>% 
+  ungroup() %>% 
+  arrange(-windspeed) %>% 
+  slice(1:10) %>% 
+  mutate(ts_name = str_to_sentence(ts_name),
+         label = paste0(round(windspeed), " km.h<sup>-1</sup> (**", year, "**)"))
+
+ggplot(data = data_cyclones_top, aes(x = fct_reorder(ts_name, -desc(windspeed)), y = windspeed, label = label)) +
+  geom_bar(stat = "identity", width = 0.5, fill = palette_first[3]) +
+  geom_richtext(hjust = 1.2, label.color = NA, color = "white", fill = NA) +
+  coord_flip() +
+  labs(y = "Wind speed (km.h<sup>-1</sup>)", x = NULL) +
+  theme_graph() +
+  theme(axis.title = element_markdown())
+
+ggsave("figs/05_supp-mat/top-ten-hurricanes.png", width = 5, height = 7)
+
+# 7. Key numbers ----
 
 load("data/07_cyclones/02_cyclones_extracted.RData")
 
@@ -190,13 +217,13 @@ data_cyclones <- data_cyclones %>%
   ungroup() %>% 
   filter(max_saffir >= 1)
 
-## 6.1 Total number of cyclones ----
+## 7.1 Total number of cyclones ----
 
 length(unique(data_cyclones$ts_id))
 
-## 6.2 Max number of cyclones ----
+## 7.2 Max number of cyclones ----
 
-data_cyclones <- data_cyclones %>% 
+data_cyclones %>% 
   select(ts_id, area) %>% 
   distinct() %>% 
   group_by(area) %>% 
@@ -204,11 +231,23 @@ data_cyclones <- data_cyclones %>%
   ungroup() %>% 
   filter(n == max(n))
 
-## 6.3 Highest windspeed ----
+## 7.3 Highest windspeed ----
 
-load("data/07_cyclones/02_cyclones_extracted.RData")
-
-data_cyclones <- data_cyclones %>% 
+data_cyclones %>% 
   group_by(saffir) %>% 
   mutate(max_saffir = max(saffir)) %>% 
   arrange(desc(windspeed))
+
+## 7.4 Mean number of cyclone per year ----
+
+data_cyclones_year <- data_cyclones %>% 
+  mutate(year = year(time)) %>% 
+  select(year, ts_id) %>% 
+  distinct() %>% 
+  group_by(year) %>% 
+  count() %>% 
+  ungroup() %>% 
+  complete(year = seq(1980, 2024, 1), fill = list(n = 0))
+
+mean(data_cyclones_year$n)
+sd(data_cyclones_year$n)
