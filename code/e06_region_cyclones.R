@@ -207,7 +207,39 @@ ggplot(data = data_cyclones_top, aes(x = fct_reorder(ts_name, -desc(windspeed)),
 
 ggsave("figs/05_supp-mat/top-ten-hurricanes.png", width = 5, height = 7)
 
-# 7. Key numbers ----
+# 7. Number of cyclones per year ----
+
+load("data/07_cyclones/02_cyclones_extracted.RData")
+
+data_cyclones_year <- data_cyclones %>% 
+  mutate(year = year(time)) %>% 
+  select(ts_id, ts_name, year, saffir) %>% 
+  distinct() %>% 
+  group_by(saffir) %>% 
+  mutate(max_saffir = max(saffir)) %>% 
+  ungroup() %>% 
+  filter(max_saffir >= 1) %>% 
+  group_by(year, max_saffir) %>% 
+  count() %>% 
+  ungroup() %>% 
+  mutate(max_saffir = as.factor(max_saffir))
+
+ggplot(data = data_cyclones_year, aes(x = year, y = n, fill = max_saffir)) +
+  geom_bar(stat = "identity") +
+  theme_graph() +
+  labs(x = "Year", y = "Number of hurricanes") +
+  scale_fill_manual(breaks = c("1", "2", "3", "4", "5"),
+                                 labels = c("Cat. 1", "Cat. 2", "Cat. 3", "Cat. 4", "Cat. 5"),
+                                 values = c(palette_second[2:5], "black"),
+                                 name = "Saffir-Simpson category",
+                                 drop = FALSE) +
+  scale_y_continuous(breaks = function(x) unique(floor(pretty(x)))) +
+  theme(legend.title.position = "top",
+        legend.title = element_text(hjust = 0.5))
+
+ggsave("figs/05_supp-mat/hurricanes-per-year.png", width = 8, height = 4)
+
+# 8. Key numbers ----
 
 load("data/07_cyclones/02_cyclones_extracted.RData")
 
@@ -217,11 +249,11 @@ data_cyclones <- data_cyclones %>%
   ungroup() %>% 
   filter(max_saffir >= 1)
 
-## 7.1 Total number of cyclones ----
+## 8.1 Total number of cyclones ----
 
 length(unique(data_cyclones$ts_id))
 
-## 7.2 Max number of cyclones ----
+## 8.2 Max number of cyclones ----
 
 data_cyclones %>% 
   select(ts_id, area) %>% 
@@ -231,14 +263,14 @@ data_cyclones %>%
   ungroup() %>% 
   filter(n == max(n))
 
-## 7.3 Highest windspeed ----
+## 8.3 Highest windspeed ----
 
 data_cyclones %>% 
   group_by(saffir) %>% 
   mutate(max_saffir = max(saffir)) %>% 
   arrange(desc(windspeed))
 
-## 7.4 Mean number of cyclone per year ----
+## 8.4 Mean number of cyclone per year ----
 
 data_cyclones_year <- data_cyclones %>% 
   mutate(year = year(time)) %>% 
