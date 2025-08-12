@@ -45,9 +45,9 @@ plot_areas <- function(area_i){
     ggplot() +
       geom_sf(data = data_area, fill = NA, color = "lightgrey", linewidth = 0.05) +
       geom_sf(data = data_area %>% filter(area == area_i),
-              fill = "#d64541", color = "#d64541", alpha = 0.35, linewidth = 0.05) +
+              fill = "#42b9bc", color = "#42b9bc", alpha = 0.35, linewidth = 0.05) +
       geom_sf(data = data_circle %>% filter(area == area_i) %>% st_buffer(dist = 2),
-              fill = "#d64541", color = NA, alpha = 0.2, linewidth = 0.05) +
+              fill = "#42b9bc", color = NA, alpha = 0.2, linewidth = 0.05) +
       geom_sf(data = data_land_ne, linewidth = 0.1) +
       coord_sf(xlim = c(-105, -50), ylim = c(6, 38), expand = FALSE) +
       theme(axis.text = element_blank(),
@@ -60,7 +60,7 @@ plot_areas <- function(area_i){
     ggplot() +
       geom_sf(data = data_area, fill = NA, color = "lightgrey", linewidth = 0.05) +
       geom_sf(data = data_area %>% filter(area == area_i),
-              fill = "#d64541", color = "#d64541", alpha = 0.35, linewidth = 0.05) +
+              fill = "#42b9bc", color = "#42b9bc", alpha = 0.35, linewidth = 0.05) +
       geom_sf(data = data_land_ne, linewidth = 0.1) +
       coord_sf(xlim = c(-105, -50), ylim = c(6, 38), expand = FALSE) +
       theme(axis.text = element_blank(),
@@ -75,6 +75,11 @@ plot_areas <- function(area_i){
                                            str_replace_all(str_to_lower(area_i), " ", "-"), ".png"),
                                     "---", "-"),
          height = 2.8, width = 4.4, dpi = fig_resolution)
+  
+  ggsave(filename = str_replace_all(paste0("figs/02_part-2/fig-0/",
+                                           str_replace_all(str_to_lower(area_i), " ", "-"), ".svg"),
+                                    "---", "-"),
+         height = 2.8, width = 4.4)
   
 }
 
