@@ -30,7 +30,32 @@ data_area <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp")
 data_benthic_coords <- st_read("data/03_site-coords/site-coords_all.shp") %>% 
   st_join(., data_area)
 
-### 3.1.2 Second assignation ----
+### 3.1.2 Check if all spatial levels are present in pred data ----
+
+spatial_levels_pred <- data_benthic_coords %>% 
+  st_drop_geometry() %>% 
+  filter(type == "pred") %>% 
+  select(area) %>% 
+  arrange(area) %>% 
+  distinct()
+
+spatial_levels_needed <- data_area %>% 
+  st_drop_geometry() %>% 
+  select(area) %>% 
+  arrange(area) %>% 
+  distinct()
+
+if(length(setdiff(spatial_levels_needed, spatial_levels_pred)) != 0){
+ 
+  stop(paste0("The following spatial levels are missing in data to predict:\n",
+       as.character(setdiff(spatial_levels_needed, spatial_levels_pred))))
+  
+   
+}
+
+rm(spatial_levels_needed, spatial_levels_pred)
+
+### 3.1.3 Second assignation ----
 
 data_predictors <- data_benthic_coords %>% 
   filter(is.na(area)) %>% 
@@ -38,7 +63,7 @@ data_predictors <- data_benthic_coords %>%
   st_join(., st_buffer(data_area, 0.05)) %>% 
   bind_rows(data_benthic_coords %>% filter(!(is.na(area))), .)
 
-### 3.1.3 Generate all years ----
+### 3.1.4 Generate all years ----
 
 data_predictors <- data_predictors %>% 
   mutate(decimalLongitude = st_coordinates(.)[,"X"],
