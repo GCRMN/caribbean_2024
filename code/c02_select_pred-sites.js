@@ -5,9 +5,9 @@ var data_reefs = ee.FeatureCollection("users/jeremywicquart/caribbean_2024_reefs
 // 2. Create the random points over coral reefs ----
 
 var site_coords = ee.FeatureCollection.randomPoints(
-    {region: data_reefs, points: 10000, seed: 0, maxError: 1}
+    {region: data_reefs, points: 10000, seed: 20, maxError: 1}
 );
-  
+
 // 3. Add site_id ----
 
 var removeProperty = function(feat, property) {

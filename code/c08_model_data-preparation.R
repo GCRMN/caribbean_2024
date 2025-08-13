@@ -17,7 +17,7 @@ load("data/02_misc/data-benthic.RData")
 
 ## 2.2 Download predictors extracted through GEE ----
 
-download_predictors()
+#download_predictors()
 
 # 3. Load and combine predictors ----
 
@@ -45,11 +45,11 @@ spatial_levels_needed <- data_area %>%
   arrange(area) %>% 
   distinct()
 
-if(length(setdiff(spatial_levels_needed, spatial_levels_pred)) != 0){
+if(nrow(setdiff(spatial_levels_needed, spatial_levels_pred)) != 0){
  
   stop(paste0("The following spatial levels are missing in data to predict:\n",
-       as.character(setdiff(spatial_levels_needed, spatial_levels_pred))))
-  
+       as.character(setdiff(spatial_levels_needed, spatial_levels_pred))),
+       "\n Re-sample sites in the c02_select_pred-sites.js script")
    
 }
 
@@ -119,7 +119,7 @@ pred_human_pop <- pred_human_pop %>%
   ungroup() %>% 
   left_join(pred_human_pop, .) %>% 
   # Estimate human population for all years between 2000 and 2023
-  tidyr::complete(year = seq(2000, 2023), nesting(site_id, type, intercept, slope)) %>% 
+  tidyr::complete(year = seq(2000, 2024), nesting(site_id, type, intercept, slope)) %>% 
   mutate(pred_population = (year*slope)+intercept) %>% 
   select(-intercept, -slope) %>% 
   mutate(pred_population = round(pred_population))
@@ -282,7 +282,7 @@ data_benthic <- data_benthic %>%
 
 save(data_benthic, file = "data/09_model-data/data_benthic_prepared.RData")
 
-# 7. Check the number of NA per predictors ----
+# 7. Check the number of NA per predictors (all) ----
 
 ## 7.1 Sites for predictions ----
 
@@ -291,7 +291,7 @@ pred_na_pred <- data_predictors_pred %>%
   pivot_longer(1:ncol(.), names_to = "predictor", values_to = "na") %>% 
   mutate(n = nrow(data_predictors_pred),
          percent = (na*100)/n,
-         type = "Sites prediction") %>% 
+         type = "Predictors (Pred.)") %>% 
   select(-n, -na) %>% 
   filter(!(predictor %in% c("measurementValue", "category")))
 
@@ -302,17 +302,14 @@ pred_na_obs <- data_benthic %>%
   pivot_longer(1:ncol(.), names_to = "predictor", values_to = "na") %>% 
   mutate(n = nrow(data_benthic),
          percent = (na*100)/n,
-         type = "Sites observed") %>% 
+         type = "Predictors (Obs.)") %>% 
   select(-n, -na) %>% 
   filter(!(predictor %in% c("measurementValue", "category")))
 
-## 7.3 Combine data ----
+## 7.3 Make the plot ----
 
-pred_na <- bind_rows(pred_na_pred, pred_na_obs)
-
-## 7.4 Make the plot ----
-
-ggplot(data = pred_na, aes(x = fct_reorder(predictor, desc(predictor)), y = percent)) +
+ggplot(data = bind_rows(pred_na_pred, pred_na_obs),
+       aes(x = fct_reorder(predictor, desc(predictor)), y = percent)) +
   geom_bar(stat = "identity", fill = "#c44d56", width = 0.6) +
   coord_flip() +
   lims(y = c(0, 100)) +
@@ -320,4 +317,46 @@ ggplot(data = pred_na, aes(x = fct_reorder(predictor, desc(predictor)), y = perc
   labs(x = NULL, y = "Percentage of NA") +
   theme_graph()
 
-ggsave("figs/06_additional/na_predictors.png", width = 8, height = 12)
+ggsave("figs/06_additional/na_predictors_all.png", width = 8, height = 12)
+
+# 8. Check the number of NA per predictors (per year) ----
+
+## 8.1 Sites for predictions ----
+
+pred_na_pred <- data_predictors_pred %>% 
+  group_by(year) %>% 
+  summarise(across("area":"parentEventID", ~sum(is.na(.x)))) %>% 
+  ungroup() %>% 
+  pivot_longer(2:ncol(.), names_to = "predictor", values_to = "na") %>% 
+  mutate(perc = (na*100)/10000,
+         type = "Predictors (Pred.)")
+
+## 8.2 Sites for observed data ----
+
+pred_na_obs <- data_benthic %>% 
+  select(-category, -measurementValue) %>% 
+  distinct() %>% 
+  group_by(year) %>% 
+  summarise(across("datasetID":"reef_type", ~sum(is.na(.x)))) %>% 
+  ungroup() %>% 
+  pivot_longer(2:ncol(.), names_to = "predictor", values_to = "na") %>% 
+  mutate(perc = (na*100)/10000,
+         type = "Predictors (Obs.)")
+
+## 8.3 Make the plot ----
+
+ggplot(data = bind_rows(pred_na_obs, pred_na_pred),
+      aes(x = year, y = predictor, fill = perc)) +
+  geom_tile(color = "white", height = 0.6, linewidth = 0.6) +
+  theme_graph() +
+  labs(y = NULL, x = "Year", fill = "Percentage of NA") +
+  scale_y_discrete(limits = rev) +
+  scale_fill_gradientn(colors = c("#74b9ff", "#f1c40f", "#f39c12", "#e74c3c", "#c0392b"),
+                       breaks = c(0, 25, 50, 75, 100)) +
+  scale_x_continuous(expand = c(0, 0), limits = c(1979, 2025)) +
+  facet_wrap(~type) +
+  theme(legend.title.position = "top",
+        legend.title = element_text(hjust = 0.5),
+        legend.key.width = unit(1.5, "cm"))
+
+ggsave("figs/06_additional/na_predictors_year.png", width = 8, height = 12)

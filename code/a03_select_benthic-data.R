@@ -6,7 +6,7 @@ sf_use_s2(FALSE)
 
 # 2. Load gcrmndb_benthos data ----
 
-load("C:/Users/jwicquart/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/09_gcrmndb_benthos.RData")
+load("C:/Users/jerem/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/09_gcrmndb_benthos.RData")
 
 # 3. Filter required data ----
 
@@ -21,7 +21,7 @@ data_benthic <- synthetic_data %>%
   # Remove useless datasets
   #filter(!(datasetID %in% c())) %>% 
   # Filter data on the period of interest
-  filter(year >= 1980 & year <= 2024) %>% 
+  filter(year >= 1970 & year <= 2024) %>% 
   # Filter depth of shallow coral reefs
   filter(is.na(verbatimDepth) | verbatimDepth <= 30) %>% 
   # Specific corrections or filters

@@ -67,7 +67,7 @@ Export.table.toDrive({
   selectors:["system:index", "site_id", "type", "pred_population"]
 });
 
-// 3. Extract predictor "land extent around 10 km radius from the site" ////////////////////////////////
+// 3. Extract predictor "land extent around 30 km radius from the site" ////////////////////////////////
 
 // 3.1 Create a function to create a buffer around a point ----
 
@@ -78,9 +78,9 @@ function bufferPoints(radius, bounds) {
   };
 }
 
-// 3.2 Apply the function (here 10 km radius) ----
+// 3.2 Apply the function (here 30 km radius) ----
 
-var site_buffer = site_coords.map(bufferPoints(10000, false));
+var site_buffer = site_coords.map(bufferPoints(30000, false));
 
 // 3.3 Load elevation data ----
 
@@ -113,7 +113,7 @@ Export.table.toDrive({
   selectors:["site_id", "type", "pred_land"]
 });
 
-// 4. Extract predictor "mean elevation around 10 km radius from the site" ////////////////////////////////
+// 4. Extract predictor "mean elevation around 30 km radius from the site" ////////////////////////////////
 
 // 4.1 Create a function to create a buffer around a point ----
 
@@ -126,7 +126,7 @@ function bufferPoints(radius, bounds) {
 
 // 4.2 Apply the function (here 10 km radius) ----
 
-var site_buffer = site_coords.map(bufferPoints(10000, false));
+var site_buffer = site_coords.map(bufferPoints(30000, false));
 
 // 4.3 Load elevation data ----
 
