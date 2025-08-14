@@ -27,7 +27,11 @@ list_authors <- read_xlsx("../../figs/05_supp-mat/tbl-4.xlsx") %>%
 
 ```
 
-**Authors:** `r list_authors`
+**Authors:** `r list_authors`.
+
+\
+
+\*AGRRA data contributor(s).
 
 \
 
@@ -50,8 +54,8 @@ figure_path <- paste0("../../figs/02_part-2/fig-0/", territory_name, ".png")
 read_xlsx("../../figs/01_part-1/tbl-1.xlsx") %>% 
   left_join(., read_xlsx("../../figs/01_part-1/tbl-2.xlsx")) %>% 
   filter(area == area_i) %>% 
-  select(reef_area_abs, reef_area_rel, pop_reef_2020, pop_percent, pop_reef_change) %>% 
-  mutate(across(c("reef_area_rel", "pop_percent", "pop_reef_change"), ~paste0(.x, " %")),
+  select(reef_area_abs, reef_area_rel_caribbean, pop_reef_2020, pop_percent, pop_reef_change) %>% 
+  mutate(across(c("reef_area_rel_caribbean", "pop_percent", "pop_reef_change"), ~paste0(.x, " %")),
          reef_area_abs = paste0(reef_area_abs, " km²")) %>% 
   t() %>% 
   as.data.frame() %>% 
