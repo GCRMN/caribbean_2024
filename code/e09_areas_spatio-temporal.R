@@ -60,7 +60,7 @@ plot_year_dataset <- function(area_i){
     scale_y_discrete(limits = rev) +
     scale_x_continuous(expand = c(0, 0), limits = c(1979, 2025)) +
     theme(legend.title.position = "top",
-          legend.title = element_text(size = 10, hjust = 1, face = "bold", color = "#2c3e50"),
+          legend.title = element_text(size = 10, hjust = 1, color = "#2c3e50"),
           legend.key.width = unit(1.5, "cm"),
           legend.key.height = unit(0.4, "cm"),
           legend.justification = "right",
@@ -306,16 +306,3 @@ data_area <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp") %>%
   pull()
 
 map(data_area, ~plot_map_area(area_i = .))
-
-
-plot_map_area(area_i = "Guatemala")
-
-#### TEST LABELS ##################
-
-data_labels <- tibble(area = "Guadeloupe",
-                      label = c("Atlantic\nOcean", "Caribbean\nSea", "GUADELOUPE", "MONTSERRAT", "DOMINICA",
-                                "La Désirade"),
-                      type = c("ocean", "ocean", "area", "area", "area", "island"),
-                      lat = c(16.6, 15.8, 16.1, 16.7, 15.68, 16.35),
-                      long = c(-60.6, -62, -60.85, -61.975, -61.45, -60.85)) %>% 
-  st_as_sf(coords = c("long", "lat"), crs = 4326)

@@ -12,7 +12,6 @@ library(tidyterra)
 source("code/function/graphical_par.R")
 source("code/function/limits_region.R")
 source("code/function/theme_map.R")
-theme_set(theme_map())
 
 # 3. Load data ----
 
@@ -62,7 +61,8 @@ plot <- ggplot() +
   limits_region() +
   annotation_scale(location = "bl", width_hint = 0.25, text_family = font_choose_map, text_col = "black",
                    text_cex = 0.6, style = "bar", line_width = 1,  height = unit(0.04, "cm"), line_col = "black",
-                   pad_x = unit(0.5, "cm"), pad_y = unit(0.35, "cm"), bar_cols = c("black", "black"))
+                   pad_x = unit(0.5, "cm"), pad_y = unit(0.35, "cm"), bar_cols = c("black", "black")) +
+  theme_map()
 
 ggsave(filename = "figs/01_part-1/fig-1_raw.png", plot = plot,
        width = 7.25, height = 4.75, dpi = fig_resolution)

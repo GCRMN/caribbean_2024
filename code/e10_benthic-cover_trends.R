@@ -48,7 +48,9 @@ raw_trends <- model_results$result_trends %>%
             lower_ci_80 = quantile(cover, 0.20),
             upper_ci_95 = quantile(cover, 0.95),
             upper_ci_80 = quantile(cover, 0.80)) %>% 
-  ungroup()
+  ungroup() %>% 
+  # Replace negative values by 0
+  mutate(across(c(mean, lower_ci_95, lower_ci_80, upper_ci_95, upper_ci_80), ~ifelse(.x < 0, 0, .x)))
 
 ## 3.3 Long-term average ----
 
@@ -117,11 +119,102 @@ rm(smoothed_trends, raw_trends, long_term_average,
 model_results$model_description %>% 
   select(-model, -color, -text_title, -grid_size)
 
+
+
+
+############################################ TO FINISH #############################
+
+
 ## 4.2 Performance ----
+
+data_rmse_rsq <- model_results$model_pred_obs %>% 
+  group_by(category) %>% 
+  mutate(residual = yhat - y,
+         res = sum((y - yhat)^2),
+         tot = sum((y - mean(y))^2)) %>% 
+  ungroup() %>% 
+  group_by(category, area) %>% 
+  summarise(res = sum((y - yhat)^2),
+            tot = sum((y - mean(y))^2),
+            rsq = 1 - (res/tot),
+            rmse = sqrt(sum(residual^2/n()))) %>% 
+  ungroup() %>% 
+  select(-res, -tot)
+
+data_rmse <- data_rmse_rsq %>% 
+  select(-rsq) %>% 
+  pivot_wider(names_from = category, values_from = rmse) %>% 
+  arrange(area) %>% 
+  select(area, `Hard coral`, `Algae`, `Other fauna`, `Macroalgae`,
+         `Coralline algae`, `Turf algae`, `Acropora`, `Orbicella`, `Porites`) %>% 
+  bind_rows(., model_results$model_pred_obs %>% 
+              group_by(category) %>% 
+              mutate(residual = yhat - y,
+                     res = sum((y - yhat)^2),
+                     tot = sum((y - mean(y))^2)) %>% 
+              summarise(res = sum((y - yhat)^2),
+                        tot = sum((y - mean(y))^2),
+                        rsq = 1 - (res/tot),
+                        rmse = sqrt(sum(residual^2/n()))) %>% 
+              ungroup() %>% 
+              select(category, rmse) %>% 
+              pivot_wider(names_from = category, values_from = rmse) %>% 
+              mutate(area = "Entire region", .before = 1)) %>% 
+  mutate(across(c(`Hard coral`:`Porites`), ~round(.x, 2)))
+
+data_rsq <- data_rmse_rsq %>% 
+  select(-rmse) %>% 
+  pivot_wider(names_from = category, values_from = rsq) %>% 
+  arrange(area) %>% 
+  select(area, `Hard coral`, `Algae`, `Other fauna`, `Macroalgae`,
+         `Coralline algae`, `Turf algae`, `Acropora`, `Orbicella`, `Porites`) %>% 
+  bind_rows(., model_results$model_pred_obs %>% 
+              group_by(category) %>% 
+              mutate(residual = yhat - y,
+                     res = sum((y - yhat)^2),
+                     tot = sum((y - mean(y))^2)) %>% 
+              summarise(res = sum((y - yhat)^2),
+                        tot = sum((y - mean(y))^2),
+                        rsq = 1 - (res/tot),
+                        rmse = sqrt(sum(residual^2/n()))) %>% 
+              ungroup() %>% 
+              select(category, rsq) %>% 
+              pivot_wider(names_from = category, values_from = rsq) %>% 
+              mutate(area = "Entire region", .before = 1)) %>% 
+  mutate(across(c(`Hard coral`:`Porites`), ~round(.x, 2)))
+
+### 4.2.1 Region ----
 
 model_results$model_performance %>% 
   group_by(category) %>% 
   summarise(across(c(rmse, rsq), ~mean(.x)))
+
+### 4.2.2 Area ----
+
+model_results$model_pred_obs %>% 
+  group_by(category) %>% 
+  mutate(residual = yhat - y,
+         res = sum((y - yhat)^2),
+         tot = sum((y - mean(y))^2),
+         rsq_global = 1 - (res/tot),
+         rmse_global = sqrt(sum(residual^2/n()))) %>% 
+  ungroup() %>% 
+  group_by(category, area, rsq_global, rmse_global) %>% 
+  summarise(res = sum((y - yhat)^2),
+            tot = sum((y - mean(y))^2),
+            rsq = 1 - (res/tot),
+            rmse = sqrt(sum(residual^2/n()))) %>% 
+  ungroup() %>% 
+  select(area, category, rmse) %>% 
+  mutate(rmse = round(rmse, 2)) %>% 
+  pivot_wider(names_from = category, values_from = rmse) %>% 
+  arrange(area) %>% 
+  select(area, `Hard coral`, `Algae`, `Other fauna`, `Macroalgae`,
+         `Coralline algae`, `Turf algae`, `Acropora`, `Orbicella`, `Porites`)
+
+#%>%write.csv2(., "figs/04_supp/rmse-territories_benthic-categories.csv", row.names = FALSE)
+
+############################################ TO FINISH #############################
 
 ## 4.3 Predicted vs observed ----
 
@@ -178,26 +271,7 @@ map(unique(data_pdp$category), ~plot_pdp(category_i = .x))
 
 # 5. Temporal trends ----
 
-map(unique(data_trends$smoothed_trends$area), ~plot_trends(area_i = .))
-
-# Raw data (for writing)
-
-if(FALSE){
-  
-  A <- data_trends %>% filter(territory == "All" & category == "Acroporidae") %>% select(-upper_ci_95, -lower_ci_95)
-  #A <- data_trends %>% filter(territory == "All" & category == "Acroporidae") %>% select(-upper_ci_95, -lower_ci_95) %>% 
-  filter(year >= 1987 & year <= 1999) %>% summarise(mean = mean(mean))
-  
-  A <- data_trends %>% filter(territory == "Guadeloupe" & category == "Turf algae") %>% select(-upper_ci_95, -lower_ci_95) %>% 
-    summarise(mean = mean(mean),
-              lower_ci_80 = mean(lower_ci_80),
-              upper_ci_80 = mean(upper_ci_80))
-  
-}
-
-# 6. Raw data (mean +/- standard deviation) ----
-
-## 6.1 Transform data ----
+## 5.1 Load and transform data obs data ----
 
 load("data/09_model-data/data_benthic_prepared.RData")
 
@@ -256,11 +330,123 @@ data_benthic <- data_benthic %>%
               distinct()) %>% 
   drop_na(area)
 
-## 6.2 Export the plots ----
+## 5.2 Create the function ----
 
-map(unique(data_benthic$area), ~export_raw_trends(area_i = .))
+plot_trends <- function(area_i, icons, raw_data = TRUE, modelled_data = TRUE, scales = "fixed"){
+  
+  data_trends_i <- data_trends$smoothed_trends %>% 
+    filter(area == area_i) %>% 
+    filter(category %in% c("Hard coral", "Macroalgae", "Other fauna"))
+  
+  data_raw_i <- data_benthic %>% 
+    filter(area == area_i) %>% 
+    filter(category %in% c("Hard coral", "Macroalgae", "Other fauna"))
+  
+  plot_trends <- ggplot() +
+    {if(raw_data == TRUE)
+      geom_pointrange(data = data_raw_i,
+                      aes(x = year, y = mean, ymin = ymin,
+                          ymax = ymax, color = color), size = 0.25)} +
+    {if(modelled_data == TRUE)
+      geom_ribbon(data = data_trends_i,
+                  aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95,
+                      fill = color), alpha = 0.5, show.legend = FALSE)} +
+    {if(modelled_data == TRUE)
+      geom_line(data = data_trends_i,
+                aes(x = year, y = mean, color = color),
+                linewidth = 1, show.legend = FALSE)} +
+    scale_color_identity() +
+    scale_fill_identity() +
+    facet_wrap(~text_title, scales = scales) +
+    theme(strip.text = element_markdown(hjust = 0, size = rel(1.3)),
+          strip.background = element_blank(),
+          panel.spacing = unit(2, "lines")) +
+    labs(x = "Year", y = "Cover (%)") +
+    lims(x = c(1980, 2024), y = c(0, NA))
+  
+  if(icons == FALSE){
+    
+    if(area_i == "All"){
+      
+      ggsave(plot = plot_trends, filename = "figs/01_part-1/fig-12.png", width = 14, height = 5)
+      
+    }else{
+        
+      ggsave(plot = plot_trends, filename = paste0("figs/02_part-2/fig-5/",
+                                                   str_replace_all(str_replace_all(str_to_lower(area_i), " ", "-"),
+                                                                   "---", "-"),
+                                                   ".png"),
+             width = 14, height = 5)
+      
+    }
 
-rm(plot_raw_trends, export_raw_trends, data_benthic)
+  }else if(icons == TRUE){
+    
+    require(cowplot)
+    
+    logo_coral <- "figs/00_misc/icons_acropora-palmata.png"
+    logo_macroalgae <- "figs/00_misc/icons_macroalgae.png"
+    logo_fauna <- "figs/00_misc/icons_gorgonia.png"
+    
+    plot_trends <- ggdraw(plot_trends) + 
+      draw_image(logo_coral,
+                 x = 0.39, y = 0.96, # Position above right
+                 hjust = 1, vjust = 1,
+                 width = 0.15, height = 0.15) +
+      draw_image(logo_macroalgae,
+                 x = 0.7075, y = 0.96, # Position above right
+                 hjust = 1, vjust = 1,
+                 width = 0.15, height = 0.15) + # Relative proportion of the image
+      draw_image(logo_fauna,
+                 x = 1.0175, y = 0.96, # Position above right
+                 hjust = 1, vjust = 1,
+                 width = 0.15, height = 0.15) # Relative proportion of the image
+    
+    if(area_i == "All"){
+      
+      ggsave(plot = plot_trends, filename = "figs/01_part-1/fig-12.png", width = 14, height = 5)
+      
+    }else{
+      
+      ggsave(plot = plot_trends, filename = paste0("figs/02_part-2/fig-5/",
+                                                   str_replace_all(str_replace_all(str_to_lower(area_i), " ", "-"),
+                                                                   "---", "-"),
+                                                   ".png"),
+             width = 14, height = 5)
+      
+    }
+    
+  }else{
+    
+    stop("icons must be TRUE or FALSE")
+    
+  }
+  
+}
+
+## 5.3 Map over the function -----
+
+map(unique(data_trends$smoothed_trends$area),
+    ~plot_trends(area_i = .x,
+                 icons = TRUE,
+                 scales = "fixed",
+                 raw_data = TRUE,
+                 modelled_data = TRUE))
+
+# Raw data (for writing)
+
+if(FALSE){
+  
+  A <- data_trends %>% filter(territory == "All" & category == "Acroporidae") %>% select(-upper_ci_95, -lower_ci_95)
+  #A <- data_trends %>% filter(territory == "All" & category == "Acroporidae") %>% select(-upper_ci_95, -lower_ci_95) %>% 
+  filter(year >= 1987 & year <= 1999) %>% summarise(mean = mean(mean))
+  
+  A <- data_trends %>% filter(territory == "Guadeloupe" & category == "Turf algae") %>% select(-upper_ci_95, -lower_ci_95) %>% 
+    summarise(mean = mean(mean),
+              lower_ci_80 = mean(lower_ci_80),
+              upper_ci_80 = mean(upper_ci_80))
+  
+}
 
 # 7. Map of predicted values across the region ----
 
