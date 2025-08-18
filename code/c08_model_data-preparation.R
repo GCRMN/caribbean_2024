@@ -360,3 +360,19 @@ ggplot(data = bind_rows(pred_na_obs, pred_na_pred),
         legend.key.width = unit(1.5, "cm"))
 
 ggsave("figs/06_additional/02_data-exploration/na_predictors_year.png", width = 8, height = 12)
+
+# 9. Number of obs and pred sites per area ----
+
+data_predictors %>% 
+  select(site_id, type, area) %>% 
+  group_by(area, type) %>% 
+  summarise(n = n_distinct(site_id)) %>% 
+  pivot_wider(names_from = type, values_from = n, names_prefix = "n_sites_") %>% 
+  bind_rows(., data_predictors %>% 
+              select(site_id, type) %>% 
+              group_by(type) %>% 
+              summarise(n = n_distinct(site_id)) %>% 
+              ungroup() %>% 
+              pivot_wider(names_from = type, values_from = n, names_prefix = "n_sites_") %>% 
+              mutate(area = "Entire Caribbean region")) %>% 
+  openxlsx::write.xlsx(., file = "figs/06_additional/02_data-exploration/nb-sites-obs-pred_area.xlsx")

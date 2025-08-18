@@ -15,16 +15,15 @@ sf_use_s2(FALSE)
 
 source("code/function/graphical_par.R")
 source("code/function/theme_graph.R")
+source("code/function/add_colors.R")
 source("code/function/combine_model_data.R")
 source("code/function/extract_mannkendall.R")
 source("code/function/plot_vimp.R")
 source("code/function/plot_pdp.R")
-source("code/function/plot_trends.R")
 source("code/function/plot_residuals.R")
 source("code/function/plot_pred_obs.R")
 source("code/function/plot_prediction_map.R")
-source("code/function/plot_raw_trends.R")
-source("code/function/export_raw_trends.R")
+source("code/function/plot_trends.R")
 
 theme_set(theme_graph())
 
@@ -35,7 +34,8 @@ theme_set(theme_graph())
 model_results <- combine_model_data(model = "xgb")
 
 model_results$result_trends <- model_results$result_trends %>% 
-  filter(year >= 1985 & year <= 2023)
+  filter(year >= 1980 & year <= 2023) %>% 
+  drop_na(area)
 
 ## 3.2 Confidence intervals ----
 
@@ -108,26 +108,19 @@ data_trends <- lst(smoothed_trends, raw_trends, long_term_average, long_term_tre
 rm(smoothed_trends, raw_trends, long_term_average,
    long_term_trend, data_benthic_obs)
 
-## 3.8 Export the data ----
-
-
-
 # 4. Model evaluation ----
 
 ## 4.1 Hyper-parameters ----
 
 model_results$model_description %>% 
-  select(-model, -color, -text_title, -grid_size)
+  select(-model, -color, -text_title, -grid_size) %>% 
+  relocate(category, .before = "trees") %>% 
+  openxlsx::write.xlsx(., "figs/06_additional/03_model-evaluation/hyperparameters.xlsx")
 
-
-
-
-############################################ TO FINISH #############################
-
-
-## 4.2 Performance ----
+## 4.2 Performance (RMSE and R²) ----
 
 data_rmse_rsq <- model_results$model_pred_obs %>% 
+  drop_na(area) %>% 
   group_by(category) %>% 
   mutate(residual = yhat - y,
          res = sum((y - yhat)^2),
@@ -141,12 +134,13 @@ data_rmse_rsq <- model_results$model_pred_obs %>%
   ungroup() %>% 
   select(-res, -tot)
 
-data_rmse <- data_rmse_rsq %>% 
+data_rmse_rsq %>% 
   select(-rsq) %>% 
   pivot_wider(names_from = category, values_from = rmse) %>% 
   arrange(area) %>% 
   select(area, `Hard coral`, `Algae`, `Other fauna`, `Macroalgae`,
          `Coralline algae`, `Turf algae`, `Acropora`, `Orbicella`, `Porites`) %>% 
+  # Add entire region values
   bind_rows(., model_results$model_pred_obs %>% 
               group_by(category) %>% 
               mutate(residual = yhat - y,
@@ -160,14 +154,17 @@ data_rmse <- data_rmse_rsq %>%
               select(category, rmse) %>% 
               pivot_wider(names_from = category, values_from = rmse) %>% 
               mutate(area = "Entire region", .before = 1)) %>% 
-  mutate(across(c(`Hard coral`:`Porites`), ~round(.x, 2)))
+  mutate(across(c(`Hard coral`:`Porites`), ~round(.x, 2))) %>% 
+  mutate(across(c(`Hard coral`:`Porites`), ~ifelse(.x == -Inf, NA, .x))) %>% 
+  openxlsx::write.xlsx(., "figs/06_additional/03_model-evaluation/performance_rmse.xlsx")
 
-data_rsq <- data_rmse_rsq %>% 
+data_rmse_rsq %>% 
   select(-rmse) %>% 
   pivot_wider(names_from = category, values_from = rsq) %>% 
   arrange(area) %>% 
   select(area, `Hard coral`, `Algae`, `Other fauna`, `Macroalgae`,
          `Coralline algae`, `Turf algae`, `Acropora`, `Orbicella`, `Porites`) %>% 
+  # Add entire region values
   bind_rows(., model_results$model_pred_obs %>% 
               group_by(category) %>% 
               mutate(residual = yhat - y,
@@ -181,52 +178,39 @@ data_rsq <- data_rmse_rsq %>%
               select(category, rsq) %>% 
               pivot_wider(names_from = category, values_from = rsq) %>% 
               mutate(area = "Entire region", .before = 1)) %>% 
-  mutate(across(c(`Hard coral`:`Porites`), ~round(.x, 2)))
+  mutate(across(c(`Hard coral`:`Porites`), ~round(.x, 2))) %>% 
+  mutate(across(c(`Hard coral`:`Porites`), ~ifelse(.x == -Inf, NA, .x))) %>% 
+  openxlsx::write.xlsx(., "figs/06_additional/03_model-evaluation/performance_rsq.xlsx")
 
-### 4.2.1 Region ----
+if(FALSE){
+  
+  # At the regional scale, the RMSE and RSQ don't need to be calculated
+  # since they were exported by the "c01_model_bootstrap_xgb.R" script.
+  # However, the values cannot be exported per area, so it's necessary to calculate it.
+  # Note that the differences in exported and calculated RMSE and RSQ can be due to the
+  # filtering of the years at line 36 of this script
+  
+  model_results$model_performance %>% 
+    group_by(category) %>% 
+    summarise(across(c(rmse, rsq), ~mean(.x)))
+  
+}
 
-model_results$model_performance %>% 
-  group_by(category) %>% 
-  summarise(across(c(rmse, rsq), ~mean(.x)))
-
-### 4.2.2 Area ----
-
-model_results$model_pred_obs %>% 
-  group_by(category) %>% 
-  mutate(residual = yhat - y,
-         res = sum((y - yhat)^2),
-         tot = sum((y - mean(y))^2),
-         rsq_global = 1 - (res/tot),
-         rmse_global = sqrt(sum(residual^2/n()))) %>% 
-  ungroup() %>% 
-  group_by(category, area, rsq_global, rmse_global) %>% 
-  summarise(res = sum((y - yhat)^2),
-            tot = sum((y - mean(y))^2),
-            rsq = 1 - (res/tot),
-            rmse = sqrt(sum(residual^2/n()))) %>% 
-  ungroup() %>% 
-  select(area, category, rmse) %>% 
-  mutate(rmse = round(rmse, 2)) %>% 
-  pivot_wider(names_from = category, values_from = rmse) %>% 
-  arrange(area) %>% 
-  select(area, `Hard coral`, `Algae`, `Other fauna`, `Macroalgae`,
-         `Coralline algae`, `Turf algae`, `Acropora`, `Orbicella`, `Porites`)
-
-#%>%write.csv2(., "figs/04_supp/rmse-territories_benthic-categories.csv", row.names = FALSE)
-
-############################################ TO FINISH #############################
+rm(data_rmse_rsq)
 
 ## 4.3 Predicted vs observed ----
 
 plot_pred_obs(all = TRUE)
 
-map(unique(model_results$model_pred_obs$category), ~plot_pred_obs(category_i = .))
+map(unique(model_results$model_pred_obs$category),
+    ~plot_pred_obs(category_i = .))
 
 ## 4.4 Residuals ----
 
 plot_residuals(all = TRUE)
 
-map(unique(model_results$result_pred_obs$category), ~plot_residuals(category_i = .))
+map(unique(model_results$model_pred_obs$category),
+    ~plot_residuals(category_i = .))
 
 ## 4.5 VIMP ----
 
@@ -267,46 +251,75 @@ rm(data_imp_raw)
 
 data_pdp <- model_results$result_pdp
 
+### 4.6.2 Map over the function ----
+
 map(unique(data_pdp$category), ~plot_pdp(category_i = .x))
+
+## 4.7 Maps of predicted values ----
+
+### 4.7.1 Predictions per site and year ----
+
+data_predicted <- model_results$results_predicted %>% 
+  # Remove NA (due to not exported results, to save memory)
+  drop_na(year) %>% 
+  # Create time period
+  mutate(time_period = case_when(year %in% seq(1985, 1999) ~ "1985-1999",
+                                 year %in% seq(2000, 2014) ~ "2000-2014",
+                                 year %in% seq(2015, 2023) ~ "2015-2023")) %>% 
+  drop_na(time_period) %>% 
+  # Average per time period and category
+  group_by(time_period, decimalLatitude, decimalLongitude, category) %>% 
+  summarise(measurementValuepred = mean(measurementValuepred)) %>% 
+  ungroup() %>% 
+  # Convert to sf
+  st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
+
+### 4.7.2 Crop of the region ----
+
+data_crop <- tibble(lon = c(-105, -50), lat = c(6, 38)) %>% 
+  st_as_sf(coords = c("lon", "lat"), 
+           crs = 4326) %>% 
+  st_bbox() %>% 
+  st_as_sfc()
+
+### 4.7.3 Background map ----
+
+data_land_ne <- read_sf("data/01_maps/01_raw/04_natural-earth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
+
+data_land_ne <- st_intersection(data_land_ne, data_crop)
+
+### 4.7.4 Create the grid ----
+
+data_grid <- st_make_grid(data_crop, n = 150, crs = 4326) %>% 
+  st_as_sf() %>% 
+  mutate(cell_id = 1:nrow(.))
+
+### 4.7.5 Summarize sites values per grid cell ----
+
+data_predicted <- st_join(data_predicted, data_grid) %>% 
+  group_by(time_period, category, cell_id) %>% 
+  summarise(cover_pred = mean(measurementValuepred)) %>% 
+  ungroup() %>% 
+  st_drop_geometry() %>% 
+  left_join(., data_grid) %>% 
+  st_as_sf()
+
+### 4.7.6 Map over the function ----
+
+map(unique(data_predicted$category), ~plot_prediction_map(category_i = .x))
 
 # 5. Temporal trends ----
 
-## 5.1 Load and transform data obs data ----
+## 5.1 Load and transform obs data ----
 
 load("data/09_model-data/data_benthic_prepared.RData")
 
 data_benthic <- data_benthic %>% 
-  mutate(color = case_when(category == "Hard coral" ~ "#c44d56",
-                           category == "Algae" ~ "#16a085",
-                           category == "Other fauna" ~ "#714d69",
-                           category == "Macroalgae" ~ "#03a678",
-                           category == "Turf algae" ~ "#26a65b",
-                           category == "Coralline algae" ~ "#C5987D",
-                           category == "Acropora" ~ "#e08283",
-                           category == "Orbicella" ~ "#c44d56",
-                           category == "Porites" ~ "#a37c82"),
-         text_title = case_when(category == "Hard coral" ~ 
-                                  glue("**A.**<span style='color:{color}'> {category}</span>"),
-                                category == "Algae" ~ 
-                                  glue("**B.**<span style='color:{color}'> {category}</span>"),
-                                category == "Other fauna" ~ 
-                                  glue("**C.**<span style='color:{color}'> {category}</span>"),
-                                
-                                category == "Coralline algae" ~ 
-                                  glue("**A.**<span style='color:{color}'> {category}</span>"),
-                                category == "Macroalgae" ~ 
-                                  glue("**B.**<span style='color:{color}'> {category}</span>"),
-                                category == "Turf algae" ~ 
-                                  glue("**C.**<span style='color:{color}'> {category}</span>"),
-                                
-                                category == "Acropora" ~ 
-                                  glue("**A.***<span style='color:{color}'> {category}</span>*"),
-                                category == "Orbicella" ~ 
-                                  glue("**B.***<span style='color:{color}'> {category}</span>*"),
-                                category == "Porites" ~ 
-                                  glue("**C.***<span style='color:{color}'> {category}</span>*")))
+  add_colors()
 
 data_benthic <- data_benthic %>% 
+  bind_rows(., data_benthic %>% 
+              mutate(area = "All")) %>% 
   group_by(year, area, category, color, text_title) %>% 
   summarise(mean = mean(measurementValue),
             sd = sd(measurementValue)) %>% 
@@ -330,101 +343,7 @@ data_benthic <- data_benthic %>%
               distinct()) %>% 
   drop_na(area)
 
-## 5.2 Create the function ----
-
-plot_trends <- function(area_i, icons, raw_data = TRUE, modelled_data = TRUE, scales = "fixed"){
-  
-  data_trends_i <- data_trends$smoothed_trends %>% 
-    filter(area == area_i) %>% 
-    filter(category %in% c("Hard coral", "Macroalgae", "Other fauna"))
-  
-  data_raw_i <- data_benthic %>% 
-    filter(area == area_i) %>% 
-    filter(category %in% c("Hard coral", "Macroalgae", "Other fauna"))
-  
-  plot_trends <- ggplot() +
-    {if(raw_data == TRUE)
-      geom_pointrange(data = data_raw_i,
-                      aes(x = year, y = mean, ymin = ymin,
-                          ymax = ymax, color = color), size = 0.25)} +
-    {if(modelled_data == TRUE)
-      geom_ribbon(data = data_trends_i,
-                  aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95,
-                      fill = color), alpha = 0.5, show.legend = FALSE)} +
-    {if(modelled_data == TRUE)
-      geom_line(data = data_trends_i,
-                aes(x = year, y = mean, color = color),
-                linewidth = 1, show.legend = FALSE)} +
-    scale_color_identity() +
-    scale_fill_identity() +
-    facet_wrap(~text_title, scales = scales) +
-    theme(strip.text = element_markdown(hjust = 0, size = rel(1.3)),
-          strip.background = element_blank(),
-          panel.spacing = unit(2, "lines")) +
-    labs(x = "Year", y = "Cover (%)") +
-    lims(x = c(1980, 2024), y = c(0, NA))
-  
-  if(icons == FALSE){
-    
-    if(area_i == "All"){
-      
-      ggsave(plot = plot_trends, filename = "figs/01_part-1/fig-12.png", width = 14, height = 5)
-      
-    }else{
-        
-      ggsave(plot = plot_trends, filename = paste0("figs/02_part-2/fig-5/",
-                                                   str_replace_all(str_replace_all(str_to_lower(area_i), " ", "-"),
-                                                                   "---", "-"),
-                                                   ".png"),
-             width = 14, height = 5)
-      
-    }
-
-  }else if(icons == TRUE){
-    
-    require(cowplot)
-    
-    logo_coral <- "figs/00_misc/icons_acropora-palmata.png"
-    logo_macroalgae <- "figs/00_misc/icons_macroalgae.png"
-    logo_fauna <- "figs/00_misc/icons_gorgonia.png"
-    
-    plot_trends <- ggdraw(plot_trends) + 
-      draw_image(logo_coral,
-                 x = 0.39, y = 0.96, # Position above right
-                 hjust = 1, vjust = 1,
-                 width = 0.15, height = 0.15) +
-      draw_image(logo_macroalgae,
-                 x = 0.7075, y = 0.96, # Position above right
-                 hjust = 1, vjust = 1,
-                 width = 0.15, height = 0.15) + # Relative proportion of the image
-      draw_image(logo_fauna,
-                 x = 1.0175, y = 0.96, # Position above right
-                 hjust = 1, vjust = 1,
-                 width = 0.15, height = 0.15) # Relative proportion of the image
-    
-    if(area_i == "All"){
-      
-      ggsave(plot = plot_trends, filename = "figs/01_part-1/fig-12.png", width = 14, height = 5)
-      
-    }else{
-      
-      ggsave(plot = plot_trends, filename = paste0("figs/02_part-2/fig-5/",
-                                                   str_replace_all(str_replace_all(str_to_lower(area_i), " ", "-"),
-                                                                   "---", "-"),
-                                                   ".png"),
-             width = 14, height = 5)
-      
-    }
-    
-  }else{
-    
-    stop("icons must be TRUE or FALSE")
-    
-  }
-  
-}
-
-## 5.3 Map over the function -----
+## 5.2 Map over the function -----
 
 map(unique(data_trends$smoothed_trends$area),
     ~plot_trends(area_i = .x,
@@ -437,71 +356,11 @@ map(unique(data_trends$smoothed_trends$area),
 
 if(FALSE){
   
-  A <- data_trends %>% filter(territory == "All" & category == "Acroporidae") %>% select(-upper_ci_95, -lower_ci_95)
-  #A <- data_trends %>% filter(territory == "All" & category == "Acroporidae") %>% select(-upper_ci_95, -lower_ci_95) %>% 
-  filter(year >= 1987 & year <= 1999) %>% summarise(mean = mean(mean))
-  
-  A <- data_trends %>% filter(territory == "Guadeloupe" & category == "Turf algae") %>% select(-upper_ci_95, -lower_ci_95) %>% 
-    summarise(mean = mean(mean),
-              lower_ci_80 = mean(lower_ci_80),
-              upper_ci_80 = mean(upper_ci_80))
-  
+  A <- data_trends$smoothed_trends %>%
+    filter(area == "All" & category == "Acropora") %>%
+    select(-upper_ci_95, -lower_ci_95, -text_title, -color)
+
 }
-
-# 7. Map of predicted values across the region ----
-
-## 7.1 Load data ----
-
-### 7.1.1 Predictions per site and year ----
-
-data_predicted <- model_results$results_predicted %>% 
-  # Remove NA (due to not exported results, to save memory)
-  drop_na(year) %>% 
-  # Create time period
-  mutate(time_period = case_when(year %in% seq(1985, 1999) ~ "1985-1999",
-                                 year %in% seq(2000, 2014) ~ "2000-2014",
-                                 year %in% seq(2015, 2023) ~ "2015-2023")) %>% 
-  drop_na(time_period) %>% 
-  # Average per time period and category
-  group_by(time_period, decimalLatitude, decimalLongitude, category) %>% 
-  summarise(measurementValuepred = mean(measurementValuepred)) %>% 
-  ungroup() %>% 
-  # Convert to sf
-  st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
-
-### 7.1.2 Crop of the region ----
-
-data_crop <- tibble(lon = c(-105, -50), lat = c(6, 38)) %>% 
-  st_as_sf(coords = c("lon", "lat"), 
-           crs = 4326) %>% 
-  st_bbox() %>% 
-  st_as_sfc()
-
-### 7.1.3 Background map ----
-
-data_land_ne <- read_sf("data/01_maps/01_raw/04_natural-earth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
-
-data_land_ne <- st_intersection(data_land_ne, data_crop)
-
-### 7.1.4 Create the grid ----
-
-data_grid <- st_make_grid(data_crop, n = 150, crs = 4326) %>% 
-  st_as_sf() %>% 
-  mutate(cell_id = 1:nrow(.))
-
-## 7.2 Summarize sites values per grid cell ----
-
-data_predicted <- st_join(data_predicted, data_grid) %>% 
-  group_by(time_period, category, cell_id) %>% 
-  summarise(cover_pred = mean(measurementValuepred)) %>% 
-  ungroup() %>% 
-  st_drop_geometry() %>% 
-  left_join(., data_grid) %>% 
-  st_as_sf()
-
-## 7.3 Make over the function ----
-
-map(unique(data_predicted$category), ~plot_prediction_map(category_i = .x))
 
 # 8. Hard coral vs algae cover ----
 
