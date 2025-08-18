@@ -382,8 +382,8 @@ plot_b <- ggplot(data = data_benthic_cover, aes(x = year, y = measurementValue))
 
 plot_full <- plot_a + plot_b + plot_layout(ncol = 1)
 
-ggsave("../figs/06_additional/benthic-cover_density-trend.png", plot = plot_full,
-       width = 12, height = 6, dpi = fig_resolution)
+ggsave("../figs/06_additional/02_data-exploration/cover_density-trend.png", plot = plot_full,
+       width = 12, height = 10, dpi = fig_resolution)
 
 ```
 
@@ -470,7 +470,9 @@ data_benthic_cover <- data_benthic %>%
   summarise(measurementValue = sum(measurementValue)) %>% 
   ungroup() %>% 
   group_by(genus) %>% 
-  summarise(measurementValue = mean(measurementValue))
+  summarise(measurementValue = mean(measurementValue)) %>% 
+  ungroup() %>% 
+  filter(genus != "Turbinaria")
 
 ggplot(data = data_benthic_cover, aes(x = fct_reorder(genus, measurementValue), y = measurementValue)) +
   geom_bar(stat = "identity", fill = palette_first[3], width = 0.7) +
@@ -479,7 +481,7 @@ ggplot(data = data_benthic_cover, aes(x = fct_reorder(genus, measurementValue), 
   theme_graph() +
   theme(axis.text.y = element_text(face = "italic"))
 
-ggsave("../figs/06_additional/benthic-cover_hcc-genera_barplot.png",
+ggsave("../figs/06_additional/02_data-exploration/cover_hcc-genera_barplot.png",
        width = 6, height = 10, dpi = fig_resolution)
 
 ```

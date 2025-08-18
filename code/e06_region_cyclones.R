@@ -205,7 +205,7 @@ ggplot(data = data_cyclones_top, aes(x = fct_reorder(ts_name, -desc(windspeed)),
   theme_graph() +
   theme(axis.title = element_markdown())
 
-ggsave("figs/05_supp-mat/top-ten-hurricanes.png", width = 5, height = 7)
+ggsave("figs/06_additional/01_misc/top-ten-hurricanes.png", width = 5, height = 7)
 
 # 7. Number of cyclones per year ----
 
@@ -237,7 +237,7 @@ ggplot(data = data_cyclones_year, aes(x = year, y = n, fill = max_saffir)) +
   theme(legend.title.position = "top",
         legend.title = element_text(hjust = 0.5))
 
-ggsave("figs/05_supp-mat/hurricanes-per-year.png", width = 8, height = 4)
+ggsave("figs/06_additional/01_misc/hurricanes-per-year.png", width = 8, height = 4)
 
 # 8. Key numbers ----
 

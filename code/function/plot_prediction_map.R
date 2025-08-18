@@ -23,7 +23,8 @@ plot_prediction_map <- function(category_i){
           panel.grid = element_blank()) +
     coord_sf(xlim = c(-105, -50), ylim = c(6, 38), expand = FALSE)
   
-  ggsave(paste0("figs/06_additional/prediction-map_", str_replace_all(str_to_lower(category_i), " ", "-"), ".png"),
+  ggsave(paste0("figs/06_additional/03_model-evaluation/pred-map_",
+                str_replace_all(str_to_lower(category_i), " ", "-"), ".png"),
          plot = plot_maps, width = 11, height = 3.5)
   
 }

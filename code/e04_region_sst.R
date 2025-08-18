@@ -166,7 +166,7 @@ ggplot(data = data_sst, aes(x = sst, y = fct_reorder(area, mean))) +
 
 ## 7.3 Save the plot ----
 
-ggsave("figs/06_additional/sst_distribution.png", height = 12, width = 6, dpi = fig_resolution)
+ggsave("figs/06_additional/01_misc/sst_distribution.png", height = 12, width = 6, dpi = fig_resolution)
 
 # 8. Map of mean SST anomaly per year ----
 
@@ -240,7 +240,8 @@ map_ssta_plot <- function(group_i){
   
   # 4. Save the plot
   
-  ggsave(filename = paste0("figs/05_supp-mat/map_sst-anom_", min(data_files_i$year), "-", max(data_files_i$year), ".png"),
+  ggsave(filename = paste0("figs/06_additional/01_misc/map_sst-anom_",
+                           min(data_files_i$year), "-", max(data_files_i$year), ".png"),
          height = 14, width = 9, combined_plots, dpi = 600)
   
 }

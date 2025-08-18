@@ -18,7 +18,7 @@ plot_vimp <- function(category_i){
     labs(x = NULL, y = "Relative importance (%)") +
     lims(y = c(0, NA))
   
-  ggsave(filename = paste0("figs/05_supp-mat/models_vimp_", str_replace_all(str_to_lower(category_i), " ", "-"), ".png"),
+  ggsave(filename = paste0("figs/05_supp-mat/supp_fig_4_", str_replace_all(str_to_lower(category_i), " ", "-"), ".png"),
          plot = plot_i, height = 8, width = 5, dpi = fig_resolution)
   
 }

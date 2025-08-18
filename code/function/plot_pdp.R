@@ -12,7 +12,7 @@ plot_pdp <- function(category_i){
           strip.text = element_text(face = "bold")) +
     labs(x = "Predictor's value", y = "Percentage cover")
     
-  ggsave(paste0("figs/05_supp-mat/pdp_", str_replace_all(str_to_lower(category_i), " ", "-"), ".png"),
+  ggsave(paste0("figs/06_additional/03_model-evaluation/pdp_", str_replace_all(str_to_lower(category_i), " ", "-"), ".png"),
          height = 18, width = 12)
   
 }

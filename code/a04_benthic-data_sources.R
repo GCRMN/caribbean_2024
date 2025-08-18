@@ -20,14 +20,14 @@ data_benthic %>%
   summarise(datasetID = paste0(datasetID, collapse = ", ")) %>% 
   left_join(data_area %>% st_drop_geometry(), .) %>% 
   arrange(area) %>% 
-  openxlsx::write.xlsx(., file = "figs/05_supp-mat/tbl-1.xlsx")
+  openxlsx::write.xlsx(., file = "figs/05_supp-mat/supp_tbl_1.xlsx")
 
 # 4. List of contributors per datasetID ----
 
 read_xlsx("C:/Users/jerem/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/05_data-sources.xlsx") %>% 
   filter(datasetID %in% unique(data_benthic$datasetID)) %>% 
   select(datasetID, rightsHolder, last_name, first_name, email) %>% 
-  openxlsx::write.xlsx(., file = "figs/05_supp-mat/tbl-2.xlsx")
+  openxlsx::write.xlsx(., file = "figs/06_additional/05_contributors/contributors_datasetid.xlsx")
 
 # 5. List of contributors emails ----
 
@@ -36,7 +36,7 @@ read_xlsx("C:/Users/jerem/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benth
   select(last_name, first_name, email) %>% 
   distinct() %>% 
   arrange(last_name) %>% 
-  openxlsx::write.xlsx(., file = "figs/05_supp-mat/tbl-3.xlsx")
+  openxlsx::write.xlsx(., file = "figs/06_additional/05_contributors/contributors_contacts.xlsx")
 
 # 6. List of contributors per area ----
 
@@ -106,7 +106,7 @@ read_xlsx("C:/Users/jerem/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benth
   group_by(area) %>% 
   mutate(name = paste0(name, collapse = ", ")) %>% 
   distinct() %>% 
-  openxlsx::write.xlsx(., file = "figs/05_supp-mat/tbl-4.xlsx")
+  openxlsx::write.xlsx(., file = "figs/06_additional/05_contributors/contributors_area.xlsx")
 
 # 7. Acknowledgments and citations to include -----
 

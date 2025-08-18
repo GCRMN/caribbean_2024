@@ -19,7 +19,7 @@ require(flextable)
 
 ```{r echo=FALSE, message=FALSE}
 
-list_authors <- read_xlsx("../../figs/05_supp-mat/tbl-4.xlsx") %>% 
+list_authors <- read_xlsx("../../figs/06_additional/05_contributors/contributors_area.xlsx") %>% 
   filter(area == area_i) %>% 
   mutate(name = str_replace_all(name, "\\*", "\\\\*")) %>% 
   select(name) %>% 

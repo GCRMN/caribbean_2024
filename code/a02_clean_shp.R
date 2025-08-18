@@ -100,7 +100,7 @@ plot <- ggplot() +
                     values = c("red", "white")) +
   coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35))
 
-ggsave("figs/06_additional/overclaimed-territories.png", height = 4)
+ggsave("figs/06_additional/01_misc/overclaimed-territories.png", height = 4)
 
 data_eez2 <- data_eez %>% 
   mutate(joint_regime = ifelse(str_detect(GEONAME, "Joint"), TRUE, FALSE))
@@ -111,7 +111,7 @@ plot <- ggplot() +
                     values = c("red", "white")) +
   coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35))
 
-ggsave("figs/06_additional/joint-regime-areas.png", height = 4)
+ggsave("figs/06_additional/01_misc/joint-regime-areas.png", height = 4)
 
 rm(data_eez2, plot)
 

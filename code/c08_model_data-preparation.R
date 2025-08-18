@@ -317,7 +317,7 @@ ggplot(data = bind_rows(pred_na_pred, pred_na_obs),
   labs(x = NULL, y = "Percentage of NA") +
   theme_graph()
 
-ggsave("figs/06_additional/na_predictors_all.png", width = 8, height = 12)
+ggsave("figs/06_additional/02_data-exploration/na_predictors_all.png", width = 8, height = 12)
 
 # 8. Check the number of NA per predictors (per year) ----
 
@@ -359,4 +359,4 @@ ggplot(data = bind_rows(pred_na_obs, pred_na_pred),
         legend.title = element_text(hjust = 0.5),
         legend.key.width = unit(1.5, "cm"))
 
-ggsave("figs/06_additional/na_predictors_year.png", width = 8, height = 12)
+ggsave("figs/06_additional/02_data-exploration/na_predictors_year.png", width = 8, height = 12)

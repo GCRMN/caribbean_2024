@@ -16,7 +16,7 @@ plot_residuals <- function(category_i, all = FALSE){
       theme(strip.text = element_markdown(hjust = 0),
             strip.background = element_blank())
     
-    ggsave(plot_i, filename = "figs/05_supp-mat/03_distri-residuals_all_cat.png",
+    ggsave(plot_i, filename = "figs/06_additional/03_model-evaluation/distri-residuals_all.png",
            dpi = fig_resolution, height = 6, width = 8)
     
   }else{
@@ -29,13 +29,13 @@ plot_residuals <- function(category_i, all = FALSE){
                        alpha = 0.5) +
         geom_vline(xintercept = 0) +
         scale_fill_identity() +
-        facet_wrap(~territory, scales = "free", ncol = 5) +
+        facet_wrap(~area, scales = "free", ncol = 5) +
         lims(x = c(-100, 100)) +
         labs(x = "Residual (ŷ - y)", y = "Percentage") +
         theme(strip.text = element_markdown(hjust = 0.5),
               strip.background = element_blank())
     
-    ggsave(plot_i, filename = paste0("figs/05_supp-mat/03_distri-residuals_", 
+    ggsave(plot_i, filename = paste0("figs/06_additional/03_model-evaluation/distri-residuals_", 
                                      str_replace_all(str_to_lower(category_i), " ", "-"),
                                      ".png"),
            width = 15, height = 12, dpi = fig_resolution)
