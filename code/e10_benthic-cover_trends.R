@@ -345,8 +345,31 @@ data_benthic <- data_benthic %>%
 
 ## 5.2 Map over the function -----
 
+### 5.2.1 Major categories ----
+
 map(unique(data_trends$smoothed_trends$area),
     ~plot_trends(area_i = .x,
+                 categories = c("Hard coral", "Macroalgae", "Other fauna"),
+                 icons = TRUE,
+                 scales = "fixed",
+                 raw_data = TRUE,
+                 modelled_data = TRUE))
+
+### 5.2.2 Algae categories ----
+
+map(unique(data_trends$smoothed_trends$area),
+    ~plot_trends(area_i = .x,
+                 categories = c("Coralline algae", "Macroalgae", "Turf algae"),
+                 icons = TRUE,
+                 scales = "fixed",
+                 raw_data = TRUE,
+                 modelled_data = TRUE))
+
+### 5.2.3 Hard coral genera ----
+
+map(unique(data_trends$smoothed_trends$area),
+    ~plot_trends(area_i = .x,
+                 categories = c("Acropora", "Orbicella", "Porites"),
                  icons = TRUE,
                  scales = "fixed",
                  raw_data = TRUE,
