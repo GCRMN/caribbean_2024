@@ -1,0 +1,251 @@
+---
+title: "Chapter `r nb_chapter`"
+subtitle: "`r str_to_title(territory_name)`"
+output:
+  word_document:
+    reference_docx: styles.docx
+editor: source
+---
+
+```{r echo=FALSE, message=FALSE}
+
+require(tidyverse)
+require(readxl)
+require(flextable)
+
+```
+
+\
+<div custom-style="textb">
+
+```{r echo=FALSE, message=FALSE}
+
+list_authors <- read_xlsx("../../figs/06_additional/05_contributors/contributors_area.xlsx") %>% 
+  filter(area == area_i) %>% 
+  mutate(name = str_replace_all(name, "\\*", "\\\\*")) %>% 
+  select(name) %>% 
+  pull()
+
+```
+
+**Authors:** `r list_authors`.
+
+\
+
+\*AGRRA data contributor(s).
+
+\
+
+</div>
+
+\newpage
+
+## Introduction
+
+<div custom-style="explanations">
+**[Maximum number of words of the section: 500]**
+</div>
+
+<div custom-style="text">
+
+```{r echo=FALSE, message=FALSE}
+
+data_intro <- read_xlsx("../../figs/01_part-1/tbl-1.xlsx") %>% 
+  filter(area == area_i)
+
+```
+
+`r area_i` hosts `r pull(data_intro[1,"reef_area_abs"])` km^2^ of coral reefs, which represent `r pull(data_intro[1,"reef_area_rel_caribbean"])`% of the Caribbean’s total coral reef extent.
+
+<div custom-style="todo">
+A paragraph about the country or territory
+</div>
+
+</div>
+
+\newpage
+
+## Threats
+
+### Thermal regime
+
+<div custom-style="explanations">
+**[Maximum number of words of the section: 400]**
+</div>
+
+<div custom-style="text">
+
+```{r echo=FALSE, message=FALSE}
+
+sst_lt <- read_xlsx("../../figs/01_part-1/tbl-3.xlsx") %>% 
+  filter(area == area_i) %>% 
+  select(mean_sst) %>% 
+  pull()
+
+sst_trend <- read_xlsx("../../figs/01_part-1/tbl-3.xlsx") %>% 
+  filter(area == area_i) %>% 
+  select(sst_increase) %>% 
+  pull()
+
+sst_rate <- read_xlsx("../../figs/01_part-1/tbl-3.xlsx") %>% 
+  filter(area == area_i) %>% 
+  select(warming_rate) %>% 
+  pull()
+
+```
+
+The long-term average in SST from 1985 to 2024 over coral reefs of `r area_i` was `r sst_lt` °C. Over this period, SST increased by `r sst_trend` °C, representing a warming rate of `r sst_rate` °C per year.
+
+<div custom-style="todo">
+A paragraph about the impacts of bleaching events (1998, 2005, and 2023-2024)
+</div>
+
+```{r echo=FALSE, message=FALSE}
+
+figure_path <- paste0("../../figs/02_part-2/fig-2/", territory_name, ".png")
+
+```
+
+![](`r figure_path`)
+
+**Figure 2.`r nb_chapter`.1.** Average Sea Surface Temperature (SST) anomaly from 1985 to 2024 over coral reefs of `r area_i`. The black line is the long-term trend in SST anomaly, values below this line are negative SST anomalies (*i.e.* cooler than long-term trend), and values above this line are positive SST anomalies (*i.e.* warmer than long-term trend).
+
+</div>
+
+\newpage
+
+### Hurricanes
+
+<div custom-style="explanations">
+**[Maximum number of words of the section: 250]**
+</div>
+
+```{r echo=FALSE, message=FALSE}
+
+data_cyclones_i <- data_cyclones %>% 
+  filter(area == area_i)
+
+nb_storm <- length(unique(data_cyclones_i$ts_id))
+
+data_cyclones_i <- data_cyclones_i %>% 
+  filter(area == area_i) %>% 
+  filter(windspeed >= 100)
+
+nb_cyclone <- length(unique(data_cyclones_i$ts_id))
+
+data_cyclones_i <- data_cyclones_i %>% 
+  filter(area == area_i) %>% 
+  filter(windspeed == max(windspeed))
+
+name_cyclone <- str_to_title(data_cyclones_i$ts_name)
+
+year_cyclone <- year(data_cyclones_i$time)
+
+dist_cyclone <- round(data_cyclones_i$dist)
+
+speed_cyclone <- round(data_cyclones_i$windspeed)
+
+```
+
+<div custom-style="text">
+
+Between 1980 and 2024, a total of `r nb_storm` tropical storms passed within 100 km distance from a coral reef of `r area_i`, and of these `r nb_cyclone` were characterized by sustained wind speed greater than 100 km.h^-1^ (**Figure 2.`r nb_chapter`.2**). The hurricane with the highest sustained wind speed over the studied period was the hurricane `r name_cyclone`, in `r year_cyclone`, which passed `r dist_cyclone` km from a coral reef with sustained wind speed of `r speed_cyclone` km.h^-1^.
+
+\
+
+```{r echo=FALSE, message=FALSE}
+
+figure_path <- paste0("../../figs/02_part-2/fig-3/", territory_name, ".png")
+
+```
+
+![](`r figure_path`)
+
+**Figure 2.`r nb_chapter`.2.** Maximum sustained wind speed of tropical storms passing within 100 km of a coral reef between 1980 and 2024 in `r area_i`. Colors correspond to the cyclone’s Saffir-Simpson category along its entire track. However, the values of sustained wind speed are extracted from the nearest tropical storm position from a coral reef. For this reason, some sustained wind speed values are below the lower threshold of category 1 Saffir-Simpson scale (*i.e.* 119 km.h^-1^). Note that cyclones passing more than 100 km away from coral reefs of `r area_i` are not represented, although they can have had an impact.
+
+</div>
+
+\newpage
+
+### Other threats
+
+<div custom-style="explanations">
+**[Maximum number of words of the section: 500]**
+</div>
+
+<div custom-style="todo">
+You can replace the subsection "Other threats" by any major threats impacting coral reefs of `r area_i`
+</div>
+
+\newpage
+
+## Trends in benthic cover
+
+<div custom-style="explanations">
+**[Maximum number of words of the section: 500]**
+</div>
+
+<div custom-style="text">
+
+```{r echo=FALSE, message=FALSE}
+
+data_monitoring <- read_xlsx("../../figs/01_part-1/tbl-4.xlsx") %>% 
+  filter(area == area_i) %>% 
+  select(nb_sites, nb_surveys, nb_datasets, first_year, last_year) %>% 
+  mutate(across(c(nb_sites, nb_surveys), ~format(.x, big.mark = ",")))
+
+```
+
+Temporal trends in the percentage cover of benthic categories from 1980 to 2024 were estimated using data from `r pull(data_monitoring[1, "nb_datasets"])` datasets (**Figure 2.`r nb_chapter`.3**) encompassing `r pull(data_monitoring[1, "nb_sites"])` monitoring sites. These data were collected through `r pull(data_monitoring[1, "nb_surveys"])` surveys conducted between `r pull(data_monitoring[1, "first_year"])` and `r pull(data_monitoring[1, "last_year"])`.
+
+\
+
+```{r echo=FALSE, message=FALSE}
+
+figure_path <- paste0("../../figs/02_part-2/fig-4/", territory_name, ".png")
+
+```
+
+![](`r figure_path`)
+
+**Figure 2.`r nb_chapter`.3.** Temporal distribution of surveys from datasets included in the analyses to model temporal trends of the three benthic categories.
+
+\newpage
+
+```{r echo=FALSE, message=FALSE}
+
+figure_path <- paste0("../../figs/02_part-2/fig-1/", territory_name, ".png")
+
+```
+
+![](`r figure_path`)
+
+**Figure 2.`r nb_chapter`.4.** Spatio-temporal distribution of benthic cover monitoring sites across `r area_i`. Sites that were monitored for the longest period of time are represented on top of the sites monitored for fewer years.
+
+</div>
+
+\newpage
+
+<div custom-style="todo">
+A paragraph describing the temporal trends, major events that can explain the patterns, and any references to compare the trends with
+</div>
+
+\
+
+```{r echo=FALSE, message=FALSE}
+
+figure_path <- paste0("../../figs/02_part-2/fig-5/", territory_name, ".png")
+
+```
+
+![](`r figure_path`){width=100%}
+
+<div custom-style="text">
+
+**Figure 2.`r nb_chapter`.5.** Modeled temporal trends of benthic percentage cover for hard coral (A), algae (B), and other fauna (C) in `r area_i` from 1980 to 2024. The bold lines indicate the modeled mean cover, while the shaded ribbon represents the 95% confidence intervals. Points denote the annual mean of observed data, and the line ranges depict the corresponding standard deviations.
+
+</div>
+
+\newpage
+
+## References

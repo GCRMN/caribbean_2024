@@ -7,13 +7,13 @@ library(openxlsx)
 
 # 2. Create the tibble ----
 
-data_contribution <- read_xlsx("figs/05_supp-mat/tbl-2.xlsx") %>% 
+data_contribution <- read_xlsx("figs/06_additional/05_contributors/contributors_contacts.xlsx") %>% 
   drop_na(first_name) %>% # Remove NA (datasets from paper) 
   select(first_name, last_name, email) %>% 
   distinct() %>% 
   mutate(`Data acquisition` = "X") %>% 
   # Add contributors who are not data contributors
-  full_join(., read_xlsx("figs/05_supp-mat/tbl-5.xlsx")) %>% 
+  full_join(., read_xlsx("figs/06_additional/05_contributors/non-data-contributors_to-complete.xlsx")) %>% 
   # Create all the columns
   mutate(`Funding acquisition` = NA,
          `Supervision` = NA,

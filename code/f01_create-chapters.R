@@ -20,7 +20,7 @@ load("data/07_cyclones/02_cyclones_extracted.RData")
 
 # 4. Create the function to render the docx documents ----
 
-render_qmd <- function(area_i, upload_drive = FALSE){
+render_rmd <- function(area_i, upload_drive = FALSE){
   
   require(rmarkdown)
   require(googledrive)
@@ -33,7 +33,7 @@ render_qmd <- function(area_i, upload_drive = FALSE){
   
   if(file.exists(paste0("doc/", file_name)) == FALSE){
     
-    render("code/function/create_chapter_doc.qmd", 
+    render("code/function/chapter_docx.Rmd", 
            output_file = file_name,
            output_dir = "doc/",
            quiet = TRUE)
