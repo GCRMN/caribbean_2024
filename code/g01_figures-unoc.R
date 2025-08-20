@@ -15,17 +15,7 @@ sf_use_s2(FALSE)
 
 source("code/function/graphical_par.R")
 source("code/function/theme_graph.R")
-source("code/function/combine_model_data.R")
-source("code/function/extract_mannkendall.R")
-source("code/function/plot_vimp.R")
-source("code/function/plot_pdp.R")
-source("code/function/plot_trends.R")
-source("code/function/plot_residuals.R")
-source("code/function/plot_pred_obs.R")
-source("code/function/combine_plot_trends.R")
-source("code/function/plot_prediction_map.R")
-source("code/function/plot_raw_trends.R")
-source("code/function/export_raw_trends.R")
+source("code/function/add_colors.R")
 
 theme_set(theme_graph())
 
@@ -34,35 +24,7 @@ theme_set(theme_graph())
 load("data/09_model-data/data_benthic_prepared.RData")
 
 data_benthic <- data_benthic %>% 
-  mutate(color = case_when(category == "Hard coral" ~ "#c44d56",
-                           category == "Algae" ~ "#16a085",
-                           category == "Other fauna" ~ "#714d69",
-                           category == "Macroalgae" ~ "#03a678",
-                           category == "Turf algae" ~ "#26a65b",
-                           category == "Coralline algae" ~ "#C5987D",
-                           category == "Acropora" ~ "#e08283",
-                           category == "Orbicella" ~ "#c44d56",
-                           category == "Porites" ~ "#a37c82"),
-         text_title = case_when(category == "Hard coral" ~ 
-                                  glue("**A.**<span style='color:{color}'> {category}</span>"),
-                                category == "Algae" ~ 
-                                  glue("**B.**<span style='color:{color}'> {category}</span>"),
-                                category == "Other fauna" ~ 
-                                  glue("**C.**<span style='color:{color}'> {category}</span>"),
-                                
-                                category == "Coralline algae" ~ 
-                                  glue("**A.**<span style='color:{color}'> {category}</span>"),
-                                category == "Macroalgae" ~ 
-                                  glue("**B.**<span style='color:{color}'> {category}</span>"),
-                                category == "Turf algae" ~ 
-                                  glue("**C.**<span style='color:{color}'> {category}</span>"),
-                                
-                                category == "Acropora" ~ 
-                                  glue("**A.***<span style='color:{color}'> {category}</span>*"),
-                                category == "Orbicella" ~ 
-                                  glue("**B.***<span style='color:{color}'> {category}</span>*"),
-                                category == "Porites" ~ 
-                                  glue("**C.***<span style='color:{color}'> {category}</span>*")))
+  add_colors()
 
 data_benthic <- data_benthic %>% 
   group_by(year, area, category, color, text_title) %>% 
@@ -88,9 +50,11 @@ data_benthic <- data_benthic %>%
               distinct()) %>% 
   drop_na(area)
 
-A <- plot_raw_trends(category_i = "Hard coral",
-                     data_benthic_i = data_benthic %>%
-                       filter(area == "Caribbean")) +
+A <- data_benthic %>% 
+  filter(category == "Hard coral" & area == "Caribbean") %>% 
+  ggplot(data = .) +
+  geom_pointrange(aes(x = year, y = mean, ymin = ymin, ymax = ymax),
+                  size = 0.25, color = "#c44d56") +
   lims(x = c(1970, 2025), y = c(0, 100)) +
   annotate("segment", x = 1970, xend = 1980, y = 35, color = "#c44d56", linetype = "dashed") +
   annotate("rect", xmin = 1970, xmax = 1980, ymin = 30, ymax = 40, fill = "#c44d56", alpha = 0.2) +
@@ -100,11 +64,14 @@ A <- plot_raw_trends(category_i = "Hard coral",
         axis.title = element_text(color = "white"),
         axis.text = element_text(color = "white"),
         axis.line = element_line(color = "white"),
-        axis.ticks = element_line(color = "white"))
+        axis.ticks = element_line(color = "white")) +
+  labs(x = "Year", y = "Benthic cover (%)")
 
-B <- plot_raw_trends(category_i = "Algae",
-                     data_benthic_i = data_benthic %>%
-                       filter(area == "Caribbean"))  +
+B <- data_benthic %>% 
+  filter(category == "Algae" & area == "Caribbean") %>% 
+  ggplot(data = .) +
+  geom_pointrange(aes(x = year, y = mean, ymin = ymin, ymax = ymax),
+                  size = 0.25, color = "#03a678") +
   lims(x = c(1970, 2025), y = c(0, 100)) +
   annotate("segment", x = 1970, xend = 1980, y = 7, color = "#03a678", linetype = "dashed") +
   annotate("rect", xmin = 1970, xmax = 1980, ymin = 2, ymax = 12, fill = "#03a678", alpha = 0.2) +
@@ -114,7 +81,8 @@ B <- plot_raw_trends(category_i = "Algae",
         axis.title = element_text(color = "white"),
         axis.text = element_text(color = "white"),
         axis.line = element_line(color = "white"),
-        axis.ticks = element_line(color = "white"))
+        axis.ticks = element_line(color = "white")) +
+  labs(x = "Year", y = "Benthic cover (%)")
 
 A + B + 
   plot_annotation(theme = theme(
@@ -122,8 +90,8 @@ A + B +
     panel.background = element_rect(fill = "transparent", color = NA)
   ))
 
-ggsave("figs/00_misc/fig-2.png", dpi = 600, width = 11, height = 5, bg = "transparent")
-ggsave("figs/00_misc/fig-2.svg", dpi = 600, width = 11, height = 5, bg = "transparent")
+ggsave("figs/06_additional/01_misc/unoc_fig-2.png", dpi = 600, width = 11, height = 5, bg = "transparent")
+ggsave("figs/06_additional/01_misc/unoc_fig-2.svg", dpi = 600, width = 11, height = 5, bg = "transparent")
 
 # 4. Map ----
 
@@ -192,14 +160,14 @@ plot_map <- ggplot() +
   geom_sf(data = data_sites, size = 0.2, color = "#9b59b6") +
   geom_sf(data = data_land_boundaries, color = "white", fill = NA, linewidth = 0.15) +
   coord_sf(xlim = c(-110, -45), ylim = c(-3, 45)) +
-    annotation_scale(location = "bl", width_hint = 0.25, text_family = font_choose_map, text_col = "black",
-                     text_cex = 0.8, style = "bar", line_width = 1,  height = unit(0.045, "cm"), line_col = "black",
-                     pad_x = unit(0.5, "cm"), pad_y = unit(0.35, "cm"), bar_cols = c("black", "black")) +
+  annotation_scale(location = "bl", width_hint = 0.25, text_family = font_choose_map, text_col = "black",
+                   text_cex = 0.8, style = "bar", line_width = 1,  height = unit(0.045, "cm"), line_col = "black",
+                   pad_x = unit(0.5, "cm"), pad_y = unit(0.35, "cm"), bar_cols = c("black", "black")) +
   theme(panel.background = element_rect(fill = "transparent", color = NA),
         plot.background = element_rect(fill = "transparent", color = NA),
         panel.border = element_blank(),
         axis.text = element_blank(),
         axis.ticks = element_blank())
 
-ggsave("figs/00_misc/fig-1.png", plot_map, width = 7.25, height = 4.75, dpi = 600, bg = "transparent")
-ggsave("figs/00_misc/fig-1.svg", plot_map, width = 7.25, height = 4.75, dpi = 600, bg = "transparent")
+ggsave("figs/06_additional/01_misc/unoc_fig-1.png", plot_map, width = 7.25, height = 4.75, dpi = 600, bg = "transparent")
+ggsave("figs/06_additional/01_misc/unoc_fig-1.svg", plot_map, width = 7.25, height = 4.75, dpi = 600, bg = "transparent")

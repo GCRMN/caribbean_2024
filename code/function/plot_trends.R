@@ -87,7 +87,7 @@ plot_trends <- function(area_i, categories, icons = FALSE, raw_data = TRUE,
     
  # Save plots
     
-  if(all.equal(categories, c("Hard coral", "Macroalgae", "Other fauna")) == TRUE){
+  if(all.equal(categories, c("Hard coral", "Algae", "Other fauna")) == TRUE){
       
     if(area_i == "All"){
       
