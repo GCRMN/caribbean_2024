@@ -9,7 +9,7 @@ library(googledrive)
 
 data_area <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp") %>% 
   st_drop_geometry() %>% 
-  filter(!(area %in% c("Navassa Island", "Guatemala"))) %>% 
+  filter(!(area %in% c("Navassa Island"))) %>% 
   distinct() %>% 
   arrange(area) %>% 
   mutate(nb = row_number())
@@ -51,4 +51,4 @@ render_rmd <- function(area_i, upload_drive = FALSE){
 
 # 5. Map over the function ----
 
-map(data_area$area, ~render_qmd(area_i = ., upload_drive = FALSE))
+map(data_area$area, ~render_rmd(area_i = ., upload_drive = FALSE))

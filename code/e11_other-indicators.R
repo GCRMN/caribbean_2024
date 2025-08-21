@@ -186,7 +186,7 @@ data_population_reef %>%
            family = font_choose_graph, color = "white", hjust = 1, size = 3) +
   annotate(geom = "text", label = "Haiti", x = 2019, y = 23.5, 
            family = font_choose_graph, color = "white", hjust = 1, size = 3) +
-  annotate(geom = "text", label = "Other territories", x = 2019, y = 8, 
+  annotate(geom = "text", label = "Other countries and territories", x = 2019, y = 8, 
            family = font_choose_graph, color = "black", hjust = 1, size = 3)
 
 ggsave("figs/01_part-1/fig-8.png", height = 4, width = 5, dpi = fig_resolution)

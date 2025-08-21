@@ -43,7 +43,7 @@ list_authors <- read_xlsx("../../figs/06_additional/05_contributors/contributors
 ## Introduction
 
 <div custom-style="explanations">
-**[Maximum number of words of the section: 500]**
+**[Maximum number of words of the section: 350]**
 </div>
 
 <div custom-style="text">
@@ -70,7 +70,7 @@ A paragraph about the country or territory
 ### Thermal regime
 
 <div custom-style="explanations">
-**[Maximum number of words of the section: 400]**
+**[Maximum number of words of the section: 150]**
 </div>
 
 <div custom-style="text">
@@ -108,7 +108,7 @@ figure_path <- paste0("../../figs/02_part-2/fig-2/", territory_name, ".png")
 
 ![](`r figure_path`)
 
-**Figure 2.`r nb_chapter`.1.** Average Sea Surface Temperature (SST) anomaly from 1985 to 2024 over coral reefs of `r area_i`. The black line is the long-term trend in SST anomaly, values below this line are negative SST anomalies (*i.e.* cooler than long-term trend), and values above this line are positive SST anomalies (*i.e.* warmer than long-term trend).
+**Figure 2.`r nb_chapter`.1.** Average Sea Surface Temperature (SST) anomaly from July 1985 to July 2024 over coral reefs of `r area_i`. The black line is the long-term trend in SST anomaly, values below this line are negative SST anomalies (*i.e.* cooler than long-term trend), and values above this line are positive SST anomalies (*i.e.* warmer than long-term trend).
 
 </div>
 
@@ -117,7 +117,7 @@ figure_path <- paste0("../../figs/02_part-2/fig-2/", territory_name, ".png")
 ### Hurricanes
 
 <div custom-style="explanations">
-**[Maximum number of words of the section: 250]**
+**[Maximum number of words of the section: 100]**
 </div>
 
 ```{r echo=FALSE, message=FALSE}
@@ -170,7 +170,7 @@ figure_path <- paste0("../../figs/02_part-2/fig-3/", territory_name, ".png")
 ### Other threats
 
 <div custom-style="explanations">
-**[Maximum number of words of the section: 500]**
+**[Maximum number of words of the section: 200]**
 </div>
 
 <div custom-style="todo">
@@ -182,7 +182,7 @@ You can replace the subsection "Other threats" by any major threats impacting co
 ## Trends in benthic cover
 
 <div custom-style="explanations">
-**[Maximum number of words of the section: 500]**
+**[Maximum number of words of the section: 400]**
 </div>
 
 <div custom-style="text">

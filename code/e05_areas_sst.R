@@ -220,7 +220,7 @@ base_plot <- function(area_i){
     geom_ribbon(data = data_i %>% mutate(sst_anom_mean = if_else(sst_anom_mean < sst_anom_mean_linear,
                                                                  sst_anom_mean_linear,
                                                                  sst_anom_mean)),
-                aes(x = date, ymin = sst_anom_mean_linear, ymax = sst_anom_mean), fill = palette_second[3], alpha = 0.9) +
+                aes(x = date, ymin = sst_anom_mean_linear, ymax = sst_anom_mean), fill = "#d35f5fff", alpha = 0.9) +
     geom_ribbon(data = data_i %>% mutate(sst_anom_mean = if_else(sst_anom_mean > sst_anom_mean_linear,
                                                                  sst_anom_mean_linear,
                                                                  sst_anom_mean)),
