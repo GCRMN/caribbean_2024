@@ -25,7 +25,7 @@ load("data/02_misc/data-benthic.RData")
 
 ## 3.2 Transform data ----
 
-data_sources <- read_xlsx("C:/Users/jwicquart/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/05_data-sources.xlsx") %>% 
+data_sources <- read_xlsx("C:/Users/jerem/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/05_data-sources.xlsx") %>% 
   select(datasetID, rightsHolder) %>% 
   distinct()
 
@@ -135,12 +135,7 @@ map(unique(data_year_dataset$area), ~plot_year_dataset(area_i = .))
 
 data_params <- read.csv2("data/02_misc/map_areas_params.csv", encoding = "latin1")
 
-### 4.1.2 Labels ----
-
-data_labels <- read.csv2("data/02_misc/map_areas_labels.csv", encoding = "latin1") %>% 
-  st_as_sf(coords = c("long", "lat"), crs = 4326)
-
-### 4.1.3 Benthic sites ----
+### 4.1.2 Benthic sites ----
 
 data_benthic <- data_benthic %>% 
   select(decimalLatitude, decimalLongitude, year, area) %>% 
@@ -156,16 +151,7 @@ data_benthic <- data_benthic %>%
   select(-nb_years) %>% 
   st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
 
-### 4.1.4 Topography ----
-
-data_topo <- terra::rast("data/01_maps/02_clean/06_topography/topography.tif")
-
-### 4.1.5 Bathymetry ----
-
-data_bathy <- st_read("data/01_maps/02_clean/07_bathymetry/bathymetry.shp") %>% 
-  st_transform(crs = 4326)
-
-### 4.1.6 Land ----
+### 4.1.3 Land ----
 
 data_land <- read_sf("data/01_maps/02_clean/05_princeton/land.shp")
 
@@ -177,27 +163,13 @@ plot_map_area <- function(area_i){
   
   data_params_i <- data_params %>% 
     filter(area == area_i)
-  
-  data_topo_i <- st_bbox(c(xmin = as.numeric(data_params_i$xmin),
-                           xmax = as.numeric(data_params_i$xmax),
-                           ymax = as.numeric(data_params_i$ymax),
-                           ymin = as.numeric(data_params_i$ymin)),
-                         crs = st_crs(4326)) %>% 
-    st_as_sfc() %>% 
-    st_as_sf() %>% 
-    terra::crop(data_topo, .)
-  
+
   # 2. Make the plot
   
   if(area_i == "Flower Garden Banks"){
     
     plot_i <- ggplot() +
-      geom_sf(data = data_bathy, aes(fill = zone, color = zone), show.legend = FALSE) +
-      scale_fill_gradient2(low = "#dff2f9", mid = "#def6ff", high = "#a7e3fa", midpoint = 4, guide = "none") +
-      scale_color_gradient2(low = "#dff2f9", mid = "#def6ff", high = "#a7e3fa", midpoint = 4, guide = "none") +
-      ggnewscale::new_scale_fill() +
-      ggnewscale::new_scale_color() +
-      geom_sf(data = data_land, fill = NA, color = "darkgrey", linewidth = 0.1) +
+      geom_sf(data = data_land, fill = "#dadfe1", color = "darkgrey", linewidth = 0.1) +
       geom_sf(data = data_benthic %>% filter(area == area_i) %>% arrange(int_class) %>% 
                 # Add point outside map range to show the legend when no data
                 bind_rows(., tibble(int_class = unique(data_benthic$int_class),
@@ -212,15 +184,6 @@ plot_map_area <- function(area_i){
                          drop = FALSE,
                          name = "NUMBER OF YEARS\nWITH DATA") +
       guides(color = guide_legend(override.aes = list(size = 3.5))) +
-      geom_sf_text(data = data_labels %>% filter(area == area_i & type == "ocean"),
-                   aes(label = label), size = 3,
-                   col = "#88b6cd", fontface = "italic", family = font_choose_map) +
-      geom_sf_text(data = data_labels %>% filter(area == area_i & type == "area"),
-                   aes(label = label), size = 2.25,
-                   col = "#2c3e50", fontface = "bold", family = font_choose_map) +
-      geom_sf_text(data = data_labels %>% filter(area == area_i & type == "island"),
-                   aes(label = label), size = 2, 
-                   col = "#6c7a89", family = font_choose_map) +
       annotation_scale(location = as.character(data_params_i$scalebar_pos),
                        width_hint = 0.25, text_family = font_choose_map, text_col = "#2c3e50",
                        text_cex = 0.7, style = "bar", line_width = 1, height = unit(0.04, "cm"), line_col = "#2c3e50",
@@ -237,17 +200,7 @@ plot_map_area <- function(area_i){
   }else{
     
     plot_i <- ggplot() +
-      geom_sf(data = data_bathy, aes(fill = zone, color = zone), show.legend = FALSE) +
-      scale_fill_gradient2(low = "#dff2f9", mid = "#def6ff", high = "#a7e3fa", midpoint = 4, guide = "none") +
-      scale_color_gradient2(low = "#dff2f9", mid = "#def6ff", high = "#a7e3fa", midpoint = 4, guide = "none") +
-      ggnewscale::new_scale_fill() +
-      ggnewscale::new_scale_color() +
-      geom_spatraster(data = data_topo_i, maxcell = 5e+100, show.legend = FALSE) +
-      scale_fill_gradientn(values =  c(0, 0.05, 0.1, 0.2, 0.3, 0.6, 1),
-                           colours = c("#ecf0f1",  "#eeeeee", "#dadfe1", "#bdc3c7", "darkgrey", "#6c7a89"),
-                           na.value = "transparent", guide = "none") +
-      ggnewscale::new_scale_fill() +
-      geom_sf(data = data_land, fill = NA, color = "darkgrey", linewidth = 0.1) +
+      geom_sf(data = data_land, fill = "#dadfe1", color = "darkgrey", linewidth = 0.1) +
       geom_sf(data = data_benthic %>% filter(area == area_i) %>% arrange(int_class) %>% 
                 # Add point outside map range to show the legend when no data
                 bind_rows(., tibble(int_class = unique(data_benthic$int_class),
@@ -262,15 +215,6 @@ plot_map_area <- function(area_i){
                          drop = FALSE,
                          name = "NUMBER OF YEARS\nWITH DATA") +
       guides(color = guide_legend(override.aes = list(size = 3.5))) +
-      geom_sf_text(data = data_labels %>% filter(area == area_i & type == "ocean"),
-                   aes(label = label), size = 3,
-                   col = "#88b6cd", fontface = "italic", family = font_choose_map) +
-      geom_sf_text(data = data_labels %>% filter(area == area_i & type == "area"),
-                   aes(label = label), size = 2.25,
-                   col = "#2c3e50", fontface = "bold", family = font_choose_map) +
-      geom_sf_text(data = data_labels %>% filter(area == area_i & type == "island"),
-                   aes(label = label), size = 2, 
-                   col = "#6c7a89", family = font_choose_map) +
       annotation_scale(location = as.character(data_params_i$scalebar_pos),
                        width_hint = 0.25, text_family = font_choose_map, text_col = "#2c3e50",
                        text_cex = 0.7, style = "bar", line_width = 1, height = unit(0.04, "cm"), line_col = "#2c3e50",
@@ -288,7 +232,8 @@ plot_map_area <- function(area_i){
   
   # 3. Export the plot
   
-  ggsave(filename = str_replace_all(paste0("figs/02_part-2/fig-1/", str_replace_all(str_to_lower(area_i), " ", "-"), ".png"),
+  ggsave(filename = str_replace_all(paste0("figs/02_part-2/fig-1/",
+                                           str_replace_all(str_to_lower(area_i), " ", "-"), "_raw.png"),
                                     "---", "-"),
          plot = plot_i,
          width = as.numeric(data_params_i$export_width),
