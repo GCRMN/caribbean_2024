@@ -24,6 +24,7 @@ source("code/function/plot_residuals.R")
 source("code/function/plot_pred_obs.R")
 source("code/function/plot_prediction_map.R")
 source("code/function/plot_trends.R")
+source("code/function/model_text.R")
 
 theme_set(theme_graph())
 
@@ -385,9 +386,13 @@ if(FALSE){
 
 }
 
-# 6. Figure for the Executive Summary ----
+# 6. Generate text to describe models ----
 
-## 6.1 Hard coral ----
+map(unique(data_trends$smoothed_trends$category), ~model_text(category_i = .x))
+
+# 7. Figure for the Executive Summary ----
+
+## 7.1 Hard coral ----
 
 data_trends$smoothed_trends %>% 
   filter(category == "Hard coral" & area == "All") %>% 
@@ -405,7 +410,7 @@ data_trends$smoothed_trends %>%
 
 ggsave("figs/00_misc/exe-summ_1_raw.png", height = 5.3, width = 9.2, dpi = fig_resolution)
 
-## 6.2 Macroalgae ----
+## 7.2 Macroalgae ----
 
 data_trends$smoothed_trends %>% 
   filter(category == "Macroalgae" & area == "All") %>% 
@@ -423,11 +428,11 @@ data_trends$smoothed_trends %>%
 
 ggsave("figs/00_misc/exe-summ_2_raw.png", height = 5.3, width = 9.2, dpi = fig_resolution)
 
-# 7. Additional figures ----
+# 8. Additional figures ----
 
-## 7.1 Hard coral vs algae ----
+## 8.1 Hard coral vs algae ----
 
-### 7.1.1 Transform data ----
+### 8.1.1 Transform data ----
 
 data_hc_algae <- data_trends$raw_trends %>% 
   filter(area == "All" & category %in% c("Hard coral", "Algae")) %>% 
@@ -435,7 +440,7 @@ data_hc_algae <- data_trends$raw_trends %>%
   pivot_wider(names_from = "category", values_from = "mean") %>% 
   mutate(ratio = `Hard coral`/`Algae`)
 
-### 7.1.2 Create labels ----
+### 8.1.2 Create labels ----
 
 data_labels <- tibble(type = c(1, 1, 2),
                       x = c(30, 10, 50),
@@ -444,7 +449,7 @@ data_labels <- tibble(type = c(1, 1, 2),
                                "**More <span style='color:#c44d56'>hard corals</span>**<br>than <span style='color:#16a085'>algae</span>",
                                "As much <span style='color:#c44d56'>hard corals</span> than <span style='color:#16a085'>algae</span>"))
 
-### 7.1.3 Make the plot ----
+### 8.1.3 Make the plot ----
 
 ggplot(data = data_hc_algae, aes(x = Algae, y = `Hard coral`, label = year)) +
   geom_line() +
@@ -469,9 +474,9 @@ ggplot(data = data_hc_algae, aes(x = Algae, y = `Hard coral`, label = year)) +
 
 ggsave("figs/06_additional/01_misc/hard-coral-vs-algae.png", width = 6, height = 6, dpi = fig_resolution)
 
-## 7.2 Stacked benthic cover ----
+## 8.2 Stacked benthic cover ----
 
-### 7.2.1 Transform data ----
+### 8.2.1 Transform data ----
 
 data_cover <- data_trends$smoothed_trends %>% 
   filter(area == "All" & category %in% c("Hard coral", "Algae", "Other fauna"))
@@ -491,7 +496,7 @@ data_labels <- tibble(x = c(1995, 1995, 1995, 1995),
                       category = c("Algae", "Hard coral", "Other fauna", "Others"),
                       color = c("white", "white", "white", "black"))
 
-### 7.2.2 Make the plot ----
+### 8.2.2 Make the plot ----
 
 ggplot(data = data_cover, aes(x = year, y = mean, fill = category)) +
   geom_area(show.legend = FALSE, color = "white", outline.type = "full", linewidth = 0.25) +
