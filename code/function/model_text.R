@@ -23,12 +23,12 @@ model_text <- function(category_i){
     filter(area == "All") %>%
     mutate(p_value = format(p_value, digits = 3))
   
-  values_mean <- data_trends$smoothed_trends %>%
+  values_mean <- data_trends$raw_trends %>%
     filter(category == category_i) %>% 
     filter(area == "All") %>% 
     summarise(across(c(mean, lower_ci_95, upper_ci_95), ~round(mean(.x, na.rm = TRUE), 1)))
   
-  values_comparison <- data_trends$smoothed_trends %>%
+  values_comparison <- data_trends$raw_trends %>%
     filter(category == category_i) %>% 
     filter(area == "All") %>% 
     mutate(period = case_when(year %in% c(1980:1985) ~ "1980-1985",
@@ -68,7 +68,7 @@ model_text <- function(category_i){
                      "% - ", pull(values_1980[1,"upper_ci_95"]), "%]) in 1980–1985 to ",pull(values_2019[1,"mean"]),
                      "% (95% CI [", pull(values_2019[1,"lower_ci_95"]),
                      "% - ", pull(values_2019[1,"upper_ci_95"]), "%]) in 2019–2024.",
-                     " This correspond to an absolute decline in ",
+                     " This corresponds to an absolute decline in ",
                      value_diff,
                      "% ", category_name, " cover between the two periods.")
     
@@ -87,7 +87,7 @@ model_text <- function(category_i){
                      "% - ", pull(values_1980[1,"upper_ci_95"]), "%]) in 1980–1985 to ",pull(values_2019[1,"mean"]),
                      "% (95% CI [", pull(values_2019[1,"lower_ci_95"]),
                      "% - ", pull(values_2019[1,"upper_ci_95"]), "%]) in 2019–2024.",
-                     " This correspond to an absolute increase in ",
+                     " This corresponds to an absolute increase in ",
                      value_diff,
                      "% ", category_name, " cover between the two periods.")
     

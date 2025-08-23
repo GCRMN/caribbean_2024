@@ -3,7 +3,7 @@ plot_trends <- function(area_i, categories, icons = FALSE, raw_data = TRUE,
   
   # Filter data
   
-  data_trends_i <- data_trends$smoothed_trends %>% 
+  data_trends_i <- data_trends$raw_trends %>% 
     filter(area == area_i) %>% 
     filter(category %in% categories)
   
@@ -54,30 +54,30 @@ plot_trends <- function(area_i, categories, icons = FALSE, raw_data = TRUE,
                                       "Acropora",
                                       "Orbicella",
                                       "Porites"),
-                         path = c("figs/00_misc/icons_acropora-palmata.png",
-                                  "figs/00_misc/icons_macroalgae.png",
-                                  "figs/00_misc/icons_gorgonia.png",
-                                  "figs/00_misc/icons_acropora-palmata.png",
-                                  "figs/00_misc/icons_macroalgae.png",
-                                  "figs/00_misc/icons_gorgonia.png",
-                                  "figs/00_misc/icons_acropora-palmata.png",
-                                  "figs/00_misc/icons_macroalgae.png",
-                                  "figs/00_misc/icons_gorgonia.png")) %>% 
+                         path = c("figs/00_misc/icon_coral.png",
+                                  "figs/00_misc/icon_algae.png",
+                                  "figs/00_misc/icon_gorgon.png",
+                                  "figs/00_misc/icon_coral.png",
+                                  "figs/00_misc/icon_algae.png",
+                                  "figs/00_misc/icon_gorgon.png",
+                                  "figs/00_misc/icon_coral.png",
+                                  "figs/00_misc/icon_algae.png",
+                                  "figs/00_misc/icon_gorgon.png")) %>% 
       filter(category %in% categories)
     
     plot_results <- ggdraw(plot_trends) + 
       draw_image(as.character(data_icons[1, 2]),
-                 x = 0.39, y = 0.96, # Position above right
+                 x = 0.37, y = 0.95, # Position above right
                  hjust = 1, vjust = 1,
-                 width = 0.15, height = 0.15) +
+                 width = 0.11, height = 0.11) +
       draw_image(as.character(data_icons[2, 2]),
-                 x = 0.7075, y = 0.96, # Position above right
+                 x = 0.6875, y = 0.95, # Position above right
                  hjust = 1, vjust = 1,
-                 width = 0.15, height = 0.15) + # Relative proportion of the image
+                 width = 0.11, height = 0.11) + # Relative proportion of the image
       draw_image(as.character(data_icons[3, 2]),
-                 x = 1.0175, y = 0.96, # Position above right
+                 x = 0.975, y = 0.95, # Position above right
                  hjust = 1, vjust = 1,
-                 width = 0.15, height = 0.15) # Relative proportion of the image
+                 width = 0.11, height = 0.11) # Relative proportion of the image
       
   }else{
       

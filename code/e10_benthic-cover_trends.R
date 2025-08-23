@@ -88,25 +88,11 @@ data_benthic_obs <- data_benthic %>%
 raw_trends <- left_join(raw_trends, data_benthic_obs) %>% 
   mutate(data_obs = replace_na(data_obs, 0))
 
-## 3.6 Smooth moving average ----
+## 3.6 Combine into a list ----
 
-smoothed_trends <- raw_trends %>% 
-  group_by(category, region, area, color, text_title) %>% 
-  # Two years moving average
-  mutate(across(c("mean", "lower_ci_95", "lower_ci_80", "upper_ci_95", "upper_ci_80"),
-                ~rollmean(.x, k = 2, fill = NA, align = "center"))) %>% 
-  ungroup() %>% 
-  # Add first year data
-  filter(year != 1980) %>% 
-  bind_rows(., raw_trends %>% 
-              filter(year == 1980)) %>% 
-  arrange(category, region, area, year)
+data_trends <- lst(raw_trends, long_term_average, long_term_trend)
 
-## 3.7 Combine into a list ----
-
-data_trends <- lst(smoothed_trends, raw_trends, long_term_average, long_term_trend)
-
-rm(smoothed_trends, raw_trends, long_term_average,
+rm(raw_trends, long_term_average,
    long_term_trend, data_benthic_obs)
 
 # 4. Model evaluation ----
@@ -348,7 +334,7 @@ data_benthic <- data_benthic %>%
 
 ### 5.2.1 Major categories ----
 
-map(unique(data_trends$smoothed_trends$area),
+map(unique(data_trends$raw_trends$area),
     ~plot_trends(area_i = .x,
                  categories = c("Hard coral", "Algae", "Other fauna"),
                  icons = TRUE,
@@ -358,7 +344,7 @@ map(unique(data_trends$smoothed_trends$area),
 
 ### 5.2.2 Algae categories ----
 
-map(unique(data_trends$smoothed_trends$area),
+map(unique(data_trends$raw_trends$area),
     ~plot_trends(area_i = .x,
                  categories = c("Coralline algae", "Macroalgae", "Turf algae"),
                  icons = TRUE,
@@ -368,7 +354,7 @@ map(unique(data_trends$smoothed_trends$area),
 
 ### 5.2.3 Hard coral genera ----
 
-map(unique(data_trends$smoothed_trends$area),
+map(unique(data_trends$raw_trends$area),
     ~plot_trends(area_i = .x,
                  categories = c("Acropora", "Orbicella", "Porites"),
                  icons = TRUE,
@@ -380,7 +366,7 @@ map(unique(data_trends$smoothed_trends$area),
 
 if(FALSE){
   
-  A <- data_trends$smoothed_trends %>%
+  A <- data_trends$raw_trends %>%
     filter(area == "All" & category == "Acropora") %>%
     select(-upper_ci_95, -lower_ci_95, -text_title, -color)
 
@@ -388,13 +374,13 @@ if(FALSE){
 
 # 6. Generate text to describe models ----
 
-map(unique(data_trends$smoothed_trends$category), ~model_text(category_i = .x))
+map(unique(data_trends$raw_trends$category), ~model_text(category_i = .x))
 
 # 7. Figure for the Executive Summary ----
 
 ## 7.1 Hard coral ----
 
-data_trends$smoothed_trends %>% 
+data_trends$raw_trends %>% 
   filter(category == "Hard coral" & area == "All") %>% 
   filter(year >= 1984) %>% 
   ggplot(data = .) +
@@ -412,7 +398,7 @@ ggsave("figs/00_misc/exe-summ_1_raw.png", height = 5.3, width = 9.2, dpi = fig_r
 
 ## 7.2 Macroalgae ----
 
-data_trends$smoothed_trends %>% 
+data_trends$raw_trends %>% 
   filter(category == "Macroalgae" & area == "All") %>% 
   filter(year >= 1984) %>% 
   ggplot(data = .) +
@@ -478,7 +464,7 @@ ggsave("figs/06_additional/01_misc/hard-coral-vs-algae.png", width = 6, height =
 
 ### 8.2.1 Transform data ----
 
-data_cover <- data_trends$smoothed_trends %>% 
+data_cover <- data_trends$raw_trends %>% 
   filter(area == "All" & category %in% c("Hard coral", "Algae", "Other fauna"))
 
 data_cover <- data_cover %>% 
