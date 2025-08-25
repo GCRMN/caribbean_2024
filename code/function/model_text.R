@@ -49,7 +49,7 @@ model_text <- function(category_i){
   
   result <- paste0("The temporal trend of benthic cover of ", category_name,
                    " across Caribbean coral reefs from 1980 to 2024 (Figure 1.3.XX) was estimated using data ",
-                   "from X monitoring sites and ", format(value_training, big.mark = ","), " observations employed for model training (Supp Table X). ",
+                   "from X monitoring sites and ", format(value_training, big.mark = ","), " observations employed for model training. ",
                    "The model achieved a Root Mean Squared Error (RMSE) of ", value_rmse,
                    " and a coefficient of determination (R²) of ", value_rsq, ".",
                    " These performance metrics indicate that the model's predictions deviate on average by ",

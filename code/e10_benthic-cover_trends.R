@@ -10,6 +10,7 @@ library(zoo)
 library(Kendall)
 library(sf)
 sf_use_s2(FALSE)
+library(cowplot) # For the function draw_image()
 
 # 2. Source functions ----
 
@@ -182,6 +183,16 @@ if(FALSE){
     summarise(across(c(rmse, rsq), ~mean(.x)))
   
 }
+
+data_rmse_rsq %>% 
+  filter(category %in% c("Hard coral", "Algae", "Other fauna")) %>% 
+  select(area, category, rmse, rsq) %>% 
+  pivot_wider(names_from = category, values_from = c(rmse, rsq),
+              names_glue = "{category}_{.value}") %>% 
+  select(area, "Hard coral_rmse", "Hard coral_rsq", Algae_rmse, Algae_rsq,
+         "Other fauna_rmse", "Other fauna_rsq") %>% 
+  arrange(area) %>% 
+  openxlsx::write.xlsx(., "figs/05_supp-mat/supp_tbl_2.xlsx")
 
 rm(data_rmse_rsq)
 

@@ -57,25 +57,25 @@ plot_trends <- function(area_i, categories, icons = FALSE, raw_data = TRUE,
                          path = c("figs/00_misc/icon_coral.png",
                                   "figs/00_misc/icon_algae.png",
                                   "figs/00_misc/icon_gorgon.png",
-                                  "figs/00_misc/icon_coral.png",
-                                  "figs/00_misc/icon_algae.png",
-                                  "figs/00_misc/icon_gorgon.png",
-                                  "figs/00_misc/icon_coral.png",
-                                  "figs/00_misc/icon_algae.png",
-                                  "figs/00_misc/icon_gorgon.png")) %>% 
+                                  "figs/00_misc/icon_coralline.png",
+                                  "figs/00_misc/icon_macroalgae.png",
+                                  "figs/00_misc/icon_turf.png",
+                                  "figs/00_misc/icon_acropora.png",
+                                  "figs/00_misc/icon_orbicella.png",
+                                  "figs/00_misc/icon_porites.png")) %>% 
       filter(category %in% categories)
     
     plot_results <- ggdraw(plot_trends) + 
       draw_image(as.character(data_icons[1, 2]),
-                 x = 0.37, y = 0.95, # Position above right
+                 x = 0.365, y = 0.95, # Position above right
                  hjust = 1, vjust = 1,
                  width = 0.11, height = 0.11) +
       draw_image(as.character(data_icons[2, 2]),
-                 x = 0.6875, y = 0.95, # Position above right
+                 x = 0.6835, y = 0.95, # Position above right
                  hjust = 1, vjust = 1,
                  width = 0.11, height = 0.11) + # Relative proportion of the image
       draw_image(as.character(data_icons[3, 2]),
-                 x = 0.975, y = 0.95, # Position above right
+                 x = 1.005, y = 0.95, # Position above right
                  hjust = 1, vjust = 1,
                  width = 0.11, height = 0.11) # Relative proportion of the image
       

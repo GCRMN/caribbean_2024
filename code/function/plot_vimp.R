@@ -17,7 +17,7 @@ plot_vimp <- function(category_i){
     scale_color_identity() +
     labs(x = NULL, y = "Relative importance (%)") +
     lims(y = c(0, NA))
-  
+
   ggsave(filename = paste0("figs/05_supp-mat/supp_fig_4_", str_replace_all(str_to_lower(category_i), " ", "-"), ".png"),
          plot = plot_i, height = 8, width = 6, dpi = fig_resolution)
   
