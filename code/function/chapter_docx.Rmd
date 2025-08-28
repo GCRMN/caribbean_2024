@@ -38,12 +38,16 @@ list_authors <- read_xlsx("../../figs/06_additional/05_contributors/contributors
 
 </div>
 
+<div custom-style="explanations">
+The list of authors has been generated automatically in alphabetical order. It can be rearranged to reflect the relative importance of each contribution, with the main authors appearing at the beginning of the list.
+</div>
+
 \newpage
 
 ## Introduction
 
 <div custom-style="explanations">
-**[Maximum number of words of the section: 350]**
+**[Maximum number of words of the section: 170]**
 </div>
 
 <div custom-style="text">
@@ -70,7 +74,7 @@ A paragraph about the country or territory
 ### Thermal regime
 
 <div custom-style="explanations">
-**[Maximum number of words of the section: 150]**
+**[Maximum number of words of the section: 130]**
 </div>
 
 <div custom-style="text">
@@ -94,7 +98,7 @@ sst_rate <- read_xlsx("../../figs/01_part-1/tbl-3.xlsx") %>%
 
 ```
 
-The long-term average in SST from 1985 to 2024 over coral reefs of `r area_i` was `r sst_lt` °C. Over this period, SST increased by `r sst_trend` °C, representing a warming rate of `r sst_rate` °C per year.
+The long-term average in SST from 1985 to 2024 over coral reefs of `r area_i` was `r sst_lt` °C. Over this period, SST increased by `r sst_trend` °C, representing a warming rate of `r sst_rate` °C per year (**Figure 2.`r nb_chapter`.1**).
 
 <div custom-style="todo">
 A paragraph about the impacts of bleaching events (1998, 2005, and 2023-2024)
@@ -249,3 +253,14 @@ figure_path <- paste0("../../figs/02_part-2/fig-5/", territory_name, ".png")
 \newpage
 
 ## References
+
+<div custom-style="explanations">
+**[Maximum number of references: 15]**
+
+In the text, the format of the citation should be (Alvarez-Filip et al., 2009) or Alvarez-Filip et al. (2009).
+
+In this section, the citation should follow the APA style:
+
+Alvarez-Filip, L., Dulvy, N. K., Gill, J. A., Côté, I. M., & Watkinson, A. R. (2009). Flattening of Caribbean coral reefs: region-wide declines in architectural complexity. Proceedings of the Royal Society B: Biological Sciences, 276(1669), 3019-3025.
+
+</div>
