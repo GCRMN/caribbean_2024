@@ -386,7 +386,8 @@ list_shp <- list.files(path = "data/01_maps/01_raw/05_princeton",
 data_land <- map_dfr(list_shp, ~st_read(.)) %>% 
   rename(area = NAME_ENGLI) %>% 
   st_transform(crs = 4326) %>% 
-  select(area)
+  select(area) %>% 
+  mutate(area = ifelse(is.na(area), "Sint-Maarten", area))
 
 ## 5.3 Correct issue for grouped territories ----
 
@@ -402,14 +403,7 @@ data_land <- data_land %>%
   mutate(area = str_replace_all(area, c("Virgin Islands, U.S." = "United States Virgin Islands",
                                         "Saint Eustatius" = "Sint-Eustatius")))
 
-## 5.4 Add Sint-Maarten ----
-
-data_land <- data_land %>% 
-  filter(area == "Saint-Martin") %>% 
-  mutate(area = "Sint-Maarten") %>% 
-  bind_rows(data_land, .)
-
-## 5.5 Export the data ----
+## 5.4 Export the data ----
 
 st_write(data_land, "data/01_maps/02_clean/05_princeton/land.shp", append = FALSE, delete_dsn = TRUE)
 
