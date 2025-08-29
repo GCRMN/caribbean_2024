@@ -62,9 +62,10 @@ map(str_replace_all(str_replace_all(str_to_lower(data_area$area), " ", "-"), "--
 
 ## 4.6 Figure 5b ----
 
-map(str_replace_all(str_replace_all(str_to_lower(data_area$area), " ", "-"), "---", "-"),
-    ~drive_upload(media = paste0("figs/02_part-2/fig-5b/", .x, ".png"),
-                  path = paste0("GCRMN Caribbean report/07_part-2_syntheses-countries-territories/", .x),
+map(list.files("figs/02_part-2/fig-5b/", full.names = TRUE),
+    ~drive_upload(media = .x,
+                  path = paste0("GCRMN Caribbean report/07_part-2_syntheses-countries-territories/",
+                                str_split_fixed(.x, "/|\\.", 5)[,4]),
                   name = "fig-5b"))
 
 ## 4.7 Docx chapter ----

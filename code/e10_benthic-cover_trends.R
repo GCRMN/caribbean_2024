@@ -192,6 +192,7 @@ data_rmse_rsq %>%
   select(area, "Hard coral_rmse", "Hard coral_rsq", Algae_rmse, Algae_rsq,
          "Other fauna_rmse", "Other fauna_rsq") %>% 
   arrange(area) %>% 
+  mutate(across(c("Hard coral_rmse":"Other fauna_rsq"), ~round(.x, 2))) %>% 
   openxlsx::write.xlsx(., "figs/05_supp-mat/supp_tbl_2.xlsx")
 
 rm(data_rmse_rsq)
@@ -345,6 +346,23 @@ data_benthic <- data_benthic %>%
 
 ### 5.2.1 Major categories ----
 
+# Version with only raw data
+
+data_benthic %>% 
+  filter(!(area %in% c("All", "Navassa Island", "Caribbean"))) %>% 
+  select(area) %>% 
+  distinct() %>% 
+  pull() %>% 
+  map(.,
+    ~plot_trends(area_i = .x,
+                 categories = c("Hard coral", "Algae", "Other fauna"),
+                 icons = TRUE,
+                 scales = "fixed",
+                 raw_data = TRUE,
+                 modelled_data = FALSE))
+
+# Version with modeled and raw data
+
 map(unique(data_trends$raw_trends$area),
     ~plot_trends(area_i = .x,
                  categories = c("Hard coral", "Algae", "Other fauna"),
@@ -378,7 +396,7 @@ map(unique(data_trends$raw_trends$area),
 if(FALSE){
   
   A <- data_trends$raw_trends %>%
-    filter(area == "All" & category == "Acropora") %>%
+    filter(area == "All" & category == "Hard coral") %>%
     select(-upper_ci_95, -lower_ci_95, -text_title, -color)
 
 }
@@ -397,8 +415,8 @@ data_trends$raw_trends %>%
   ggplot(data = .) +
   geom_ribbon(aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95, fill = "#42b9bc"), alpha = 0.35) +
   geom_line(aes(x = year, y = mean, color = "#42b9bc"), linewidth = 1) +
-  annotate("segment", x = 1970, xend = 1983, y = 33, color = "#42b9bc", linetype = "dashed") +
-  annotate("rect", xmin = 1970, xmax = 1983, ymin = 28.7, ymax = 37.6, fill = "#42b9bc", alpha = 0.2) +
+  annotate("segment", x = 1970, xend = 1983, y = 50, color = "#42b9bc", linetype = "dashed") +
+  annotate("rect", xmin = 1970, xmax = 1983, ymin = 40, ymax = 60, fill = "#42b9bc", alpha = 0.2) +
   scale_fill_identity() +
   scale_color_identity() +
   scale_x_continuous(expand = c(0, 0), limits = c(1970, NA)) +
@@ -415,12 +433,12 @@ data_trends$raw_trends %>%
   ggplot(data = .) +
   geom_ribbon(aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95, fill = "#42b9bc"), alpha = 0.35) +
   geom_line(aes(x = year, y = mean, color = "#42b9bc"), linewidth = 1) +
-  annotate("segment", x = 1970, xend = 1983, y = 7, color = "#42b9bc", linetype = "dashed") +
-  annotate("rect", xmin = 1970, xmax = 1983, ymin = 3.6, ymax = 13, fill = "#42b9bc", alpha = 0.2) +
+  annotate("segment", x = 1970, xend = 1983, y = 8, color = "#42b9bc", linetype = "dashed") +
+  annotate("rect", xmin = 1970, xmax = 1983, ymin = 6, ymax = 10, fill = "#42b9bc", alpha = 0.2) +
   scale_fill_identity() +
   scale_color_identity() +
   scale_x_continuous(expand = c(0, 0), limits = c(1970, NA)) +
-  scale_y_continuous(limits = c(0, 60)) +
+  scale_y_continuous(limits = c(0, 50)) +
   labs(x = "Year", y = "Benthic cover (%)")
 
 ggsave("figs/00_misc/exe-summ_2_raw.png", height = 5.3, width = 9.2, dpi = fig_resolution)

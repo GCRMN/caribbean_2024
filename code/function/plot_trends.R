@@ -95,11 +95,23 @@ plot_trends <- function(area_i, categories, icons = FALSE, raw_data = TRUE,
       
     }else{
       
-      ggsave(plot = plot_results, filename = paste0("figs/02_part-2/fig-5/",
-                                                   str_replace_all(str_replace_all(str_to_lower(area_i), " ", "-"),
-                                                                   "---", "-"),
-                                                   ".png"),
-             width = 14, height = 5)
+      if(modelled_data == TRUE){
+        
+        ggsave(plot = plot_results, filename = paste0("figs/02_part-2/fig-5/",
+                                                      str_replace_all(str_replace_all(str_to_lower(area_i), " ", "-"),
+                                                                      "---", "-"),
+                                                      ".png"),
+               width = 14, height = 5)
+        
+      }else{
+        
+        ggsave(plot = plot_results, filename = paste0("figs/02_part-2/fig-5b/",
+                                                      str_replace_all(str_replace_all(str_to_lower(area_i), " ", "-"),
+                                                                      "---", "-"),
+                                                      ".png"),
+               width = 14, height = 5)
+        
+      }
       
     }
       
