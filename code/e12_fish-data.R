@@ -10,6 +10,8 @@ library(sf)
 source("code/function/graphical_par.R")
 source("code/function/theme_graph.R")
 
+type_dataviz <- "pointrange" # "boxplot" or "pointrange"
+
 # 3. Data for Sint-Maarten ----
 
 data_sintmarteen <- read.csv2("data/12_fish-data/fish_data_SintMaarten.csv", skip = 1) %>% 
@@ -17,26 +19,58 @@ data_sintmarteen <- read.csv2("data/12_fish-data/fish_data_SintMaarten.csv", ski
          across(c(year, biomass.g.100m2, site_latitude, site_longitude), ~as.numeric(.x)),
          dataset = "sint_marteen") %>% 
   filter(family %in% c("Acanthuridae", "Epinephelidae", "Scaridae")) %>% 
-  filter(year == min(year) | year == max(year)) %>% 
-  mutate(year = as.character(year)) %>% 
   rename(biomass = "biomass.g.100m2", mpa = site_within_mpa) %>% 
   mutate(biomass = biomass/1000)
 
-ggplot(data = data_sintmarteen, aes(x = year, y = biomass, fill = as.factor(mpa))) +
-  geom_boxplot(width = 0.6, outliers = FALSE, show.legend = FALSE) +
-  facet_wrap(~family, scales = "free_y", ncol = 1) +
-  labs(x = "Year", y = bquote("Biomass (kg.100/"~m^2*")")) +
-  scale_fill_manual(values = c("no" = "#d35f5fff", "yes" = "#2C5D96")) +
-  scale_y_continuous(labels = scales::label_number(accuracy = 0.1), limits = c(0, NA)) +
-  theme_graph() +
-  theme(strip.background = element_blank(),
-        text = element_text(size = 13),
-        axis.title.x = element_text(size = 14),
-        axis.title.y = element_text(size = 14),
-        strip.text = element_text(hjust = 0, size = 13, face = "bold"),
-        panel.spacing = unit(1.3, "lines"),
-        plot.background = element_rect(fill = "transparent", color = NA),
-        panel.background = element_rect(fill = "transparent", color = NA))
+if(type_dataviz == "boxplot"){
+  
+  data_sintmarteen <- data_sintmarteen %>% 
+    filter(year == min(year) | year == max(year)) %>% 
+    mutate(year = as.character(year))
+  
+  ggplot(data = data_sintmarteen, aes(x = year, y = biomass, fill = as.factor(mpa))) +
+    geom_boxplot(width = 0.6, outliers = FALSE, show.legend = FALSE) +
+    facet_wrap(~family, scales = "free_y", ncol = 1) +
+    labs(x = "Year", y = bquote("Biomass (kg.100/"~m^2*")")) +
+    scale_fill_manual(values = c("no" = "#d35f5fff", "yes" = "#2C5D96")) +
+    scale_y_continuous(labels = scales::label_number(accuracy = 0.1), limits = c(0, NA)) +
+    theme_graph() +
+    theme(strip.background = element_blank(),
+          text = element_text(size = 13),
+          axis.title.x = element_text(size = 14),
+          axis.title.y = element_text(size = 14),
+          strip.text = element_text(hjust = 0, size = 13, face = "bold"),
+          panel.spacing = unit(1.3, "lines"),
+          plot.background = element_rect(fill = "transparent", color = NA),
+          panel.background = element_rect(fill = "transparent", color = NA))
+  
+}else if(type_dataviz == "pointrange"){
+  
+  data_sintmarteen <- data_sintmarteen %>% 
+    group_by(year, family, dataset, mpa) %>% 
+    summarise(mean = mean(biomass),
+              sd = sd(biomass)) %>% 
+    ungroup()
+  
+  ggplot(data = data_sintmarteen, aes(x = year, y = mean, ymin = ifelse(mean-sd < 0, 0,mean-sd),
+                                      ymax = mean+sd, color = as.factor(mpa))) +
+    geom_pointrange(show.legend = FALSE) +
+    geom_line(show.legend = FALSE) +
+    facet_wrap(~family, scales = "free_y", ncol = 1) +
+    labs(x = "Year", y = bquote("Biomass (kg.100/"~m^2*")")) +
+    scale_color_manual(values = c("no" = "#d35f5fff", "yes" = "#2C5D96")) +
+    scale_y_continuous(labels = scales::label_number(accuracy = 0.1), limits = c(0, NA)) +
+    theme_graph() +
+    theme(strip.background = element_blank(),
+          text = element_text(size = 13),
+          axis.title.x = element_text(size = 14),
+          axis.title.y = element_text(size = 14),
+          strip.text = element_text(hjust = 0, size = 13, face = "bold"),
+          panel.spacing = unit(1.3, "lines"),
+          plot.background = element_rect(fill = "transparent", color = NA),
+          panel.background = element_rect(fill = "transparent", color = NA))
+  
+}
 
 ggsave("figs/01_part-1/fig-15a.png", width = 3.4, height = 8)
 
@@ -45,37 +79,74 @@ ggsave("figs/01_part-1/fig-15a.png", width = 3.4, height = 8)
 data_curacao <- read_xlsx("data/12_fish-data/GCRMN_Curacao_fishdata_2015_2023.xlsx", skip = 1) %>% 
   mutate(dataset = "curacao") %>% 
   filter(family %in% c("Acanthuridae", "Epinephelidae", "Scaridae")) %>% 
-  filter(year == min(year) | year == max(year)) %>% 
-  mutate(year = as.character(year)) %>% 
   rename(biomass = "biomass g/100m2", mpa = site_within_mpa) %>% 
   mutate(biomass = biomass/1000)
 
-ggplot(data = data_curacao, aes(x = year, y = biomass, fill = as.factor(mpa))) +
-  geom_boxplot(width = 0.6, outliers = FALSE, show.legend = FALSE) +
-  facet_wrap(~family, scales = "free_y", ncol = 3) +
-  labs(x = "Year", y = bquote("Biomass (kg.100/"~m^2*")")) +
-  scale_fill_manual(values = c("no" = "#d35f5fff", "yes" = "#2C5D96")) + 
-  scale_y_continuous(labels = scales::label_number(accuracy = 0.1), limits = c(0, NA)) +
-  theme_graph() +
-  theme(strip.background = element_blank(),
-        strip.text = element_text(hjust = 0, size = 15, face = "bold"),
-        panel.spacing = unit(5, "lines"),
-        plot.background = element_rect(fill = "transparent", color = NA),
-        panel.background = element_rect(fill = "transparent", color = NA))
+if(type_dataviz == "boxplot"){
+  
+  data_curacao <- data_curacao %>% 
+    filter(year == min(year) | year == max(year)) %>% 
+    mutate(year = as.character(year))
+
+  ggplot(data = data_curacao, aes(x = year, y = biomass, fill = as.factor(mpa))) +
+    geom_boxplot(width = 0.6, outliers = FALSE, show.legend = FALSE) +
+    facet_wrap(~family, scales = "free_y", ncol = 3) +
+    labs(x = "Year", y = bquote("Biomass (kg.100/"~m^2*")")) +
+    scale_fill_manual(values = c("no" = "#d35f5fff", "yes" = "#2C5D96")) + 
+    scale_y_continuous(labels = scales::label_number(accuracy = 0.1), limits = c(0, NA)) +
+    theme_graph() +
+    theme(strip.background = element_blank(),
+          strip.text = element_text(hjust = 0, size = 15, face = "bold"),
+          panel.spacing = unit(5, "lines"),
+          plot.background = element_rect(fill = "transparent", color = NA),
+          panel.background = element_rect(fill = "transparent", color = NA))
+
+}else if(type_dataviz == "pointrange"){
+  
+  data_curacao <- data_curacao %>% 
+    group_by(year, family, dataset, mpa) %>% 
+    summarise(mean = mean(biomass),
+              sd = sd(biomass)) %>% 
+    ungroup()
+  
+  ggplot(data = data_curacao, aes(x = year, y = mean, ymin = ifelse(mean-sd < 0, 0,mean-sd),
+                                      ymax = mean+sd, color = as.factor(mpa))) +
+    geom_pointrange(show.legend = FALSE) +
+    geom_line(show.legend = FALSE) +
+    facet_wrap(~family, scales = "free_y", ncol = 3) +
+    labs(x = "Year", y = bquote("Biomass (kg.100/"~m^2*")")) +
+    scale_color_manual(values = c("no" = "#d35f5fff", "yes" = "#2C5D96")) +
+    scale_y_continuous(labels = scales::label_number(accuracy = 0.1), limits = c(0, NA)) +
+    theme_graph() +
+    theme(strip.background = element_blank(),
+          text = element_text(size = 13),
+          axis.title.x = element_text(size = 14),
+          axis.title.y = element_text(size = 14),
+          strip.text = element_text(hjust = 0, size = 13, face = "bold"),
+          panel.spacing = unit(1.3, "lines"),
+          plot.background = element_rect(fill = "transparent", color = NA),
+          panel.background = element_rect(fill = "transparent", color = NA))
+
+}
 
 ggsave("figs/01_part-1/fig-15b.png", width = 12, height = 3.5)
 
 # 5. Data for MAR ----
 
-data_hri <- read_xlsx("data/12_fish-data/template_fish_data_Rev_final_clean_four_families_HRI.xlsx", skip = 1, sheet = 1) %>% 
+data_hri <- read_xlsx("data/12_fish-data/template_fish_data_Rev_final_clean_four_families_HRI.xlsx",
+                      skip = 1, sheet = 1) %>% 
   mutate(dataset = "hri") %>% 
   select(-Country) %>% 
   filter(family %in% c("Acanthuridae", "Epinephelidae", "Scaridae")) %>% 
-  filter(year == min(year) | year == max(year)) %>% 
-  mutate(year = as.character(year)) %>% 
   rename(biomass = "biomass g/100m2", mpa = site_within_mpa) %>% 
   mutate(biomass = biomass/1000)
 
+if(type_dataviz == "boxplot"){
+  
+  data_hri <- data_hri %>% 
+    filter(year == min(year) | year == max(year)) %>% 
+    mutate(year = as.character(year))
+  
 ggplot(data = data_hri, aes(x = year, y = biomass, fill = as.factor(mpa))) +
   geom_boxplot(width = 0.6, outliers = FALSE, show.legend = FALSE) +
   facet_wrap(~family, scales = "free_y", ncol = 1) +
@@ -92,6 +163,34 @@ ggplot(data = data_hri, aes(x = year, y = biomass, fill = as.factor(mpa))) +
         plot.background = element_rect(fill = "transparent", color = NA),
         panel.background = element_rect(fill = "transparent", color = NA))
 
+}else if(type_dataviz == "pointrange"){
+  
+  data_hri <- data_hri %>% 
+    group_by(year, family, dataset, mpa) %>% 
+    summarise(mean = mean(biomass),
+              sd = sd(biomass)) %>% 
+    ungroup()
+  
+  ggplot(data = data_hri, aes(x = year, y = mean, ymin = ifelse(mean-sd < 0, 0,mean-sd),
+                                  ymax = mean+sd, color = as.factor(mpa))) +
+    geom_pointrange(show.legend = FALSE) +
+    geom_line(show.legend = FALSE) +
+    facet_wrap(~family, scales = "free_y", ncol = 1) +
+    labs(x = "Year", y = bquote("Biomass (kg.100/"~m^2*")")) +
+    scale_color_manual(values = c("no" = "#d35f5fff", "yes" = "#2C5D96")) +
+    scale_y_continuous(labels = scales::label_number(accuracy = 0.1), limits = c(0, NA)) +
+    theme_graph() +
+    theme(strip.background = element_blank(),
+          text = element_text(size = 13),
+          axis.title.x = element_text(size = 14),
+          axis.title.y = element_text(size = 14),
+          strip.text = element_text(hjust = 0, size = 13, face = "bold"),
+          panel.spacing = unit(1.3, "lines"),
+          plot.background = element_rect(fill = "transparent", color = NA),
+          panel.background = element_rect(fill = "transparent", color = NA))
+  
+}
+
 ggsave("figs/01_part-1/fig-15c.png", width = 3.4, height = 8)
 
 # 6. FUNDEMAR ----
@@ -99,11 +198,15 @@ ggsave("figs/01_part-1/fig-15c.png", width = 3.4, height = 8)
 data_fundemar <- read_xlsx("data/12_fish-data/fish_data_FUNDEMAR.xlsx", skip = 1, sheet = 2) %>% 
   mutate(dataset = "fundemar") %>% 
   filter(family %in% c("Acanthuridae", "Epinephelidae", "Scaridae")) %>% 
-  filter(year == min(year) | year == max(year)) %>% 
-  mutate(year = as.character(year)) %>% 
   rename(biomass = "biomass g/100m2", mpa = site_within_mpa) %>% 
   mutate(biomass = biomass/1000)
 
+if(type_dataviz == "boxplot"){
+  
+  data_fundemar <- data_fundemar %>% 
+    filter(year == min(year) | year == max(year)) %>% 
+    mutate(year = as.character(year))
+  
 ggplot(data = data_fundemar, aes(x = year, y = biomass, fill = as.factor(mpa))) +
   geom_boxplot(width = 0.3, outliers = FALSE, show.legend = FALSE) +
   facet_wrap(~family, scales = "free_y", ncol = 3) +
@@ -116,6 +219,34 @@ ggplot(data = data_fundemar, aes(x = year, y = biomass, fill = as.factor(mpa))) 
         panel.spacing = unit(5, "lines"),
         plot.background = element_rect(fill = "transparent", color = NA),
         panel.background = element_rect(fill = "transparent", color = NA))
+
+}else if(type_dataviz == "pointrange"){
+
+  data_fundemar <- data_fundemar %>% 
+    group_by(year, family, dataset, mpa) %>% 
+    summarise(mean = mean(biomass),
+              sd = sd(biomass)) %>% 
+    ungroup()
+  
+  ggplot(data = data_fundemar, aes(x = year, y = mean, ymin = ifelse(mean-sd < 0, 0,mean-sd),
+                              ymax = mean+sd, color = as.factor(mpa))) +
+    geom_pointrange(show.legend = FALSE) +
+    geom_line(show.legend = FALSE) +
+    facet_wrap(~family, scales = "free_y", ncol = 3) +
+    labs(x = "Year", y = bquote("Biomass (kg.100/"~m^2*")")) +
+    scale_color_manual(values = c("no" = "#d35f5fff", "yes" = "#2C5D96")) +
+    scale_y_continuous(labels = scales::label_number(accuracy = 0.1), limits = c(0, NA)) +
+    theme_graph() +
+    theme(strip.background = element_blank(),
+          text = element_text(size = 13),
+          axis.title.x = element_text(size = 14),
+          axis.title.y = element_text(size = 14),
+          strip.text = element_text(hjust = 0, size = 13, face = "bold"),
+          panel.spacing = unit(1.3, "lines"),
+          plot.background = element_rect(fill = "transparent", color = NA),
+          panel.background = element_rect(fill = "transparent", color = NA))
+  
+}
 
 ggsave("figs/01_part-1/fig-15d.png", width = 12, height = 3.5, bg = "transparent")
 
@@ -147,6 +278,10 @@ ggsave("figs/01_part-1/fig-15e.png", width = 8.8, height = 5.6, dpi = 300)
 
 # 8. Get number of sites ----
 
-data_coordinates %>% 
-  group_by(dataset) %>% 
-  count()
+if(type_dataviz == "boxplot"){
+  
+  data_coordinates %>% 
+    group_by(dataset) %>% 
+    count()
+  
+}
