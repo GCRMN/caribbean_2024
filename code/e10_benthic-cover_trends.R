@@ -523,3 +523,29 @@ ggplot(data = data_cover, aes(x = year, y = mean, fill = category)) +
   labs(x = "Year", y = "Benthic cover (%)")
 
 ggsave("figs/06_additional/01_misc/stacked-benthic-cover.png", width = 7, height = 5, dpi = fig_resolution)
+
+## 8.3 Comparison previous trends ----
+
+load("C:/Users/jerem/Desktop/Recherche/03_projects/2025-08-25_time-series/time_series/data/data_trends_litterature.RData")
+
+data_trends_litterature <- data_trends$raw_trends %>%
+  filter(area == "All") %>% 
+  rename(lower_ci = lower_ci_95, higher_ci = upper_ci_95) %>% 
+  select(category, region, year, mean, higher_ci, lower_ci) %>%
+  mutate(source = "GCRMN Caribbean 2025") %>% 
+  bind_rows(., data_trends_litterature)
+
+data_trends_litterature %>% 
+  filter(region == "Caribbean" & is.na(subregion) & category == "Hard coral") %>% 
+  ggplot(data = .) +
+  geom_ribbon(aes(x = year, ymin = lower_ci, ymax = higher_ci), fill = "lightgrey") +
+  geom_point(aes(x = year, y = mean)) +
+  geom_line(aes(x = year, y = mean)) +
+  facet_wrap(~source, nrow = 1) +
+  lims(y = c(0, NA)) +
+  theme_graph() +
+  theme(strip.background = element_blank(),
+        panel.spacing = unit(3, "lines")) +
+  labs(x = "Year", y = "Hard coral cover (%)")
+
+ggsave("figs/06_additional/01_misc/trends_litterature.png", width = 15, height = 5)
