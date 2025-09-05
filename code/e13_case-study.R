@@ -132,3 +132,58 @@ ggplot(data = data_socmon, aes(x = year, y = value, fill = perception, label = v
         legend.direction = "vertical")
 
 ggsave("figs/03_case-studies/socmon_1.png", width = 10, height = 6, bg = "transparent")
+
+# 6. Red Hind ----
+
+data_red <- read_xlsx("data/11_case-studies/Red hind data-Nemeth-GCRMN report.xlsx", skip = 1) %>% 
+  add_column(nb_points = c(323, 1620, 495, 238, 1176, 2756, 1238, NA, 1203))
+
+data_labels <- tibble(x = c(1.7, 4.5, 7.5),
+                      y = rep(10, 3),
+                      labels = c("pre-closure", "seasonal closure", "permanent closure"))
+
+ggplot() +
+  geom_vline(xintercept = 3.5, linetype = "dashed") +
+  geom_vline(xintercept = 5.5, linetype = "dashed") +
+  geom_path(data = data_red %>% drop_na(`Total length (cm)`),
+            aes(x = Year, y = `Total length (cm)`, group = 1), color = "#42b9bc") +
+  geom_linerange(data = data_red, aes(x = Year, y = `Total length (cm)`,
+                                      ymin = `Total length (cm)` - `St. Dev.`,
+                                      ymax = `Total length (cm)` + `St. Dev.`),
+                  color = "#42b9bc") +
+  geom_point(data = data_red, aes(x = Year,  y = `Total length (cm)`),
+             fill = "#42b9bc", color = "white", shape = 21, size = 4) +
+  geom_label(data = data_labels, aes(x = x, y = y, label = labels),
+             fill = "#42b9bc", color = "white", family = font_choose_graph,
+             label.padding = unit(0.5, "lines"), fontface = "bold") +
+  geom_text(data = data_red,
+            aes(x = Year, y = `Total length (cm)` + `St. Dev.`, label = format(nb_points, big.mark = ",")),
+            size = 3.5, angle = 90, hjust = -0.25, family = font_choose_graph) +
+  lims(y = c(0, 50)) +
+  theme_graph() +
+  labs(x = "Years") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.9, hjust = 1))
+
+ggsave("figs/03_case-studies/red_hind.png", width = 10, height = 5, bg = "transparent")
+
+# 7. Nassau Grouper ----
+
+data <- read_xlsx("data/11_case-studies/Nassau grouper data-Nemeth-GCRMN report.xlsx",
+                  skip = 2, col_types = "numeric")
+
+plot_a <- ggplot(data = data, aes(x = `Year`, y = `Density (no./100m2)`)) +
+  geom_line(color = "#42b9bc") +
+  geom_point(size = 4, color = "white", fill = "#42b9bc", shape = 21) +
+  labs(title = "A", y = bquote("Density (no.100 "~m^-2*")"), x = NULL) +
+  theme_graph() +
+  theme(plot.title = element_text(face = "bold"))
+
+plot_b <- ggplot(data = data, aes(x = `Year`, y = `Maximum number`)) +
+  geom_bar(stat = "identity", fill = "#42b9bc", width = 0.7) +
+  labs(title = "B", y = "Maximum abundance") +
+  theme_graph() +
+  theme(plot.title = element_text(face = "bold"))
+
+plot_a + plot_b + plot_layout(ncol = 1)
+
+ggsave("figs/03_case-studies/nassau_grouper.png", width = 10, height = 8, bg = "transparent")
