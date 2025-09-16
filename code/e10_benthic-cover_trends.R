@@ -11,11 +11,13 @@ library(Kendall)
 library(sf)
 sf_use_s2(FALSE)
 library(cowplot) # For the function draw_image()
+library(ggspatial) # For annotation_scale function
 
 # 2. Source functions ----
 
 source("code/function/graphical_par.R")
 source("code/function/theme_graph.R")
+source("code/function/theme_map.R")
 source("code/function/add_colors.R")
 source("code/function/combine_model_data.R")
 source("code/function/extract_mannkendall.R")
@@ -26,6 +28,7 @@ source("code/function/plot_pred_obs.R")
 source("code/function/plot_prediction_map.R")
 source("code/function/plot_trends.R")
 source("code/function/model_text.R")
+source("code/function/limits_region.R")
 
 theme_set(theme_graph())
 
@@ -321,22 +324,22 @@ data_benthic <- data_benthic %>%
               mutate(area = "All")) %>% 
   group_by(year, area, category, color, text_title) %>% 
   summarise(mean = mean(measurementValue),
-            sd = sd(measurementValue)) %>% 
+            sd = sd(measurementValue),
+            n = n()) %>% 
   ungroup() %>% 
-  mutate(ymin = mean - sd,
-         ymin = ifelse(ymin < 0, 0, ymin),
-         ymax = mean + sd) %>% 
   bind_rows(., data_benthic %>% 
               group_by(year, category, color, text_title) %>% 
               summarise(mean = mean(measurementValue),
-                        sd = sd(measurementValue)) %>% 
+                        sd = sd(measurementValue),
+                        n = n()) %>% 
               ungroup() %>% 
-              mutate(ymin = mean - sd,
-                     ymin = ifelse(ymin < 0, 0, ymin),
-                     ymax = mean + sd,
-                     area = "Caribbean")) %>% 
+              mutate(area = "Caribbean")) %>% 
+  mutate(se = sd/sqrt(n),
+         ymin = mean - se, # Set sd (standard deviation) or se (standard error)
+         ymin = ifelse(ymin < 0, 0, ymin),
+         ymax = mean + se) %>% # Set sd (standard deviation) or se (standard error)
   complete(year, category, nesting(area), fill = list(mean = NA, sd = NA)) %>% 
-  select(-color, -text_title) %>% 
+  select(-color, -text_title, -sd, -n, -se) %>% 
   left_join(., data_benthic %>% 
               select(category, text_title, color) %>% 
               distinct()) %>% 
@@ -396,9 +399,13 @@ map(unique(data_trends$raw_trends$area),
 if(FALSE){
   
   A <- data_trends$raw_trends %>%
-    filter(area == "All" & category == "Hard coral") %>%
-    select(-upper_ci_95, -lower_ci_95, -text_title, -color)
+    filter(area == "All" & category == "Porites") %>%
+    select(-upper_ci_80, -lower_ci_80, -text_title, -color)
 
+  A %>% 
+    filter(year %in% c(2019:2024)) %>% 
+    summarise(across(c("mean", "lower_ci_95", "upper_ci_95"), ~mean(.x)))
+  
 }
 
 # 6. Generate text to describe models ----
@@ -415,8 +422,7 @@ data_trends$raw_trends %>%
   ggplot(data = .) +
   geom_ribbon(aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95, fill = "#42b9bc"), alpha = 0.35) +
   geom_line(aes(x = year, y = mean, color = "#42b9bc"), linewidth = 1) +
-  annotate("segment", x = 1970, xend = 1983, y = 50, color = "#42b9bc", linetype = "dashed") +
-  annotate("rect", xmin = 1970, xmax = 1983, ymin = 40, ymax = 60, fill = "#42b9bc", alpha = 0.2) +
+  annotate("rect", xmin = 1970, xmax = 1983, ymin = 29, ymax = 38, fill = "#42b9bc", alpha = 0.2) +
   scale_fill_identity() +
   scale_color_identity() +
   scale_x_continuous(expand = c(0, 0), limits = c(1970, NA)) +
@@ -433,8 +439,7 @@ data_trends$raw_trends %>%
   ggplot(data = .) +
   geom_ribbon(aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95, fill = "#42b9bc"), alpha = 0.35) +
   geom_line(aes(x = year, y = mean, color = "#42b9bc"), linewidth = 1) +
-  annotate("segment", x = 1970, xend = 1983, y = 8, color = "#42b9bc", linetype = "dashed") +
-  annotate("rect", xmin = 1970, xmax = 1983, ymin = 6, ymax = 10, fill = "#42b9bc", alpha = 0.2) +
+  annotate("rect", xmin = 1970, xmax = 1983, ymin = 4, ymax = 13, fill = "#42b9bc", alpha = 0.2) +
   scale_fill_identity() +
   scale_color_identity() +
   scale_x_continuous(expand = c(0, 0), limits = c(1970, NA)) +
@@ -549,3 +554,55 @@ data_trends_litterature %>%
   labs(x = "Year", y = "Hard coral cover (%)")
 
 ggsave("figs/06_additional/01_misc/trends_litterature.png", width = 15, height = 5)
+
+## 8.4 Confidence in estimated trends ----
+
+### 8.4.1 Load data ----
+
+data_confidence <- readxl::read_xlsx("data/02_misc/confidence-levels_trends.xlsx")
+
+data_land <- st_read("data/01_maps/01_raw/04_natural-earth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
+
+data_crop <- tibble(lon = c(-105, -50), lat = c(6, 38)) %>% 
+  st_as_sf(coords = c("lon", "lat"), 
+           crs = 4326) %>% 
+  st_bbox() %>% 
+  st_as_sfc()
+
+data_eez <- st_read("data/01_maps/02_clean/03_eez/caribbean_area.shp")
+
+data_land_cropped <- st_intersection(data_land, data_crop)
+
+data_eez <- st_difference(data_eez, st_union(data_land_cropped)) %>% 
+  left_join(., data_confidence) %>% 
+  drop_na(confidence)
+
+data_land_boundaries <- st_read("data/01_maps/01_raw/04_natural-earth/ne_10m_admin_0_boundary_lines_land/ne_10m_admin_0_boundary_lines_land.shp")
+
+### 8.4.2 Make the map ----
+
+plot <- ggplot() +
+  geom_sf(data = data_eez, aes(fill = confidence), color = "white", linewidth = 0.15,
+          show.legend = FALSE, alpha = 0.9) +
+  scale_fill_manual(values = c("#7393C9", "#f8a07e", "#ce6693", "#34495e"),
+                    breaks = c("high", "medium", "low", "excluded")) +
+  geom_sf(data = data_land, color = "white", fill = "#d9d9d9", linewidth = 0.05) +
+  geom_sf(data = data_land_boundaries, color = "#979796", fill = NA, linewidth = 0.15) +
+  limits_region() +
+  annotation_scale(location = "bl", width_hint = 0.25, text_family = font_choose_map, text_col = "black",
+                   text_cex = 0.6, style = "bar", line_width = 1,  height = unit(0.04, "cm"), line_col = "black",
+                   pad_x = unit(0.5, "cm"), pad_y = unit(0.35, "cm"), bar_cols = c("black", "black")) +
+  theme_map() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.border = element_rect(color = "black"),
+        legend.position = "inside",
+        legend.direction = "vertical",
+        axis.ticks.y = element_line(colour = "grey20"),
+        legend.background = element_rect(color = "black", linewidth = 0.1, fill = "#fbfbfb"),
+        legend.title = element_text(size = 7, hjust = 0),
+        legend.text = element_text(size = 6, margin = margin(t = 0)),
+        legend.key.size = unit(0.4, "cm"),
+        legend.position.inside = c(0.1, 0.21))
+
+ggsave(filename = "figs/02_part-2/fig-1_raw.png", plot = plot,
+       width = 7.25, height = 4.75, dpi = fig_resolution)

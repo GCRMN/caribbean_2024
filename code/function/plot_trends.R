@@ -17,7 +17,7 @@ plot_trends <- function(area_i, categories, icons = FALSE, raw_data = TRUE,
     {if(raw_data == TRUE)
       geom_pointrange(data = data_raw_i,
                       aes(x = year, y = mean, ymin = ymin,
-                          ymax = ymax, color = color), size = 0.25)} +
+                          ymax = ymax, color = "#95a5a6"), size = 0.25)} +
     {if(modelled_data == TRUE)
       geom_ribbon(data = data_trends_i,
                   aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95,

@@ -71,6 +71,7 @@ plot <- ggplot() +
   theme(panel.background = element_rect(fill = "white"),
         legend.position = "inside",
         legend.direction = "vertical",
+        axis.ticks.y = element_line(colour = "grey20"), 
         legend.background = element_rect(color = "black", linewidth = 0.1, fill = "#fbfbfb"),
         legend.title = element_text(size = 7, hjust = 0),
         legend.text = element_text(size = 6, margin = margin(t = 0)),
