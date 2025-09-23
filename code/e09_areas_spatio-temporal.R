@@ -41,7 +41,9 @@ data_year_dataset <- data_benthic %>%
   left_join(., data_sources) %>% 
   mutate(label = paste0("<b>", datasetID,
                         "</b><br><span style = 'font-size:10pt'>(",
-                        rightsHolder, ")</span>"))
+                        rightsHolder, ")</span>")) %>% 
+  mutate(nb_sites = case_when(datasetID == "0147" & year == 2014 ~ 0,
+                              TRUE ~ nb_sites))
 
 ## 3.3 Create a function to produce the plot ----
 

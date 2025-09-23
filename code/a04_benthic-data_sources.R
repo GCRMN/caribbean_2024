@@ -38,11 +38,22 @@ read_xlsx("C:/Users/jerem/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benth
   arrange(last_name) %>% 
   openxlsx::write.xlsx(., file = "figs/06_additional/05_contributors/contributors_contacts.xlsx")
 
-# 6. List of contributors per area ----
+# 6. List of contributors emails per area ----
 
-## 6.1 Data contributors for AGRRA (datasetID 0091) ----
+data_benthic %>% 
+  select(area, datasetID) %>% 
+  distinct() %>% 
+  left_join(., read_xlsx("C:/Users/jerem/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/05_data-sources.xlsx")) %>% 
+  select(area, last_name, first_name, email) %>% 
+  distinct() %>% 
+  arrange(area, last_name) %>% 
+  openxlsx::write.xlsx(., file = "figs/06_additional/05_contributors/contributors_contacts_area.xlsx")
 
-### 6.1.1 Load AGRRA raw data (to get batch and lat/long) ----
+# 7. List of contributors per area ----
+
+## 7.1 Data contributors for AGRRA (datasetID 0091) ----
+
+### 7.1.1 Load AGRRA raw data (to get batch and lat/long) ----
 
 data_agrra_raw <- read_xlsx("../../2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/01_raw-data/0091/BenthicPointCoverByTransect.xlsx",
                             sheet = 2) %>% 
@@ -55,13 +66,13 @@ data_agrra_raw <- read_xlsx("../../2022-02-10_gcrmndb_benthos/gcrmndb_benthos/da
   bind_rows(data_agrra_raw, .) %>% 
   distinct()
 
-### 6.1.2 Load AGRRA data contributors ----
+### 7.1.2 Load AGRRA data contributors ----
 
 data_agrra <- read_xlsx("../../2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/01_raw-data/0091/AGRRA_Surveyors_Feb2025 updated for GCRMN.xlsx",
                         sheet = 2) %>% 
   left_join(data_agrra_raw, .)
 
-### 6.1.3 Spatial join with area ----
+### 7.1.3 Spatial join with area ----
 
 data_agrra <- data_agrra %>% 
   select(Latitude, Longitude, Name, `Org Name`) %>% 
@@ -85,7 +96,7 @@ data_agrra <- data_agrra %>%
   select(datasetID, area, agrra, last_name, first_name) %>% 
   distinct()
 
-## 6.2 Non AGRRA data contributors ----
+## 7.2 Non AGRRA data contributors ----
 
 read_xlsx("C:/Users/jerem/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/05_data-sources.xlsx") %>% 
   filter(datasetID %in% unique(data_benthic$datasetID)) %>% 
@@ -108,7 +119,7 @@ read_xlsx("C:/Users/jerem/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benth
   distinct() %>% 
   openxlsx::write.xlsx(., file = "figs/06_additional/05_contributors/contributors_area.xlsx")
 
-# 7. Acknowledgments and citations to include -----
+# 8. Acknowledgments and citations to include -----
 
 read_xlsx("C:/Users/jerem/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/05_data-sources.xlsx") %>% 
   filter(datasetID %in% unique(data_benthic$datasetID)) %>% 
