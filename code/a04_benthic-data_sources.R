@@ -121,8 +121,35 @@ read_xlsx("C:/Users/jerem/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benth
 
 # 8. Acknowledgments and citations to include -----
 
-read_xlsx("C:/Users/jerem/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/05_data-sources.xlsx") %>% 
+## 8.1 List of files to include ----
+
+data_ack_cit <- read_xlsx("C:/Users/jerem/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/05_data-sources.xlsx") %>% 
   filter(datasetID %in% unique(data_benthic$datasetID)) %>% 
   select(datasetID, citation, acknowledgments) %>% 
-  distinct() %>% 
-  filter(!(is.na(citation) & is.na(acknowledgments)))
+  distinct()
+
+## 8.2 Export the list of citations ----
+
+data_ack_cit %>% 
+  select(citation) %>%
+  drop_na(citation) %>% 
+  mutate(citation = paste0("C:/Users/jerem/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/00_citation/",
+                           citation, ".txt")) %>% 
+  pull() %>% 
+  map(., ~read_file(file = .x)) %>% 
+  unlist() %>% 
+  paste0(., collapse = "\n\n") %>% 
+  write.table(file = "figs/06_additional/05_contributors/citation-to-include.txt", quote = FALSE, sep = ";")
+
+## 8.3 Export the list of acknowledgments ----
+
+data_ack_cit %>% 
+  select(acknowledgments) %>% 
+  drop_na(acknowledgments) %>% 
+  mutate(acknowledgments = paste0("C:/Users/jerem/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/00_acknowledgment/",
+                                  acknowledgments, ".txt")) %>% 
+  pull() %>% 
+  map(., ~read_file(file = .x)) %>% 
+  unlist() %>% 
+  paste0(., collapse = "\n\n") %>% 
+  write.table(file = "figs/06_additional/05_contributors/acknowledgments-to-include.txt", quote = FALSE, sep = ";")
