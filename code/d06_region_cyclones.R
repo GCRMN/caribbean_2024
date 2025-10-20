@@ -157,7 +157,8 @@ data_cyclones <- data_cyclones %>%
                                         " and the " = " & ",
                                         " and " = " & ",
                                         "United States" = "U.S.",
-                                        "Saint " = "St. ")))
+                                        "Saint " = "St. "))) %>% 
+  filter(area != "Navassa Island")
 
 ## 5.2 Make the plot ----
 
