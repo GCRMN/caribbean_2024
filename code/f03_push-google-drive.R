@@ -30,7 +30,8 @@ if(FALSE){
 map(str_replace_all(str_replace_all(str_to_lower(data_area$area), " ", "-"), "---", "-"),
     ~drive_upload(media = paste0("figs/02_part-2/fig-1/", .x, ".png"),
                   path = paste0("GCRMN Caribbean report/07_part-2_syntheses-countries-territories/", .x),
-                  name = "fig-1"))
+                  name = "fig-1",
+                  overwrite = TRUE))
   
 ## 4.2 Figure 2 ----
 
@@ -51,7 +52,8 @@ map(str_replace_all(str_replace_all(str_to_lower(data_area$area), " ", "-"), "--
 map(str_replace_all(str_replace_all(str_to_lower(data_area$area), " ", "-"), "---", "-"),
     ~drive_upload(media = paste0("figs/02_part-2/fig-4/", .x, ".png"),
                   path = paste0("GCRMN Caribbean report/07_part-2_syntheses-countries-territories/", .x),
-                  name = "fig-4"))
+                  name = "fig-4",
+                  overwrite = TRUE))
 
 ## 4.5 Figure 5 ----
 

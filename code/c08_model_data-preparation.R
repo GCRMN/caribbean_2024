@@ -118,7 +118,7 @@ pred_human_pop <- pred_human_pop %>%
   group_modify(~extract_coeff(data = .x)) %>% 
   ungroup() %>% 
   left_join(pred_human_pop, .) %>% 
-  # Estimate human population for all years between 2000 and 2023
+  # Estimate human population for all years between 2000 and 2024
   tidyr::complete(year = seq(2000, 2024), nesting(site_id, type, intercept, slope)) %>% 
   mutate(pred_population = (year*slope)+intercept) %>% 
   select(-intercept, -slope) %>% 
@@ -264,7 +264,7 @@ data_site_coords_obs <- st_read("data/03_site-coords/site-coords_obs.shp") %>%
 
 data_benthic <- data_benthic %>% 
   # 1. Prepare benthic data
-  prepare_benthic_data(data = ., remove_na_algae = FALSE) %>% 
+  prepare_benthic_data(data = ., remove_na = TRUE, regenerate_zero = FALSE) %>% 
   # 2. Remove useless variables
   select(-region, -subregion, -ecoregion, -country, -locality, -habitat, -eventDate) %>% 
   # 3. Convert to factors
@@ -353,13 +353,42 @@ ggplot(data = bind_rows(pred_na_obs, pred_na_pred),
   scale_y_discrete(limits = rev) +
   scale_fill_gradientn(colors = c("#74b9ff", "#f1c40f", "#f39c12", "#e74c3c", "#c0392b"),
                        breaks = c(0, 25, 50, 75, 100)) +
-  scale_x_continuous(expand = c(0, 0), limits = c(1979, 2025)) +
+  scale_x_continuous(expand = c(0, 0), limits = c(1970, 2025)) +
   facet_wrap(~type) +
   theme(legend.title.position = "top",
+        panel.spacing = unit(2, "lines"),
         legend.title = element_text(hjust = 0.5),
         legend.key.width = unit(1.5, "cm"))
 
-ggsave("figs/06_additional/02_data-exploration/na_predictors_year.png", width = 8, height = 12)
+ggsave("figs/06_additional/02_data-exploration/na_predictors_year.png", width = 10, height = 12)
+
+## 8.4 Export the percentage of NA per predictor ----
+
+data_na_pred <- data_predictors_pred %>% 
+  select(-datasetID, -territory, -area, -parentEventID, -month, -reef_type) %>% 
+  pivot_longer(1:ncol(.), names_to = "predictor", values_to = "value") %>% 
+  group_by(predictor) %>% 
+  summarise(n_tot = n(),
+            n_na = sum(is.na(value))) %>% 
+  ungroup() %>% 
+  mutate(perc_pred = (n_na*100)/n_tot,
+         type = "Predictors (Pred.)") %>% 
+  select(predictor, perc_pred)
+
+data_na_obs <- data_benthic %>% 
+  select(-datasetID, -territory, -area, -parentEventID, -month, -category, -reef_type, -measurementValue) %>% 
+  pivot_longer(1:ncol(.), names_to = "predictor", values_to = "value") %>% 
+  group_by(predictor) %>% 
+  summarise(n_tot = n(),
+            n_na = sum(is.na(value))) %>% 
+  ungroup() %>% 
+  mutate(perc_obs = (n_na*100)/n_tot,
+         type = "Predictors (Obs.)") %>% 
+  select(predictor, perc_obs)
+
+left_join(data_na_obs, data_na_pred) %>%
+  mutate(predictor = str_remove_all(predictor, "pred_")) %>% 
+  openxlsx::write.xlsx(., file = "figs/06_additional/02_data-exploration/percentage-na-predictors-obs-pred.xlsx")
 
 # 9. Number of obs and pred sites per area ----
 

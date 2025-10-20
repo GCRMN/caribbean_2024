@@ -12,17 +12,14 @@ add_colors <- function(data){
                              category == "Porites" ~ "#a37c82"),
            text_title = case_when(category == "Hard coral" ~ 
                                     glue("**A.**<span style='color:{color}'> {category}</span>"),
-                                  category == "Algae" ~ 
-                                    glue("**B.**<span style='color:{color}'> {category}</span>"),
-                                  category == "Other fauna" ~ 
-                                    glue("**C.**<span style='color:{color}'> {category}</span>"),
-                                  
-                                  category == "Coralline algae" ~ 
-                                    glue("**A.**<span style='color:{color}'> {category}</span>"),
                                   category == "Macroalgae" ~ 
                                     glue("**B.**<span style='color:{color}'> {category}</span>"),
                                   category == "Turf algae" ~ 
                                     glue("**C.**<span style='color:{color}'> {category}</span>"),
+                                  category == "Coralline algae" ~ 
+                                    glue("**D.**<span style='color:{color}'> {category}</span>"),
+                                  category == "Other fauna" ~ 
+                                    glue("**E.**<span style='color:{color}'> {category}</span>"),
                                   
                                   category == "Acropora" ~ 
                                     glue("**A.***<span style='color:{color}'> {category}</span>*"),

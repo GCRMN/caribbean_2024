@@ -97,14 +97,15 @@ data_benthic %>%
   count() %>% 
   ungroup() %>% 
   complete(year, fill = list(n = 0)) %>% 
-  mutate(percent = n*100/sum(n)) %>% 
+  mutate(percent = n*100/sum(n),
+         percent_cumsum = cumsum(percent)) %>% 
   ggplot(data = ., aes(x = year, y = percent)) +
     geom_bar(stat = "identity", show.legend = FALSE, width = 1,
              color = palette_first[4], fill = palette_first[3]) +
     labs(x = "Year", y = "Surveys (%)") +
     coord_cartesian(clip = "off") +
     theme_graph() +
-    scale_x_continuous(expand = c(0, 0), limits = c(1980, NA))
+    scale_x_continuous(expand = c(0, 0), limits = c(1970, NA))
 
 ## 5.2 Save the plot ----
 

@@ -139,7 +139,7 @@ data_ack_cit %>%
   map(., ~read_file(file = .x)) %>% 
   unlist() %>% 
   paste0(., collapse = "\n\n") %>% 
-  write.table(file = "figs/06_additional/05_contributors/citation-to-include.txt", quote = FALSE, sep = ";")
+  write.table(file = "figs/06_additional/05_contributors/citations-to-include.txt", quote = FALSE, sep = ";")
 
 ## 8.3 Export the list of acknowledgments ----
 

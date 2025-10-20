@@ -124,7 +124,7 @@ function bufferPoints(radius, bounds) {
   };
 }
 
-// 4.2 Apply the function (here 10 km radius) ----
+// 4.2 Apply the function (here 30 km radius) ----
 
 var site_buffer = site_coords.map(bufferPoints(30000, false));
 
