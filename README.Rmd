@@ -16,7 +16,13 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 # **Status and Trends of Caribbean Coral Reefs: 1980-2024**
 
 
-## 1. Introduction
+## 1. Introduction [<img src='misc/2025-10-20_report-page-cover.jpg' align="right" height="300" />](https://gcrmn.net/pacific-report-2025-v1/)
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat. Duis semper. Duis arcu massa, scelerisque vitae, consequat in, pretium a, enim. Pellentesque congue. Ut in risus volutpat libero pharetra tempor. Cras vestibulum bibendum augue. Praesent egestas leo in pede. Praesent blandit odio eu enim. Pellentesque sed dui ut augue blandit sodales. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Aliquam nibh. Mauris ac mauris sed pede pellentesque fermentum. Maecenas adipiscing ante non diam sodales hendrerit.
+
+Ut velit mauris, egestas sed, gravida nec, ornare ut, mi. Aenean ut orci vel massa suscipit pulvinar. Nulla sollicitudin. Fusce varius, ligula non tempus aliquam, nunc turpis ullamcorper nibh, in tempus sapien eros vitae ligula. Pellentesque rhoncus nunc et augue. Integer id felis. Curabitur aliquet pellentesque diam. Integer quis metus vitae elit lobortis egestas. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Morbi vel erat non mauris convallis vehicula. Nulla et sapien. Integer tortor tellus, aliquam faucibus, convallis id, congue eu, quam. Mauris ullamcorper felis vitae erat. Proin feugiat, augue non elementum posuere, metus purus iaculis lectus, et tristique ligula justo vitae magna.
+
+Aliquam convallis sollicitudin purus. Praesent aliquam, enim at fermentum mollis, ligula massa adipiscing nisl, ac euismod nibh nisl eu lectus. Fusce vulputate sem at sapien. Vivamus leo. Aliquam euismod libero eu enim. Nulla nec felis sed leo placerat imperdiet. Aenean suscipit nulla in justo. Suspendisse cursus rutrum augue. Nulla tincidunt tincidunt mi. Curabitur iaculis, lorem vel rhoncus faucibus, felis magna fermentum augue, et ultricies lacus lorem varius purus. Curabitur eu amet.
 
 ## 2. Code
 
@@ -56,40 +62,43 @@ options(tibble.print_min = 5, tibble.print_max = 5)
 
 ### Indicators' extraction (`b_`)
 
-* `b03_extract_indicator_population.js` Extract population indicators using [GEE](https://earthengine.google.com/).
-* `b04_extract_indicator_sst.R` Extract SST indicators.
-* `b05_extract_indicator_cyclones.R` Extract cyclones indicators.
+* `b01_extract_indicator_population.js` Extract population indicators using [GEE](https://earthengine.google.com/).
+* `b02_extract_indicator_sst.R` Extract SST indicators.
+* `b03_extract_indicator_cyclones.R` Extract cyclones indicators.
 
 ### Models (benthic cover) (`c_`)
 
-* `c01_explo_benthic-data.R` Exploratory analyses of benthic cover data.
-* `c07_extract_predictor_crw.R` Extract DHW max, SSTa max, and SSTa mean.
-* `c09_model_tuning_rf.R` Perform hyper parameters tuning for Random Forest models.
-* `c09_model_tuning_xgb.R` Perform hyper parameters tuning for XGBoost models.
-* `c10_model_bootstrap_rf.R` Run bootstrap predictions using Random Forest models.
-* `c10_model_bootstrap_xgb.R` Run bootstrap predictions using XGBoost models.
+* `c01_explo_benthic-data.qmd` Exploratory analyses of benthic cover data.
+* `c02_select_pred-sites.js` A
+* `c03_extract_predictor_gee.js` A
+* `c04_extract_predictor_gravity.R` A
+* `c05_extract_predictor_enso.R` A
+* `c06_extract_predictor_cyclones.R` A
+* `c07_extract_predictor_crw.R` A
+* `c08_model_data-preparation.R` Combine predictors and prepare cover benthic data.
+* `c09_xgboost-model.R` Run XGBoost models.
 
-### Models (fish biomass) (`d_`)
+### Figures and tables (`d_`)
 
+* `d01_materials-and-methods.R` Produce figures for the Materials and Methods.
+* `d02_region_map.R` Produce map of the region.
+* `d03_areas_map.R` Produce contextual maps for areas.
+* `d04_region_sst.R` Produce figures for SST for the region.
+* `d05_areas_sst.R` Produce figures for SST for areas.
+* `d06_region_cyclones.R` Produce figures for cyclones for the region.
+* `d07_areas_cyclones.R` Produce figures for cyclones for areas.
+* `d08_region_spatio-temporal.R` Produce figures for spatio-temporal distribution of monitoring for the region.
+* `d09_areas_spatio-temporal.R` Produce figures for spatio-temporal distribution of monitoring for areas.
+* `d10_benthic-cover_trends.R` Produce figures for benthic cover temporal trends.
+* `d11_other-indicators.R` Produce figures, tables, and numbers for other indicators.
+* `d12_fish-biomass.R` Produce figure for the fish biomass box.
+* `d13_case-study.R` Produce figures for the case studies.
 
-### Figures and tables (`e_`)
+### Writing and sharing (`e_`)
 
-* `e01_materials-and-methods.R` Produce figures for the Materials and Methods.
-* `e02_region_map.R` Produce map of the region.
-* `e03_areas_map.R` Produce contextual maps for areas.
-* `e04_region_sst.R` Produce figures for SST for the region.
-* `e05_areas_sst.R` Produce figures for SST for areas.
-* `e06_region_cyclones.R` Produce figures for cyclones for the region.
-* `e07_areas_cyclones.R` Produce figures for cyclones for areas.
-* `e08_region_spatio-temporal.R` Produce figures for spatio-temporal distribution of monitoring for the region.
-* `e09_areas_spatio-temporal.R` Produce figures for spatio-temporal distribution of monitoring for areas.
-* `e10_benthic-cover_trends.R` Produce figures for benthic cover temporal trends.
-* `e11_other-indicators.R` Produce figures, tables, and numbers for other indicators.
-
-### Writing and sharing (`f_`)
-
-* `f01_create-chapters.R` Generate .docx chapters for areas.
-* `f02_authors-contribution.R` Export author's contributions .xlsx file. 
+* `e01_create-chapters.R` Generate .docx chapters for areas.
+* `e02_authors-contribution.R` Export author's contributions .xlsx file.
+* `e03_push-google-drive.R` Export figures to the Google Drive folder.
 
 ## 3. Reproducibility parameters
 

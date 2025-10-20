@@ -26,7 +26,7 @@ source("code/function/plot_pdp.R")
 source("code/function/plot_residuals.R")
 source("code/function/plot_pred_obs.R")
 source("code/function/plot_prediction_map.R")
-source("code/function/plot_trends.R")
+source("code/function/plot_trends_chapters.R")
 source("code/function/model_text.R")
 source("code/function/limits_region.R")
 
@@ -36,7 +36,7 @@ theme_set(theme_graph())
 
 ## 3.1 Combine model results ----
 
-model_results <- combine_model_data(model = "xgb")
+model_results <- combine_model_data(save_results = FALSE)
 
 model_results$result_trends <- model_results$result_trends %>% 
   filter(year >= 1980 & year <= 2024) %>% 
@@ -49,19 +49,17 @@ raw_trends <- model_results$result_trends %>%
   rename(cover = mean) %>% 
   group_by(category, region, area, year, color, text_title) %>% 
   summarise(mean = mean(cover),
-            lower_ci_95 = quantile(cover, 0.05),
-            lower_ci_80 = quantile(cover, 0.20),
-            upper_ci_95 = quantile(cover, 0.95),
-            upper_ci_80 = quantile(cover, 0.80)) %>% 
+            lower_ci_95 = quantile(cover, 0.025),
+            upper_ci_95 = quantile(cover, 0.975)) %>% 
   ungroup() %>% 
   # Replace negative values by 0
-  mutate(across(c(mean, lower_ci_95, lower_ci_80, upper_ci_95, upper_ci_80), ~ifelse(.x < 0, 0, .x)))
+  mutate(across(c(mean, lower_ci_95, upper_ci_95), ~ifelse(.x < 0, 0, .x)))
 
 ## 3.3 Long-term average ----
 
 long_term_average <- raw_trends %>% 
   group_by(category, area) %>% 
-  summarise(across(c(mean, lower_ci_80, upper_ci_80), ~mean(.x, na.rm = TRUE))) %>% 
+  summarise(across(c(mean, lower_ci_95, upper_ci_95), ~mean(.x, na.rm = TRUE))) %>% 
   ungroup()
 
 ## 3.4 Long-term trend ----
@@ -99,17 +97,52 @@ data_trends <- lst(raw_trends, long_term_average, long_term_trend)
 rm(raw_trends, long_term_average,
    long_term_trend, data_benthic_obs)
 
+
+
+
+
+
+
+
+
+
+
+
 # 4. Model evaluation ----
 
 ## 4.1 Hyper-parameters ----
 
-model_results$model_description %>% 
+model_results$model_hyperparams %>% 
+  group_by(category) %>% 
+  summarise(across(c("trees", "min_n", "tree_depth", "learn_rate", "loss_reduction"), ~mean(.x))) %>% 
+  ungroup() %>% 
+  mutate(across(c("trees", "min_n", "tree_depth"), ~round(.x, 0)))
+  
+  
   select(-model, -color, -text_title, -grid_size) %>% 
   relocate(category, .before = "trees") %>% 
   openxlsx::write.xlsx(., "figs/06_additional/03_model-evaluation/hyperparameters.xlsx")
 
 ## 4.2 Performance (RMSE and R²) ----
 
+data_rmse_rsq <- model_results$result_pred_obs %>% 
+    group_by(category, area) %>% 
+    summarise(rmse = yardstick::rmse(data = ., truth = y, estimate = yhat)) %>% 
+    ungroup()
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 data_rmse_rsq <- model_results$model_pred_obs %>% 
   drop_na(area) %>% 
   group_by(category) %>% 
@@ -200,19 +233,95 @@ data_rmse_rsq %>%
 
 rm(data_rmse_rsq)
 
-## 4.3 Predicted vs observed ----
 
-plot_pred_obs(all = TRUE)
 
-map(unique(model_results$model_pred_obs$category),
-    ~plot_pred_obs(category_i = .))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## 4.4 Residuals ----
 
-plot_residuals(all = TRUE)
+### 4.4.1 Distribution of residuals ----
 
-map(unique(model_results$model_pred_obs$category),
-    ~plot_residuals(category_i = .))
+plot_i <- model_results$result_pred_obs %>%
+  filter(category %in% c("Hard coral", "Algae", "Macroalgae", "Turf algae",
+                         "Coralline algae", "Other fauna", "Acropora",
+                         "Orbicella", "Porites")) %>% 
+  mutate(residual = yhat - y) %>% 
+  ggplot(data = ., aes(x = residual, fill = color)) + 
+  geom_histogram(aes(y = after_stat(count / sum(count))*100),
+                 alpha = 0.5) +
+  geom_vline(xintercept = 0) +
+  scale_fill_identity() +
+  facet_wrap(~category, scales = "free") +
+  lims(x = c(-100, 100)) +
+  labs(x = "Residual (ŷ - y)", y = "Percentage") +
+  theme(strip.text = element_markdown(hjust = 0, face = "bold"),
+        strip.background = element_blank(),
+        axis.text = element_text(size = 8))
+
+ggsave(plot_i, filename = "figs/06_additional/03_model-evaluation/residuals_distribution.png",
+       dpi = fig_resolution, height = 6, width = 8)
+
+### 4.4.2 Pred vs Obs ----
+
+plot_i <- model_results$result_pred_obs %>%
+  filter(category %in% c("Hard coral", "Algae", "Macroalgae", "Turf algae",
+                         "Coralline algae", "Other fauna", "Acropora",
+                         "Orbicella", "Porites")) %>%
+  ggplot(data = ., aes(x = y, y = yhat, color = color)) +
+  geom_abline(slope = 1, linewidth = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, linetype = "dashed", linewidth = 0.5) +
+  scale_color_identity() +
+  facet_wrap(~category) +
+  labs(x = "Observed value (y)", y = "Predicted value (ŷ)") +
+  theme(strip.text = element_markdown(hjust = 0, face = "bold"),
+        strip.background = element_blank(),
+        axis.text = element_text(size = 8))
+
+ggsave(plot_i, filename = "figs/06_additional/03_model-evaluation/residuals_pred-obs.png",
+       dpi = fig_resolution, height = 6, width = 8)
+
+### 4.4.3 Mean residuals per year ----
+
+plot_i <- model_results$result_pred_obs %>%
+  filter(category %in% c("Hard coral", "Algae", "Macroalgae", "Turf algae",
+                         "Coralline algae", "Other fauna", "Acropora",
+                         "Orbicella", "Porites")) %>% 
+  mutate(residual = yhat - y) %>% 
+  group_by(category, year, color) %>% 
+  summarise(mean = mean(residual)) %>% 
+  ungroup() %>% 
+  ggplot(data = ., aes(x = year, y = mean, color = color)) + 
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  scale_color_identity() +
+  facet_wrap(~category, scales = "free") +
+  labs(y = "Residual (ŷ - y)", x = "Year") +
+  theme(strip.text = element_markdown(hjust = 0, face = "bold"),
+        strip.background = element_blank(),
+        axis.text = element_text(size = 8))
+
+ggsave(plot_i, filename = "figs/06_additional/03_model-evaluation/residuals_year.png",
+       dpi = fig_resolution, height = 6, width = 8)
 
 ## 4.5 VIMP ----
 
@@ -220,14 +329,11 @@ map(unique(model_results$model_pred_obs$category),
 
 data_imp_summary <- model_results$result_vip %>% 
   mutate(importance = importance*100,
-         predictor = str_remove_all(predictor, "pred_"),
-         predictor = str_replace_all(predictor, "ID_X", "ID_")) %>% 
+         predictor = str_remove_all(predictor, "pred_")) %>% 
   group_by(predictor, category, color) %>% 
   summarise(mean = mean(importance),
-            lower_ci_95 = quantile(importance, 0.05),
-            lower_ci_80 = quantile(importance, 0.10),
-            upper_ci_95 = quantile(importance, 0.95),
-            upper_ci_80 = quantile(importance, 0.80)) %>% 
+            lower_ci_95 = quantile(importance, 0.025),
+            upper_ci_95 = quantile(importance, 0.975)) %>% 
   ungroup() %>% 
   group_by(category, color) %>% 
   arrange(desc(mean)) %>% 
@@ -236,16 +342,37 @@ data_imp_summary <- model_results$result_vip %>%
 
 data_imp_raw <- model_results$result_vip %>% 
   mutate(importance = importance*100,
-         predictor = str_remove_all(predictor, "pred_"),
-         predictor = str_replace_all(predictor, "ID_X", "ID_")) %>% 
-  left_join(data_imp_summary, .) %>% 
-  group_by(category)
+         predictor = str_remove_all(predictor, "pred_")) %>% 
+  left_join(data_imp_summary, .)
 
 ### 4.5.2 Map over the function ----
 
 map(unique(data_imp_summary$category), ~plot_vimp(category_i = .))
 
 rm(data_imp_raw)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## 4.6 PDP ----
 
@@ -310,6 +437,25 @@ data_predicted <- st_join(data_predicted, data_grid) %>%
 
 map(unique(data_predicted$category), ~plot_prediction_map(category_i = .x))
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 5. Temporal trends ----
 
 ## 5.1 Load and transform obs data ----
@@ -323,33 +469,83 @@ data_benthic <- data_benthic %>%
   bind_rows(., data_benthic %>% 
               mutate(area = "All")) %>% 
   group_by(year, area, category, color, text_title) %>% 
-  summarise(mean = mean(measurementValue),
-            sd = sd(measurementValue),
-            n = n()) %>% 
+  summarise(mean = mean(measurementValue)) %>% 
   ungroup() %>% 
   bind_rows(., data_benthic %>% 
               group_by(year, category, color, text_title) %>% 
-              summarise(mean = mean(measurementValue),
-                        sd = sd(measurementValue),
-                        n = n()) %>% 
+              summarise(mean = mean(measurementValue)) %>% 
               ungroup() %>% 
               mutate(area = "Caribbean")) %>% 
-  mutate(se = sd/sqrt(n),
-         ymin = mean - se, # Set sd (standard deviation) or se (standard error)
-         ymin = ifelse(ymin < 0, 0, ymin),
-         ymax = mean + se) %>% # Set sd (standard deviation) or se (standard error)
-  complete(year, category, nesting(area), fill = list(mean = NA, sd = NA)) %>% 
-  select(-color, -text_title, -sd, -n, -se) %>% 
+  complete(year, category, nesting(area), fill = list(mean = NA)) %>% 
+  select(-color, -text_title) %>% 
   left_join(., data_benthic %>% 
               select(category, text_title, color) %>% 
               distinct()) %>% 
   drop_na(area)
 
-## 5.2 Map over the function -----
+## 5.2 Figure 12 (Part 1) ----
 
-### 5.2.1 Major categories ----
+data_trends_i <- data_trends$raw_trends %>% 
+  filter(area == "All") %>% 
+  filter(category %in% c("Hard coral", "Macroalgae", "Turf algae", "Coralline algae", "Other fauna"))
 
-# Version with only raw data
+data_raw_i <- data_benthic %>% 
+  filter(area == "All") %>% 
+  filter(category %in% c("Hard coral", "Macroalgae", "Turf algae", "Coralline algae", "Other fauna"))
+
+plot_trends <- ggplot() +
+    geom_point(data = data_raw_i,
+                    aes(x = year, y = mean, color = "#b2bec3"), size = 1) +
+    geom_ribbon(data = data_trends_i,
+                aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95,
+                    fill = color), alpha = 0.5, show.legend = FALSE) +
+    geom_line(data = data_trends_i,
+              aes(x = year, y = mean, color = color),
+              linewidth = 1, show.legend = FALSE) +
+  scale_color_identity() +
+  scale_fill_identity() +
+  facet_wrap(~text_title, scales = "free", ncol = 3) +
+  theme(strip.text = element_markdown(hjust = 0, size = rel(1.3)),
+        strip.background = element_blank(),
+        panel.spacing = unit(2, "lines")) +
+  labs(x = "Year", y = "Benthic cover (%)") +
+  lims(x = c(1980, 2024), y = c(0, 60))
+
+ggsave(plot = plot_trends, filename = "figs/01_part-1/fig-12_raw.png", width = 12, height = 8)
+
+## 5.3 Figure 13 (Part 1) ----
+
+data_trends_i <- data_trends$raw_trends %>% 
+  filter(area == "All") %>% 
+  filter(category %in% c("Acropora", "Orbicella", "Porites"))
+
+data_raw_i <- data_benthic %>% 
+  filter(area == "All") %>% 
+  filter(category %in% c("Acropora", "Orbicella", "Porites"))
+
+plot_trends <- ggplot() +
+  geom_point(data = data_raw_i,
+             aes(x = year, y = mean, color = "#b2bec3"), size = 1) +
+  geom_ribbon(data = data_trends_i,
+              aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95,
+                  fill = color), alpha = 0.5, show.legend = FALSE) +
+  geom_line(data = data_trends_i,
+            aes(x = year, y = mean, color = color),
+            linewidth = 1, show.legend = FALSE) +
+  scale_color_identity() +
+  scale_fill_identity() +
+  facet_wrap(~text_title, scales = "fixed", ncol = 3) +
+  theme(strip.text = element_markdown(hjust = 0, size = rel(1.3)),
+        strip.background = element_blank(),
+        panel.spacing = unit(2, "lines")) +
+  labs(x = "Year", y = "Benthic cover (%)") +
+  lims(x = c(1980, 2024), y = c(0, NA))
+
+ggsave(plot = plot_trends, filename = "figs/01_part-1/fig-13_raw.png", width = 12, height = 4.5)
+
+rm(data_trends_i, data_raw_i)
+
+## 5.4 Figure 5 (Part 2) -----
 
 data_benthic %>% 
   filter(!(area %in% c("All", "Navassa Island", "Caribbean"))) %>% 
@@ -357,42 +553,25 @@ data_benthic %>%
   distinct() %>% 
   pull() %>% 
   map(.,
-    ~plot_trends(area_i = .x,
-                 categories = c("Hard coral", "Algae", "Other fauna"),
-                 icons = TRUE,
-                 scales = "fixed",
-                 raw_data = TRUE,
-                 modelled_data = FALSE))
+      ~plot_trends_chapters(area_i = .x,
+                            icons = TRUE,
+                            scales = "fixed",
+                            raw_data = TRUE,
+                            modelled_data = TRUE))
 
-# Version with modeled and raw data
+## 5.5 Figure 5b (Part 2) -----
 
-map(unique(data_trends$raw_trends$area),
-    ~plot_trends(area_i = .x,
-                 categories = c("Hard coral", "Algae", "Other fauna"),
-                 icons = TRUE,
-                 scales = "fixed",
-                 raw_data = TRUE,
-                 modelled_data = TRUE))
-
-### 5.2.2 Algae categories ----
-
-map(unique(data_trends$raw_trends$area),
-    ~plot_trends(area_i = .x,
-                 categories = c("Coralline algae", "Macroalgae", "Turf algae"),
-                 icons = TRUE,
-                 scales = "fixed",
-                 raw_data = TRUE,
-                 modelled_data = TRUE))
-
-### 5.2.3 Hard coral genera ----
-
-map(unique(data_trends$raw_trends$area),
-    ~plot_trends(area_i = .x,
-                 categories = c("Acropora", "Orbicella", "Porites"),
-                 icons = TRUE,
-                 scales = "fixed",
-                 raw_data = TRUE,
-                 modelled_data = TRUE))
+data_benthic %>% 
+  filter(!(area %in% c("All", "Navassa Island", "Caribbean"))) %>% 
+  select(area) %>% 
+  distinct() %>% 
+  pull() %>% 
+  map(.,
+      ~plot_trends_chapters(area_i = .x,
+                            icons = TRUE,
+                            scales = "fixed",
+                            raw_data = TRUE,
+                            modelled_data = FALSE))
 
 # Raw data (for writing)
 
