@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# **Status and Trends of Caribbean Coral Reefs: 1980-2024**
+# **Status and Trends of Caribbean Coral Reefs: 1970-2024**
 
 ## 1. Introduction [<img src='misc/2025-10-20_report-page-cover.jpg' align="right" height="300" />](https://gcrmn.net/pacific-report-2025-v1/)
 
@@ -139,8 +139,8 @@ Curabitur eu amet.
 
     Warning in system2("quarto", "-V", stdout = TRUE, env = paste0("TMPDIR=", :
     l'exécution de la commande '"quarto"
-    TMPDIR=C:/Users/jerem/AppData/Local/Temp/RtmpOcUn8j/file8d9416196b46 -V'
-    renvoie un statut 1
+    TMPDIR=C:/Users/jerem/AppData/Local/Temp/Rtmpc3gYnV/file44c67e3e4a -V' renvoie
+    un statut 1
     ─ Session info ───────────────────────────────────────────────────────────────
      setting  value
      version  R version 4.5.1 (2025-06-13 ucrt)
@@ -151,7 +151,7 @@ Curabitur eu amet.
      collate  French_France.utf8
      ctype    French_France.utf8
      tz       Europe/Paris
-     date     2025-10-20
+     date     2025-10-21
      pandoc   3.6.3 @ C:/Program Files/RStudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)
      quarto   NA @ C:\\PROGRA~1\\RStudio\\RESOUR~1\\app\\bin\\quarto\\bin\\quarto.exe
 

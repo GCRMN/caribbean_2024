@@ -68,22 +68,17 @@ prepare_benthic_data <- function(data, remove_na = TRUE, regenerate_zero = TRUE)
              decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, eventID, category) %>% 
     summarise(measurementValue = sum(measurementValue)) %>% 
     ungroup() %>% 
-    # 3. Sum of benthic cover per sampling unit (site, transect, quadrat) and category
-    group_by(datasetID, region, subregion, ecoregion, country, territory, area, locality, habitat, parentEventID,
-             decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, eventID, category) %>% 
-    summarise(measurementValue = sum(measurementValue)) %>% 
-    ungroup() %>% 
-    # 4. Regenerate 0 values
+    # 3. Regenerate 0 values
     function_regenerate_zero(data = ., regenerate_zero = regenerate_zero) %>%
-    # 5. Average of benthic cover per transect (i.e. mean of photo-quadrats)
+    # 4. Average of benthic cover per transect (i.e. mean of photo-quadrats)
     # This avoid getting semi-quantitative data (e.g. when there is only 10 points per photo-quadrat)
     group_by(datasetID, region, subregion, ecoregion, country, territory, area, locality, habitat, parentEventID,
              decimalLatitude, decimalLongitude, verbatimDepth, year, month, day, eventDate, category) %>% 
     summarise(measurementValue = mean(measurementValue)) %>% 
     ungroup() %>% 
-    # 6. Remove values greater than 100 (unlikely but included to avoid any issues later)
+    # 5. Remove values greater than 100 (unlikely but included to avoid any issues later)
     filter(measurementValue <= 100)# %>% 
-    # 7. Remove datasetID among top predictors for a given category
+    # 6. Remove datasetID among top predictors for a given category
     #filter(!(category == "Algae" & datasetID %in% c("0015", "0104", "0151")))
   
   # Algae subcategories

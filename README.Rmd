@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 options(tibble.print_min = 5, tibble.print_max = 5)
 ```
 
-# **Status and Trends of Caribbean Coral Reefs: 1980-2024**
+# **Status and Trends of Caribbean Coral Reefs: 1970-2024**
 
 
 ## 1. Introduction [<img src='misc/2025-10-20_report-page-cover.jpg' align="right" height="300" />](https://gcrmn.net/pacific-report-2025-v1/)

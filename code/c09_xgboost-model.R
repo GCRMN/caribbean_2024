@@ -230,40 +230,36 @@ model_xgboost <- function(category_i, bootstrap_i, vfolds = 3, gridsize = 10){
 
 ## 4.1 Hard coral ----
 
-if(FALSE){
-  
-  model_results <- future_map(1:20, ~model_xgboost(category_i = "Hard coral",
-                                                   bootstrap_i = .),
-                              .options = furrr_options(seed = TRUE)) %>% 
-    map_df(., ~ as.data.frame(map(.x, ~ unname(nest(.))))) %>% 
-    map(., bind_rows) %>% 
-    map(., ~distinct(.x))
-  
-  save(model_results, file = "data/10_model-output/model-results_hard-coral.RData")
-  
-  ## 4.2 Algae ----
-  
-  model_results <- future_map(1:20, ~model_xgboost(category_i = "Algae",
-                                                   bootstrap_i = .),
-                              .options = furrr_options(seed = TRUE)) %>% 
-    map_df(., ~ as.data.frame(map(.x, ~ unname(nest(.))))) %>% 
-    map(., bind_rows) %>% 
-    map(., ~distinct(.x))
-  
-  save(model_results, file = "data/10_model-output/model-results_algae.RData")
-  
-  ## 4.3 Macroalgae ----
-  
-  model_results <- future_map(1:20, ~model_xgboost(category_i = "Macroalgae",
-                                                   bootstrap_i = .),
-                              .options = furrr_options(seed = TRUE)) %>% 
-    map_df(., ~ as.data.frame(map(.x, ~ unname(nest(.))))) %>% 
-    map(., bind_rows) %>% 
-    map(., ~distinct(.x))
-  
-  save(model_results, file = "data/10_model-output/model-results_macroalgae.RData")
-  
-}
+model_results <- future_map(1:20, ~model_xgboost(category_i = "Hard coral",
+                                                 bootstrap_i = .),
+                            .options = furrr_options(seed = TRUE)) %>% 
+  map_df(., ~ as.data.frame(map(.x, ~ unname(nest(.))))) %>% 
+  map(., bind_rows) %>% 
+  map(., ~distinct(.x))
+
+save(model_results, file = "data/10_model-output/model-results_hard-coral.RData")
+
+## 4.2 Algae ----
+
+model_results <- future_map(1:20, ~model_xgboost(category_i = "Algae",
+                                                 bootstrap_i = .),
+                            .options = furrr_options(seed = TRUE)) %>% 
+  map_df(., ~ as.data.frame(map(.x, ~ unname(nest(.))))) %>% 
+  map(., bind_rows) %>% 
+  map(., ~distinct(.x))
+
+save(model_results, file = "data/10_model-output/model-results_algae.RData")
+
+## 4.3 Macroalgae ----
+
+model_results <- future_map(1:20, ~model_xgboost(category_i = "Macroalgae",
+                                                 bootstrap_i = .),
+                            .options = furrr_options(seed = TRUE)) %>% 
+  map_df(., ~ as.data.frame(map(.x, ~ unname(nest(.))))) %>% 
+  map(., bind_rows) %>% 
+  map(., ~distinct(.x))
+
+save(model_results, file = "data/10_model-output/model-results_macroalgae.RData")
 
 ## 4.4 Turf algae ----
 
