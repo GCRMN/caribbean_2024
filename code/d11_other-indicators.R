@@ -165,28 +165,16 @@ openxlsx::write.xlsx(data_population, file = "figs/01_part-1/tbl-2.xlsx")
 data_population_reef %>% 
   pivot_longer(2:ncol(.), names_to = "year", values_to = "population") %>% 
   mutate(year = as.numeric(str_sub(year, 10, 14)),
-         area_type = case_when(area %in% c("Haiti", "Cuba", "Florida", "Dominican Republic") ~ area,
-                               TRUE ~ "Other territories"),
          population = population*1e-06) %>% # Convert to million
-  group_by(area_type, year) %>% 
-  summarise(population = sum(population, na.rm = TRUE)) %>% 
+  group_by(year) %>% 
+  summarise(population = round(sum(population, na.rm = TRUE), 0)) %>% 
   ungroup() %>% 
-  ggplot(data = ., aes(x = year, y = population, fill = area_type, label = area_type)) +
-  #geom_area(show.legend = TRUE, color = "white", linewidth = 0.25) + # To know where to place text
-  geom_area(show.legend = FALSE, color = "white", linewidth = 0.25) +
-  scale_fill_manual(values = rev(palette_first)) +
+  ggplot(data = ., aes(x = year, y = population, label = population)) +
+  geom_line(color = "#2C5D96") +
+  geom_point(color = "white", shape = 21, fill = "#2C5D96", size = 5) +
+  geom_label(family = font_choose_graph, vjust = 2, linewidth = 0, fill = "#74b9ff", text.color = "black", size = 4, alpha = 0.6) +
   labs(x = "Year", y = "Inhabitants (millions)") +
   theme_graph() +
-  lims(y = c(0, 60)) +
-  annotate(geom = "text", label = "Cuba", x = 2019, y = 43, 
-           family = font_choose_graph, color = "white", hjust = 1, size = 3) +
-  annotate(geom = "text", label = "DR", x = 2019, y = 37, 
-           family = font_choose_graph, color = "white", hjust = 1, size = 3) +
-  annotate(geom = "text", label = "Florida", x = 2019, y = 31, 
-           family = font_choose_graph, color = "white", hjust = 1, size = 3) +
-  annotate(geom = "text", label = "Haiti", x = 2019, y = 23.5, 
-           family = font_choose_graph, color = "white", hjust = 1, size = 3) +
-  annotate(geom = "text", label = "Other countries and territories", x = 2019, y = 8, 
-           family = font_choose_graph, color = "black", hjust = 1, size = 3)
+  lims(y = c(0, 60))
 
 ggsave("figs/01_part-1/fig-8.png", height = 4, width = 5, dpi = fig_resolution)
