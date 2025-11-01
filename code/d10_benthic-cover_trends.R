@@ -367,6 +367,22 @@ data_benthic %>%
                             icons = TRUE,
                             scales = "fixed",
                             raw_data = TRUE,
+                            reefcheck = TRUE,
+                            modelled_data = FALSE))
+
+## 5.5 Figure 5c (Part 2) -----
+
+data_benthic %>% 
+  filter(!(area %in% c("All", "Navassa Island", "Caribbean"))) %>% 
+  select(area) %>% 
+  distinct() %>% 
+  pull() %>% 
+  map(.,
+      ~plot_trends_chapters(area_i = .x,
+                            icons = TRUE,
+                            scales = "fixed",
+                            raw_data = TRUE,
+                            reefcheck = FALSE,
                             modelled_data = FALSE))
 
 # Raw data (for writing)
@@ -437,31 +453,9 @@ plot_a <- data_trends$raw_trends %>%
   filter(category == "Hard coral" & area == "All") %>% 
   filter(year >= 1984) %>% 
   ggplot(data = .) +
-  geom_ribbon(aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95, fill = "#c44d56"), alpha = 0.35) +
-  geom_line(aes(x = year, y = mean, color = "#c44d56"), linewidth = 1) +
-  annotate("rect", xmin = 1972, xmax = 1983, ymin = 29, ymax = 38, fill = "#c44d56", alpha = 0.2) +
-  scale_fill_identity() +
-  scale_color_identity() +
-  scale_x_continuous(expand = c(0, 0), limits = c(1970, NA)) +
-  scale_y_continuous(limits = c(0, 50)) +
-  labs(x = "Year", y = "Benthic cover (%)") +
-  theme(plot.background = element_rect(fill = "transparent", color = "transparent"),
-        panel.background = element_rect(fill = "transparent", color = "transparent"),
-        panel.grid = element_blank(),
-        axis.title = element_text(color = "white"),
-        axis.text = element_text(color = "white"),
-        axis.line = element_line(color = "white"),
-        axis.ticks = element_line(color = "white"))
-
-## 8.2 Macroalgae ----
-
-plot_b <- data_trends$raw_trends %>% 
-  filter(category == "Macroalgae" & area == "All") %>% 
-  filter(year >= 1984) %>% 
-  ggplot(data = .) +
-  geom_ribbon(aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95, fill = "#03a678"), alpha = 0.35) +
-  geom_line(aes(x = year, y = mean, color = "#03a678"), linewidth = 1) +
-  annotate("rect", xmin = 1972, xmax = 1983, ymin = 4, ymax = 13, fill = "#03a678", alpha = 0.2) +
+  geom_ribbon(aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95, fill = "#F56b12"), alpha = 0.35) +
+  geom_line(aes(x = year, y = mean, color = "#F56b12"), linewidth = 1) +
+  annotate("rect", xmin = 1972, xmax = 1983, ymin = 29, ymax = 38, fill = "#F56b12", alpha = 0.2) +
   scale_fill_identity() +
   scale_color_identity() +
   scale_x_continuous(expand = c(0, 0), limits = c(1970, NA)) +
@@ -471,8 +465,38 @@ plot_b <- data_trends$raw_trends %>%
         panel.background = element_rect(fill = "transparent", color = NA),
         panel.grid = element_blank(),
         axis.title = element_text(color = "white"),
-        axis.text = element_text(color = "white"),
+        axis.title.x = element_text(size = 26),
+        axis.title.y = element_text(size = 26),
+        axis.text = element_text(color = "white", size = 20),
         axis.line = element_line(color = "white"),
+        axis.line.x = element_line(linewidth = 0.6),
+        axis.ticks.x = element_line(linewidth = 0.6),
+        axis.ticks = element_line(color = "white"))
+
+## 8.2 Macroalgae ----
+
+plot_b <- data_trends$raw_trends %>% 
+  filter(category == "Macroalgae" & area == "All") %>% 
+  filter(year >= 1984) %>% 
+  ggplot(data = .) +
+  geom_ribbon(aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95, fill = "#24bf25"), alpha = 0.35) +
+  geom_line(aes(x = year, y = mean, color = "#24bf25"), linewidth = 1) +
+  annotate("rect", xmin = 1972, xmax = 1983, ymin = 4, ymax = 13, fill = "#24bf25", alpha = 0.2) +
+  scale_fill_identity() +
+  scale_color_identity() +
+  scale_x_continuous(expand = c(0, 0), limits = c(1970, NA)) +
+  scale_y_continuous(limits = c(0, 50)) +
+  labs(x = "Year", y = "Benthic cover (%)") +
+  theme(plot.background = element_rect(fill = "transparent", color = NA),
+        panel.background = element_rect(fill = "transparent", color = NA),
+        panel.grid = element_blank(),
+        axis.title = element_text(color = "white"),
+        axis.title.x = element_text(size = 26),
+        axis.title.y = element_text(size = 26),
+        axis.text = element_text(color = "white", size = 20),
+        axis.line = element_line(color = "white"),
+        axis.line.x = element_line(linewidth = 0.6),
+        axis.ticks.x = element_line(linewidth = 0.6),
         axis.ticks = element_line(color = "white"))
 
 ## 8.3 Combine and export plots ----
