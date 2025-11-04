@@ -23,6 +23,10 @@ source("code/function/theme_map_area.R")
 
 load("data/02_misc/data-benthic.RData")
 
+data_benthic <- data_benthic %>% 
+  mutate(year = case_when(datasetID == "0270" & year == 2012 ~ 2023,
+                          TRUE ~ year)) # Correct error in the AGRRA 2.0 database
+
 ## 3.2 Transform data ----
 
 data_sources <- read_xlsx("C:/Users/jerem/Desktop/Recherche/03_projects/2022-02-10_gcrmndb_benthos/gcrmndb_benthos/data/05_data-sources.xlsx") %>% 
