@@ -99,19 +99,3 @@ if(file.exists("figs/00_misc/authors_contribution.xlsx") == FALSE){
 # /!\        2) THE COLUMN DATA ACQUISITION MUST NOT BE CHANGED                   /!\ #
 # /!\        3) MODIFICATIONS MUST BE DONE ON LOCAL FILE NOT ON GOOGLE DRIVE      /!\ #
 # ----------------------------------------------------------------------------------- #
-
-# 4. Export to Google Drive (without email) ----
-
-data_contribution <- read_xlsx("figs/00_misc/authors_contribution.xlsx")
-
-data_contribution <- data_contribution %>% 
-  select(-email)
-
-export_contributions(data = data_contribution, path = "figs/00_misc/authors_contribution_temp.xlsx")
-
-drive_put(media = "figs/00_misc/authors_contribution_temp.xlsx",
-          path = "GCRMN Caribbean report/10_authors-contribution.xlsx")
-
-# Select Google account before running the last line of code
-
-file.remove("figs/00_misc/authors_contribution_temp.xlsx")

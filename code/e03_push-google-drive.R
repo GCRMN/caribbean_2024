@@ -25,7 +25,15 @@ if(FALSE){
 
 # 4. Load the figures to the folders ----
 
-## 4.1 Figure 1 ----
+## 4.1 Figure 0 ----
+
+map(str_replace_all(str_replace_all(str_to_lower(data_area$area), " ", "-"), "---", "-"),
+    ~drive_upload(media = paste0("figs/02_part-2/fig-0/", .x, ".png"),
+                  path = paste0("GCRMN Caribbean report/07_part-2_syntheses-countries-territories/", .x),
+                  name = "fig-0",
+                  overwrite = TRUE))
+
+## 4.2 Figure 1 ----
 
 map(str_replace_all(str_replace_all(str_to_lower(data_area$area), " ", "-"), "---", "-"),
     ~drive_upload(media = paste0("figs/02_part-2/fig-1/", .x, ".png"),
@@ -33,21 +41,21 @@ map(str_replace_all(str_replace_all(str_to_lower(data_area$area), " ", "-"), "--
                   name = "fig-1",
                   overwrite = TRUE))
   
-## 4.2 Figure 2 ----
+## 4.3 Figure 2 ----
 
 map(str_replace_all(str_replace_all(str_to_lower(data_area$area), " ", "-"), "---", "-"),
     ~drive_upload(media = paste0("figs/02_part-2/fig-2/", .x, ".png"),
                   path = paste0("GCRMN Caribbean report/07_part-2_syntheses-countries-territories/", .x),
                   name = "fig-2"))
 
-## 4.3 Figure 3 ----
+## 4.4 Figure 3 ----
 
 map(str_replace_all(str_replace_all(str_to_lower(data_area$area), " ", "-"), "---", "-"),
     ~drive_upload(media = paste0("figs/02_part-2/fig-3/", .x, ".png"),
                   path = paste0("GCRMN Caribbean report/07_part-2_syntheses-countries-territories/", .x),
                   name = "fig-3"))
 
-## 4.4 Figure 4 ----
+## 4.5 Figure 4 ----
 
 map(str_replace_all(str_replace_all(str_to_lower(data_area$area), " ", "-"), "---", "-"),
     ~drive_upload(media = paste0("figs/02_part-2/fig-4/", .x, ".png"),
@@ -55,7 +63,7 @@ map(str_replace_all(str_replace_all(str_to_lower(data_area$area), " ", "-"), "--
                   name = "fig-4",
                   overwrite = TRUE))
 
-## 4.5 Figure 5 ----
+## 4.6 Figure 5 ----
 
 map(str_replace_all(str_replace_all(str_to_lower(data_area$area), " ", "-"), "---", "-"),
     ~drive_upload(media = paste0("figs/02_part-2/fig-5/", .x, ".png"),
@@ -63,7 +71,7 @@ map(str_replace_all(str_replace_all(str_to_lower(data_area$area), " ", "-"), "--
                   name = "fig-5",
                   overwrite = TRUE))
 
-## 4.6 Figure 5b ----
+## 4.7 Figure 5b ----
 
 map(list.files("figs/02_part-2/fig-5b/", full.names = TRUE),
     ~drive_upload(media = .x,
@@ -72,7 +80,7 @@ map(list.files("figs/02_part-2/fig-5b/", full.names = TRUE),
                   name = "fig-5b",
                   overwrite = TRUE))
 
-## 4.7 Docx chapter ----
+## 4.8 Docx chapter ----
 
 map(list.files("doc/", full.names = TRUE, pattern = ".docx$"),
     ~drive_upload(media = .x,

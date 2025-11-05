@@ -172,7 +172,8 @@ data_population_reef %>%
   ggplot(data = ., aes(x = year, y = population, label = population)) +
   geom_line(color = "#2C5D96") +
   geom_point(color = "white", shape = 21, fill = "#2C5D96", size = 5) +
-  geom_label(family = font_choose_graph, vjust = 2, linewidth = 0, fill = "#74b9ff", text.color = "black", size = 4, alpha = 0.6) +
+  geom_label(family = font_choose_graph, vjust = 2, linewidth = 0,
+             fill = "#74b9ff", text.color = "black", size = 4, alpha = 0.6) +
   labs(x = "Year", y = "Inhabitants (millions)") +
   theme_graph() +
   lims(y = c(0, 60))

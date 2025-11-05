@@ -465,12 +465,13 @@ plot_a <- data_trends$raw_trends %>%
         panel.background = element_rect(fill = "transparent", color = NA),
         panel.grid = element_blank(),
         axis.title = element_text(color = "white"),
-        axis.title.x = element_text(size = 26),
-        axis.title.y = element_text(size = 26),
-        axis.text = element_text(color = "white", size = 20),
+        axis.title.x = element_text(size = 36),
+        axis.title.y = element_text(size = 36),
+        axis.text = element_text(color = "white", size = 30),
         axis.line = element_line(color = "white"),
         axis.line.x = element_line(linewidth = 0.6),
         axis.ticks.x = element_line(linewidth = 0.6),
+        axis.ticks.y = element_line(linewidth = 0.6),
         axis.ticks = element_line(color = "white"))
 
 ## 8.2 Macroalgae ----
@@ -491,12 +492,13 @@ plot_b <- data_trends$raw_trends %>%
         panel.background = element_rect(fill = "transparent", color = NA),
         panel.grid = element_blank(),
         axis.title = element_text(color = "white"),
-        axis.title.x = element_text(size = 26),
-        axis.title.y = element_text(size = 26),
-        axis.text = element_text(color = "white", size = 20),
+        axis.title.x = element_text(size = 36),
+        axis.title.y = element_text(size = 36),
+        axis.text = element_text(color = "white", size = 30),
         axis.line = element_line(color = "white"),
         axis.line.x = element_line(linewidth = 0.6),
         axis.ticks.x = element_line(linewidth = 0.6),
+        axis.ticks.y = element_line(linewidth = 0.6),
         axis.ticks = element_line(color = "white"))
 
 ## 8.3 Combine and export plots ----

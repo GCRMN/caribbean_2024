@@ -119,7 +119,7 @@ prepare_benthic_data <- function(data, remove_na = TRUE, regenerate_zero = TRUE)
     summarise(measurementValue = sum(measurementValue)) %>% 
     ungroup() %>% 
     # 3. Regenerate 0 values
-    function_regenerate_zero(data = ., regenerate_zero = regenerate_zero) %>%
+    function_regenerate_zero(data = ., regenerate_zero = TRUE) %>%
     # 4. Average of benthic cover per transect (i.e. mean of photo-quadrats)
     # This avoid getting semi-quantitative data (e.g. when there is only 10 points per photo-quadrat)
     group_by(datasetID, region, subregion, ecoregion, country, territory, area, locality, habitat, parentEventID,

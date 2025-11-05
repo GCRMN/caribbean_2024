@@ -202,10 +202,14 @@ data_benthic <- data_benthic %>%
   distinct() %>% 
   st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
 
+data_reefs <- st_read("data/01_maps/02_clean/02_reefs/reefs.shp") %>% 
+  filter(area == "Cuba")
+
 ## 5.2 Map of sites with observed data ----
 
 plot_a <- ggplot() +
   geom_sf(data = data_land, fill = "lightgrey") +
+  geom_sf(data = data_reefs, col = "#3498db", alpha = 0.8) +
   geom_sf(data = data_benthic, size = 0.75, col = "red", shape = 16) +
   theme_minimal() +
   labs(title = "Sites with observed data") +
