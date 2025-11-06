@@ -17,7 +17,8 @@ plot_trends_chapters <- function(area_i, icons = FALSE, raw_data = TRUE,
     
     data_benthic_raw_i <- data_benthic_raw %>% 
       filter(area == area_i) %>% 
-      filter(datasetID != "0015") %>%
+      # Remove 0 values for macroalgae for ReefCheck
+      filter(!(datasetID == "0015" & category == "Macroalgae" & measurementValue == 0)) %>%
       filter(category %in% c("Hard coral", "Macroalgae"))
     
   }
@@ -37,6 +38,7 @@ plot_trends_chapters <- function(area_i, icons = FALSE, raw_data = TRUE,
     
     data_benthic_raw_mean_i <- data_benthic_raw %>% 
       filter(area == area_i) %>% 
+      # Remove 0 values for macroalgae for ReefCheck
       filter(!(datasetID == "0015" & category == "Macroalgae" & measurementValue == 0)) %>%
       filter(category %in% c("Hard coral", "Macroalgae")) %>% 
       group_by(year, color, category, text_title) %>% 
