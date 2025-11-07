@@ -77,6 +77,11 @@ plot_areas <- function(area_i){
          height = 2.8, width = 4.4, dpi = 600)
   
   ggsave(filename = str_replace_all(paste0("figs/02_part-2/fig-0/",
+                                           str_replace_all(str_to_lower(area_i), " ", "-"), ".pdf"),
+                                    "---", "-"),
+         height = 2.8, width = 4.4)
+  
+  ggsave(filename = str_replace_all(paste0("figs/02_part-2/fig-0/",
                                            str_replace_all(str_to_lower(area_i), " ", "-"), ".svg"),
                                     "---", "-"),
          height = 2.8, width = 4.4)
