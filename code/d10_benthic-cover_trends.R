@@ -413,7 +413,7 @@ map(unique(data_trends$raw_trends$category), ~model_text(category_i = .x))
 
 ## 7.1 Hard coral ----
 
-data_trends$raw_trends %>% 
+plot_i <- data_trends$raw_trends %>% 
   filter(category == "Hard coral" & area == "All") %>% 
   filter(year >= 1984) %>% 
   ggplot(data = .) +
@@ -423,14 +423,26 @@ data_trends$raw_trends %>%
   scale_fill_identity() +
   scale_color_identity() +
   scale_x_continuous(expand = c(0, 0), limits = c(1970, NA)) +
-  scale_y_continuous(limits = c(0, 60)) +
+  scale_y_continuous(limits = c(0, 60))
+
+plot_i +
   labs(x = "Year", y = "Benthic cover (%)")
 
-ggsave("figs/00_misc/exe-summ_1_raw.png", height = 5.3, width = 9.2, dpi = fig_resolution)
+ggsave("figs/00_misc/exe-summ_en_coral_raw.png", height = 5.3, width = 9.2, dpi = fig_resolution)
+
+plot_i +
+  labs(x = "Année", y = "Couverture benthique (%)")
+
+ggsave("figs/00_misc/exe-summ_fr_coral_raw.png", height = 5.3, width = 9.2, dpi = fig_resolution)
+
+plot_i +
+  labs(x = "Año", y = "Cubierta bentónica (%)")
+
+ggsave("figs/00_misc/exe-summ_sp_coral_raw.png", height = 5.3, width = 9.2, dpi = fig_resolution)
 
 ## 7.2 Macroalgae ----
 
-data_trends$raw_trends %>% 
+plot_i <- data_trends$raw_trends %>% 
   filter(category == "Macroalgae" & area == "All") %>% 
   filter(year >= 1984) %>% 
   ggplot(data = .) +
@@ -443,7 +455,20 @@ data_trends$raw_trends %>%
   scale_y_continuous(limits = c(0, 50)) +
   labs(x = "Year", y = "Benthic cover (%)")
 
-ggsave("figs/00_misc/exe-summ_2_raw.png", height = 5.3, width = 9.2, dpi = fig_resolution)
+plot_i +
+  labs(x = "Year", y = "Benthic cover (%)")
+
+ggsave("figs/00_misc/exe-summ_en_macroalgae_raw.png", height = 5.3, width = 9.2, dpi = fig_resolution)
+
+plot_i +
+  labs(x = "Année", y = "Couverture benthique (%)")
+
+ggsave("figs/00_misc/exe-summ_fr_macroalgae_raw.png", height = 5.3, width = 9.2, dpi = fig_resolution)
+
+plot_i +
+  labs(x = "Año", y = "Cubierta bentónica (%)")
+
+ggsave("figs/00_misc/exe-summ_sp_macroalgae_raw.png", height = 5.3, width = 9.2, dpi = fig_resolution)
 
 # 8. Figures for the poster ----
 

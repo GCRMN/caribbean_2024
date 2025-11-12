@@ -19,7 +19,10 @@ plot_trends_chapters <- function(area_i, icons = FALSE, raw_data = TRUE,
       filter(area == area_i) %>% 
       # Remove 0 values for macroalgae for ReefCheck
       filter(!(datasetID == "0015" & category == "Macroalgae" & measurementValue == 0)) %>%
-      filter(category %in% c("Hard coral", "Macroalgae"))
+      filter(category %in% c("Hard coral", "Macroalgae")) %>% 
+      # Remove macroalgae for Martinique for 2024
+      filter(!(area == "Martinique" & category == "Macroalgae" & year == 2024))
+      
     
   }
   
@@ -40,6 +43,8 @@ plot_trends_chapters <- function(area_i, icons = FALSE, raw_data = TRUE,
       filter(area == area_i) %>% 
       # Remove 0 values for macroalgae for ReefCheck
       filter(!(datasetID == "0015" & category == "Macroalgae" & measurementValue == 0)) %>%
+      # Remove macroalgae for Martinique for 2024
+      filter(!(area == "Martinique" & category == "Macroalgae" & year == 2024)) %>% 
       filter(category %in% c("Hard coral", "Macroalgae")) %>% 
       group_by(year, color, category, text_title) %>% 
       summarise(mean = mean(measurementValue)) %>% 
