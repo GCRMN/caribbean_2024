@@ -3,7 +3,7 @@
 
 # **Status and Trends of Caribbean Coral Reefs: 1970-2024**
 
-## 1. Introduction [<img src='misc/2025-10-20_report-page-cover.jpg' align="right" height="300" />](https://gcrmn.net/pacific-report-2025-v1/)
+## 1. Introduction [<img src='misc/2025-10-20_report-page-cover.jpg' align="right" height="300" />](https://gcrmn.net/caribbean-report-2025-v1/)
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus.
 Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies
@@ -139,7 +139,7 @@ Curabitur eu amet.
 
     Warning in system2("quarto", "-V", stdout = TRUE, env = paste0("TMPDIR=", :
     l'exécution de la commande '"quarto"
-    TMPDIR=C:/Users/jerem/AppData/Local/Temp/Rtmpc3gYnV/file44c67e3e4a -V' renvoie
+    TMPDIR=C:/Users/jerem/AppData/Local/Temp/RtmpGslr8q/file7220657179a -V' renvoie
     un statut 1
     ─ Session info ───────────────────────────────────────────────────────────────
      setting  value
@@ -151,7 +151,7 @@ Curabitur eu amet.
      collate  French_France.utf8
      ctype    French_France.utf8
      tz       Europe/Paris
-     date     2025-10-21
+     date     2025-11-12
      pandoc   3.6.3 @ C:/Program Files/RStudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)
      quarto   NA @ C:\\PROGRA~1\\RStudio\\RESOUR~1\\app\\bin\\quarto\\bin\\quarto.exe
 
@@ -210,7 +210,7 @@ Curabitur eu amet.
      hardhat         1.4.2      2025-08-20 [1] CRAN (R 4.5.1)
      haven           2.5.5      2025-05-30 [1] CRAN (R 4.5.0)
      highr           0.11       2024-05-26 [1] CRAN (R 4.5.0)
-     hms             1.1.3      2023-03-21 [1] CRAN (R 4.5.0)
+     hms             1.1.4      2025-10-17 [1] CRAN (R 4.5.2)
      htmltools       0.5.8.1    2024-04-04 [1] CRAN (R 4.5.0)
      httr            1.4.7      2023-08-15 [1] CRAN (R 4.5.0)
      ids             1.0.1      2017-05-31 [1] CRAN (R 4.5.0)
@@ -223,12 +223,12 @@ Curabitur eu amet.
      knitr           1.50       2025-03-16 [1] CRAN (R 4.5.0)
      labeling        0.4.3      2023-08-29 [1] CRAN (R 4.5.0)
      lattice         0.22-7     2025-04-02 [2] CRAN (R 4.5.1)
-     lava            1.8.1      2025-01-12 [1] CRAN (R 4.5.0)
+     lava            1.8.2      2025-10-30 [1] CRAN (R 4.5.2)
      lhs             1.2.0      2024-06-30 [1] CRAN (R 4.5.0)
      lifecycle       1.0.4      2023-11-07 [1] CRAN (R 4.5.0)
-     listenv         0.9.1      2024-01-29 [1] CRAN (R 4.5.0)
+     listenv         0.10.0     2025-11-02 [1] CRAN (R 4.5.1)
      lubridate       1.9.4      2024-12-08 [1] CRAN (R 4.5.0)
-     magrittr        2.0.3      2022-03-30 [1] CRAN (R 4.5.0)
+     magrittr        2.0.4      2025-09-12 [1] CRAN (R 4.5.1)
      MASS            7.3-65     2025-02-28 [2] CRAN (R 4.5.1)
      Matrix          1.7-4      2025-08-28 [1] CRAN (R 4.5.1)
      memoise         2.0.1      2021-11-26 [1] CRAN (R 4.5.0)
@@ -287,18 +287,18 @@ Curabitur eu amet.
      systemfonts     1.3.1      2025-10-01 [1] CRAN (R 4.5.1)
      tailor          0.1.0      2025-08-25 [1] CRAN (R 4.5.1)
      terra           1.8-70     2025-09-27 [1] CRAN (R 4.5.1)
-     textshaping     1.0.3      2025-09-02 [1] CRAN (R 4.5.1)
+     textshaping     1.0.4      2025-10-10 [1] CRAN (R 4.5.2)
      tibble          3.3.0      2025-06-08 [1] CRAN (R 4.5.0)
      tidymodels      1.4.1      2025-09-08 [1] CRAN (R 4.5.1)
      tidyr           1.3.1      2024-01-24 [1] CRAN (R 4.5.0)
      tidyselect      1.2.1      2024-03-11 [1] CRAN (R 4.5.0)
      tidyverse       2.0.0      2023-02-22 [1] CRAN (R 4.5.0)
      timechange      0.3.0      2024-01-18 [1] CRAN (R 4.5.0)
-     timeDate        4041.110   2024-09-22 [1] CRAN (R 4.5.0)
+     timeDate        4051.111   2025-10-17 [1] CRAN (R 4.5.2)
      tinytex         0.57       2025-04-15 [1] CRAN (R 4.5.0)
-     tune            2.0.0      2025-09-01 [1] CRAN (R 4.5.1)
+     tune            2.0.1      2025-10-17 [1] CRAN (R 4.5.2)
      tzdb            0.5.0      2025-03-15 [1] CRAN (R 4.5.0)
-     units           0.8-7      2025-03-11 [1] CRAN (R 4.5.0)
+     units           1.0-0      2025-10-09 [1] CRAN (R 4.5.2)
      utf8            1.2.6      2025-06-08 [1] CRAN (R 4.5.0)
      uuid            1.2-1      2024-07-29 [1] CRAN (R 4.5.0)
      vctrs           0.6.5      2023-12-01 [1] CRAN (R 4.5.0)
@@ -309,8 +309,8 @@ Curabitur eu amet.
      wk              0.9.4      2024-10-11 [1] CRAN (R 4.5.0)
      workflows       1.3.0      2025-08-27 [1] CRAN (R 4.5.1)
      workflowsets    1.1.1      2025-05-27 [1] CRAN (R 4.5.0)
-     xfun            0.53       2025-08-19 [1] CRAN (R 4.5.1)
-     xml2            1.4.0      2025-08-20 [1] CRAN (R 4.5.1)
+     xfun            0.54       2025-10-30 [1] CRAN (R 4.5.2)
+     xml2            1.4.1      2025-10-27 [1] CRAN (R 4.5.1)
      yaml            2.3.10     2024-07-26 [1] CRAN (R 4.5.0)
      yardstick       1.3.2      2025-01-22 [1] CRAN (R 4.5.0)
 
