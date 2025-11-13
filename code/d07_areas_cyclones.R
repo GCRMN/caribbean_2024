@@ -50,9 +50,9 @@ map_cyclone_plot <- function(area_i){
                      aes(label = ts_name, color = max_saffir), fill = "white", alpha = 0.9,
                      label.r = unit(0.4, "lines"), show.legend = FALSE,
                      max.overlaps = getOption("ggrepel.max.overlaps", default = 15)) +
-    scale_y_continuous(breaks = c(0, 50 ,100, 150, 200, 250, 300), limits = c(0, 300)) +
+    scale_y_continuous(breaks = c(0, 50 ,100, 150, 200, 250, 300), limits = c(0, 310)) +
     scale_x_date(limits = c(ymd("1980-01-01"), ymd("2025-01-01"))) +
-    coord_cartesian(ylim = c(14.25, 310)) +
+    coord_cartesian(ylim = c(14.25, 320)) +
     scale_fill_manual(breaks = c("1", "2", "3", "4", "5"),
                       labels = c("Cat. 1", "Cat. 2", "Cat. 3", "Cat. 4", "Cat. 5"),
                       values = c(palette_second[2:5], "black"),
