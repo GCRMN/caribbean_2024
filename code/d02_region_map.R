@@ -115,3 +115,20 @@ plot <- ggplot() +
 
 ggsave(filename = "figs/00_misc/map_regions_raw.png", plot = plot,
        bg = "transparent", height = 5, width = 8, dpi = 300)
+
+# 5. Background map for the PowerPoint ----
+
+data_country <- st_read("data/01_maps/01_raw/04_natural-earth/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
+
+plot <- ggplot() +
+  geom_sf(data = data_country, color = "#DA926C", fill = "NA", linewidth = 0.15, alpha = 0.35) +
+  coord_sf(xlim = c(-100, -55), ylim = c(7.5, 35), expand = FALSE) +
+  theme(axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        plot.background = element_blank(),
+        panel.background = element_blank(),
+        panel.grid = element_blank())
+
+ggsave(filename = "figs/00_misc/map_powerpoint.png", plot = plot,
+       width = 7.25, height = 4.75, dpi = fig_resolution, bg = "transparent")

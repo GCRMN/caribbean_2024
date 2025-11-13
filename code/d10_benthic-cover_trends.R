@@ -415,11 +415,10 @@ map(unique(data_trends$raw_trends$category), ~model_text(category_i = .x))
 
 plot_i <- data_trends$raw_trends %>% 
   filter(category == "Hard coral" & area == "All") %>% 
-  filter(year >= 1984) %>% 
   ggplot(data = .) +
   geom_ribbon(aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95, fill = "#c44d56"), alpha = 0.35) +
   geom_line(aes(x = year, y = mean, color = "#c44d56"), linewidth = 1) +
-  annotate("rect", xmin = 1970, xmax = 1983, ymin = 29, ymax = 38, fill = "#c44d56", alpha = 0.2) +
+  annotate("rect", xmin = 1970, xmax = 1979.5, ymin = 29, ymax = 38, fill = "#c44d56", alpha = 0.35) +
   scale_fill_identity() +
   scale_color_identity() +
   scale_x_continuous(expand = c(0, 0), limits = c(1970, NA)) +
@@ -436,7 +435,7 @@ plot_i +
 ggsave("figs/00_misc/exe-summ_fr_coral_raw.png", height = 5.3, width = 9.2, dpi = fig_resolution)
 
 plot_i +
-  labs(x = "Año", y = "Cubierta bentónica (%)")
+  labs(x = "Año", y = "Cobertura bentónica (%)")
 
 ggsave("figs/00_misc/exe-summ_sp_coral_raw.png", height = 5.3, width = 9.2, dpi = fig_resolution)
 
@@ -444,11 +443,10 @@ ggsave("figs/00_misc/exe-summ_sp_coral_raw.png", height = 5.3, width = 9.2, dpi 
 
 plot_i <- data_trends$raw_trends %>% 
   filter(category == "Macroalgae" & area == "All") %>% 
-  filter(year >= 1984) %>% 
   ggplot(data = .) +
   geom_ribbon(aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95, fill = "#03a678"), alpha = 0.35) +
   geom_line(aes(x = year, y = mean, color = "#03a678"), linewidth = 1) +
-  annotate("rect", xmin = 1970, xmax = 1983, ymin = 4, ymax = 13, fill = "#03a678", alpha = 0.2) +
+  annotate("rect", xmin = 1970, xmax = 1979.5, ymin = 4, ymax = 13, fill = "#03a678", alpha = 0.35) +
   scale_fill_identity() +
   scale_color_identity() +
   scale_x_continuous(expand = c(0, 0), limits = c(1970, NA)) +
@@ -466,7 +464,7 @@ plot_i +
 ggsave("figs/00_misc/exe-summ_fr_macroalgae_raw.png", height = 5.3, width = 9.2, dpi = fig_resolution)
 
 plot_i +
-  labs(x = "Año", y = "Cubierta bentónica (%)")
+  labs(x = "Año", y = "Cobertura bentónica (%)")
 
 ggsave("figs/00_misc/exe-summ_sp_macroalgae_raw.png", height = 5.3, width = 9.2, dpi = fig_resolution)
 
