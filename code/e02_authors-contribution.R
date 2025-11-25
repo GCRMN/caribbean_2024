@@ -17,9 +17,7 @@ data_contribution <- read_xlsx("figs/06_additional/05_contributors/contributors_
   # Create all the columns
   mutate(`Funding acquisition` = NA,
          `Supervision` = NA,
-         `Conceptualization` = NA,
          `Facilitation` = NA,
-         `Data integration` = NA,
          `Data analysis` = NA,
          `Participation to workshop` = NA,
          `Executive summary` = NA,
@@ -28,9 +26,8 @@ data_contribution <- read_xlsx("figs/06_additional/05_contributors/contributors_
          `Case studies` = NA,
          `Materials and Methods` = NA,
          `Supplementary Materials` = NA,
-         `Layout` = NA,
          `Communication` = NA) %>% 
-  relocate(`Data acquisition`, .before = `Data integration`) %>% 
+  relocate(`Data acquisition`, .before = `Data analysis`) %>% 
   arrange(last_name, .locale = "en") %>% 
   mutate(across(c(first_name, last_name), ~str_squish(.x))) %>% 
   # Concatenate email address
@@ -87,7 +84,7 @@ if(file.exists("figs/00_misc/authors_contribution.xlsx") == FALSE){
   data_contribution <- data_contribution %>% 
     select(first_name, last_name, email, `Data acquisition`) %>% 
     left_join(., data_contribution_before) %>% 
-    relocate(`Data acquisition`, .before = `Data integration`)
+    relocate(`Data acquisition`, .before = `Data analysis`)
   
   export_contributions(data = data_contribution)
   
