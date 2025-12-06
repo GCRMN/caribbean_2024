@@ -616,7 +616,7 @@ ggplot(data = data_cover, aes(x = year, y = mean, fill = category)) +
 
 ggsave("figs/06_additional/01_misc/stacked-benthic-cover.png", width = 7, height = 5, dpi = fig_resolution)
 
-## 9.3 Comparison previous trends ----
+## 9.3 Comparison with previous trends ----
 
 load("C:/Users/jerem/Desktop/Recherche/03_projects/2025-08-25_time-series/time_series/data/data_trends_litterature.RData")
 
@@ -641,3 +641,51 @@ data_trends_litterature %>%
   labs(x = "Year", y = "Hard coral cover (%)")
 
 ggsave("figs/06_additional/01_misc/trends_litterature.png", width = 15, height = 5)
+
+# 10. Figures for the PowerPoint ----
+
+## 10.1 Acropora ----
+
+plot_i <- data_trends$raw_trends %>% 
+  filter(category == "Acropora" & area == "All") %>% 
+  ggplot(data = .) +
+  geom_ribbon(aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95, fill = "#e08283"), alpha = 0.35) +
+  geom_line(aes(x = year, y = mean, color = "#e08283"), linewidth = 1) +
+  annotate("rect", xmin = 1970, xmax = 1979.5, ymin = 14, ymax = 16, fill = "#e08283", alpha = 0.35) +
+  scale_fill_identity() +
+  scale_color_identity() +
+  scale_x_continuous(expand = c(0, 0), limits = c(1970, NA)) +
+  scale_y_continuous(limits = c(0, 17)) +
+  labs(x = "Year", y = "Benthic cover (%)")
+
+ggsave("figs/00_misc/powerpoint_acropora.png", width = 5, height = 4)
+
+## 10.2 Orbicella ----
+
+plot_i <- data_trends$raw_trends %>% 
+  filter(category == "Orbicella" & area == "All") %>% 
+  ggplot(data = .) +
+  geom_ribbon(aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95, fill = "#c44d56"), alpha = 0.35) +
+  geom_line(aes(x = year, y = mean, color = "#c44d56"), linewidth = 1) +
+  scale_fill_identity() +
+  scale_color_identity() +
+  scale_x_continuous(expand = c(0, 0), limits = c(1970, NA)) +
+  scale_y_continuous(limits = c(0, 17)) +
+  labs(x = "Year", y = "Benthic cover (%)")
+
+ggsave("figs/00_misc/powerpoint_orbicella.png", width = 5, height = 4)
+
+## 10.3 Porites ----
+
+plot_i <- data_trends$raw_trends %>% 
+  filter(category == "Porites" & area == "All") %>% 
+  ggplot(data = .) +
+  geom_ribbon(aes(x = year, ymin = lower_ci_95, ymax = upper_ci_95, fill = "#a37c82"), alpha = 0.35) +
+  geom_line(aes(x = year, y = mean, color = "#a37c82"), linewidth = 1) +
+  scale_fill_identity() +
+  scale_color_identity() +
+  scale_x_continuous(expand = c(0, 0), limits = c(1970, NA)) +
+  scale_y_continuous(limits = c(0, 17)) +
+  labs(x = "Year", y = "Benthic cover (%)")
+
+ggsave("figs/00_misc/powerpoint_porites.png", width = 5, height = 4)
