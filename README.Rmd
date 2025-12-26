@@ -69,13 +69,13 @@ This GitHub repository accompanies the [***Status and Trends of Caribbean Coral 
 ### Models (benthic cover) (`c_`)
 
 * `c01_explo_benthic-data.qmd` Exploratory analyses of benthic cover data.
-* `c02_select_pred-sites.js` A
-* `c03_extract_predictor_gee.js` A
-* `c04_extract_predictor_gravity.R` A
-* `c05_extract_predictor_enso.R` A
-* `c06_extract_predictor_cyclones.R` A
-* `c07_extract_predictor_crw.R` A
-* `c08_model_data-preparation.R` Combine predictors and prepare cover benthic data.
+* `c02_select_pred-sites.js` Generate sites on which the predictions will be made.
+* `c03_extract_predictor_gee.js` Extract predictors on [GEE](https://earthengine.google.com/).
+* `c04_extract_predictor_gravity.R` Extract gravity as a predictor.
+* `c05_extract_predictor_enso.R` Extract ENSO as a predictor.
+* `c06_extract_predictor_cyclones.R` Extract cyclones as a predictor.
+* `c07_extract_predictor_crw.R` Extract CRW derived predictors.
+* `c08_model_data-preparation.R` Combine predictors and prepare benthic cover data.
 * `c09_xgboost-model.R` Run XGBoost models.
 
 ### Figures and tables (`d_`)

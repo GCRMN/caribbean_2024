@@ -114,14 +114,16 @@ provides the code used to produce the results of the report.
 
 - `c01_explo_benthic-data.qmd` Exploratory analyses of benthic cover
   data.
-- `c02_select_pred-sites.js` A
-- `c03_extract_predictor_gee.js` A
-- `c04_extract_predictor_gravity.R` A
-- `c05_extract_predictor_enso.R` A
-- `c06_extract_predictor_cyclones.R` A
-- `c07_extract_predictor_crw.R` A
-- `c08_model_data-preparation.R` Combine predictors and prepare cover
-  benthic data.
+- `c02_select_pred-sites.js` Generate sites on which the predictions
+  will be made.
+- `c03_extract_predictor_gee.js` Extract predictors on
+  [GEE](https://earthengine.google.com/).
+- `c04_extract_predictor_gravity.R` Extract gravity as a predictor.
+- `c05_extract_predictor_enso.R` Extract ENSO as a predictor.
+- `c06_extract_predictor_cyclones.R` Extract cyclones as a predictor.
+- `c07_extract_predictor_crw.R` Extract CRW derived predictors.
+- `c08_model_data-preparation.R` Combine predictors and prepare benthic
+  cover data.
 - `c09_xgboost-model.R` Run XGBoost models.
 
 ### Figures and tables (`d_`)
@@ -155,7 +157,7 @@ provides the code used to produce the results of the report.
 
     Warning in system2("quarto", "-V", stdout = TRUE, env = paste0("TMPDIR=", :
     l'exécution de la commande '"quarto"
-    TMPDIR=C:/Users/jerem/AppData/Local/Temp/Rtmp65lQpI/file36d43a4b6aa2 -V'
+    TMPDIR=C:/Users/jerem/AppData/Local/Temp/RtmpIpwreI/file5c5470b94740 -V'
     renvoie un statut 1
     ─ Session info ───────────────────────────────────────────────────────────────
      setting  value
@@ -167,7 +169,7 @@ provides the code used to produce the results of the report.
      collate  French_France.utf8
      ctype    French_France.utf8
      tz       Europe/Paris
-     date     2025-12-09
+     date     2025-12-26
      pandoc   3.6.3 @ C:/Program Files/RStudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)
      quarto   NA @ C:\\PROGRA~1\\RStudio\\RESOUR~1\\app\\bin\\quarto\\bin\\quarto.exe
 
@@ -179,7 +181,7 @@ provides the code used to produce the results of the report.
      bit             4.6.0      2025-03-06 [1] CRAN (R 4.5.0)
      bit64           4.6.0-1    2025-01-16 [1] CRAN (R 4.5.0)
      blob            1.2.4      2023-03-17 [1] CRAN (R 4.5.0)
-     broom           1.0.10     2025-09-13 [1] CRAN (R 4.5.1)
+     broom           1.0.11     2025-12-04 [1] CRAN (R 4.5.2)
      bslib           0.9.0      2025-01-30 [1] CRAN (R 4.5.0)
      cachem          1.1.0      2024-05-16 [1] CRAN (R 4.5.0)
      callr           3.7.6      2024-03-25 [1] CRAN (R 4.5.0)
@@ -212,7 +214,7 @@ provides the code used to produce the results of the report.
      fs              1.6.6      2025-04-12 [1] CRAN (R 4.5.0)
      furrr           0.3.1      2022-08-15 [1] CRAN (R 4.5.0)
      future          1.68.0     2025-11-17 [1] CRAN (R 4.5.2)
-     future.apply    1.20.0     2025-06-06 [1] CRAN (R 4.5.0)
+     future.apply    1.20.1     2025-12-09 [1] CRAN (R 4.5.2)
      gargle          1.6.0      2025-09-03 [1] CRAN (R 4.5.1)
      generics        0.1.4      2025-05-09 [1] CRAN (R 4.5.0)
      ggplot2         4.0.1      2025-11-14 [1] CRAN (R 4.5.2)
@@ -227,12 +229,12 @@ provides the code used to produce the results of the report.
      haven           2.5.5      2025-05-30 [1] CRAN (R 4.5.0)
      highr           0.11       2024-05-26 [1] CRAN (R 4.5.0)
      hms             1.1.4      2025-10-17 [1] CRAN (R 4.5.2)
-     htmltools       0.5.8.1    2024-04-04 [1] CRAN (R 4.5.0)
+     htmltools       0.5.9      2025-12-04 [1] CRAN (R 4.5.2)
      httr            1.4.7      2023-08-15 [1] CRAN (R 4.5.0)
      ids             1.0.1      2017-05-31 [1] CRAN (R 4.5.0)
      infer           1.0.9      2025-06-26 [1] CRAN (R 4.5.0)
      ipred           0.9-15     2024-07-18 [1] CRAN (R 4.5.0)
-     isoband         0.2.7      2022-12-20 [1] CRAN (R 4.5.0)
+     isoband         0.3.0      2025-12-07 [1] CRAN (R 4.5.2)
      jquerylib       0.1.4      2021-04-26 [1] CRAN (R 4.5.0)
      jsonlite        2.0.0      2025-03-27 [1] CRAN (R 4.5.0)
      KernSmooth      2.23-26    2025-01-01 [2] CRAN (R 4.5.2)
@@ -255,7 +257,7 @@ provides the code used to produce the results of the report.
      nnet            7.3-20     2025-01-01 [2] CRAN (R 4.5.2)
      numDeriv        2016.8-1.1 2019-06-06 [1] CRAN (R 4.5.0)
      openssl         2.3.4      2025-09-30 [1] CRAN (R 4.5.1)
-     parallelly      1.45.1     2025-07-24 [1] CRAN (R 4.5.1)
+     parallelly      1.46.0     2025-12-12 [1] CRAN (R 4.5.2)
      parsnip         1.4.0      2025-12-01 [1] CRAN (R 4.5.2)
      patchwork       1.3.2      2025-08-25 [1] CRAN (R 4.5.1)
      pillar          1.11.1     2025-09-17 [1] CRAN (R 4.5.1)
@@ -265,7 +267,7 @@ provides the code used to produce the results of the report.
      prodlim         2025.04.28 2025-04-28 [1] CRAN (R 4.5.0)
      progress        1.2.3      2023-12-06 [1] CRAN (R 4.5.0)
      progressr       0.18.0     2025-11-06 [1] CRAN (R 4.5.2)
-     proxy           0.4-27     2022-06-09 [1] CRAN (R 4.5.0)
+     proxy           0.4-28     2025-12-11 [1] CRAN (R 4.5.2)
      ps              1.9.1      2025-04-12 [1] CRAN (R 4.5.0)
      purrr           1.2.0      2025-11-04 [1] CRAN (R 4.5.2)
      R6              2.6.1      2025-02-15 [1] CRAN (R 4.5.0)
@@ -294,7 +296,7 @@ provides the code used to produce the results of the report.
      sfd             0.1.0      2024-01-08 [1] CRAN (R 4.5.0)
      shape           1.4.6.1    2024-02-23 [1] CRAN (R 4.5.0)
      slider          0.3.3      2025-11-14 [1] CRAN (R 4.5.2)
-     sparsevctrs     0.3.4      2025-05-25 [1] CRAN (R 4.5.0)
+     sparsevctrs     0.3.5      2025-12-09 [1] CRAN (R 4.5.2)
      SQUAREM         2021.1     2021-01-13 [1] CRAN (R 4.5.0)
      stringi         1.8.7      2025-03-27 [1] CRAN (R 4.5.0)
      stringr         1.6.0      2025-11-04 [1] CRAN (R 4.5.2)
@@ -327,7 +329,7 @@ provides the code used to produce the results of the report.
      workflowsets    1.1.1      2025-05-27 [1] CRAN (R 4.5.0)
      xfun            0.54       2025-10-30 [1] CRAN (R 4.5.2)
      xml2            1.5.1      2025-12-01 [1] CRAN (R 4.5.2)
-     yaml            2.3.11     2025-11-28 [1] CRAN (R 4.5.2)
+     yaml            2.3.12     2025-12-10 [1] CRAN (R 4.5.2)
      yardstick       1.3.2      2025-01-22 [1] CRAN (R 4.5.0)
 
      [1] C:/Users/jerem/AppData/Local/R/win-library/4.5
