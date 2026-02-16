@@ -97,6 +97,10 @@ data_trends <- lst(raw_trends, long_term_average, long_term_trend)
 rm(raw_trends, long_term_average,
    long_term_trend, data_benthic_obs)
 
+## 3.7 Export the data ----
+
+save(data_trends, file = "data/model_trends.RData")
+
 # 4. Model evaluation ----
 
 ## 4.1 Hyper-parameters ----
